@@ -1,0 +1,2521 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Bean Hunt 🫘</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<style>
+:root{--ink:#4a2366;--pink:#ff5fa2;--yellow:#ffd23f;--blue:#3fa7ff;--green:#5ed36a;--font:"Fredoka","Baloo 2","Nunito",ui-rounded,"Arial Rounded MT Bold","Trebuchet MS",sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;height:100%;overflow:hidden;background:#8fd3ff;font-family:var(--font);user-select:none;-webkit-user-select:none;color:#fff}
+canvas#c{display:block;position:fixed;inset:0;width:100vw;height:100vh}
+.hidden{display:none!important}
+.chunky{font-weight:700;color:#fff;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:0 4px 0 var(--ink)}
+/* ---------- HUD ---------- */
+#hud{position:fixed;inset:0;pointer-events:none;z-index:5}
+#topCenter{position:absolute;top:12px;left:50%;transform:translateX(-50%);text-align:center}
+#phase{font-size:22px;letter-spacing:2px;font-weight:700;padding:3px 16px;border-radius:20px;background:var(--pink);border:3px solid var(--ink);display:inline-block;box-shadow:0 4px 0 var(--ink)}
+#timer{font-size:54px;line-height:1;margin-top:6px;font-weight:700;color:#fff;-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:0 5px 0 var(--ink)}
+#timer.low{color:#ff4d6d;animation:pulse .5s infinite alternate}
+#role{margin-top:4px;font-size:16px;font-weight:700;background:rgba(74,35,102,.75);padding:3px 12px;border-radius:12px;display:inline-block}
+@keyframes pulse{from{transform:scale(1)}to{transform:scale(1.15)}}
+#hiders{position:absolute;top:14px;left:14px;background:rgba(255,255,255,.88);border:3px solid var(--ink);border-radius:16px;padding:8px 12px;color:var(--ink);min-width:170px;box-shadow:0 4px 0 var(--ink)}
+#hiders h4{margin:0 0 4px;font-size:15px}
+.hrow{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:600;margin:2px 0;transition:opacity .3s}
+.hrow.caught{opacity:.45;text-decoration:line-through}
+.dot{width:14px;height:18px;border-radius:50%/60%;border:2px solid var(--ink);flex:none}
+#scoreBox{position:absolute;top:206px;right:14px;width:180px;text-align:center;background:rgba(255,255,255,.88);border:3px solid var(--ink);border-radius:16px;padding:6px;color:var(--ink);font-weight:700;box-shadow:0 4px 0 var(--ink)}
+#scoreBox b{font-size:24px;color:var(--pink)}
+#roundLbl{font-size:13px;opacity:.8}
+#minimap{position:absolute;top:14px;right:14px;width:180px;height:180px;border-radius:50%;border:4px solid var(--ink);background:#7cc96b;box-shadow:0 4px 0 var(--ink)}
+#bottom{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;flex-direction:column;align-items:center;gap:8px}
+#status{font-size:16px;font-weight:700;padding:4px 14px;border-radius:14px;background:rgba(74,35,102,.8);min-height:28px}
+#stamina{width:260px;height:14px;border-radius:8px;background:rgba(74,35,102,.6);border:2px solid var(--ink);overflow:hidden}
+#staminaFill{height:100%;width:100%;background:linear-gradient(90deg,#ffd23f,#5ed36a);transition:background .2s}
+#staminaFill.tired{background:#ff6b6b}
+#abilities{display:flex;gap:12px}
+.ab{position:relative;width:76px;height:76px;border-radius:18px;background:#fff;border:3px solid var(--ink);color:var(--ink);display:flex;flex-direction:column;align-items:center;justify-content:center;box-shadow:0 4px 0 var(--ink);overflow:hidden}
+.ab .ic{font-size:28px;line-height:1}
+.ab .nm{font-size:11px;font-weight:700;margin-top:2px}
+.ab .key{position:absolute;top:2px;left:5px;font-size:12px;font-weight:800;color:var(--pink)}
+.ab .cd{position:absolute;inset:0;background:conic-gradient(rgba(74,35,102,.72) calc(var(--p,0)*360deg),transparent 0);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:800;color:#fff;-webkit-text-stroke:1px var(--ink)}
+.ab.ready{animation:readyPop .35s}
+.ab.active{background:#fff3a8}
+@keyframes readyPop{50%{transform:scale(1.2)}}
+#hint{position:absolute;bottom:14px;left:14px;font-size:13px;line-height:1.5;background:rgba(74,35,102,.65);padding:8px 12px;border-radius:12px;max-width:260px}
+#hint b{color:var(--yellow)}
+#eyeMeter{position:absolute;top:158px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:6px;opacity:0;transition:opacity .2s}
+#eyeMeter .eye{font-size:26px}
+#eyeBar{width:120px;height:12px;border:2px solid var(--ink);border-radius:8px;background:rgba(255,255,255,.7);overflow:hidden}
+#eyeFill{height:100%;width:0;background:linear-gradient(90deg,#ffd23f,#ff3b3b)}
+#sniffArrow{position:absolute;left:50%;top:50%;width:0;height:0;opacity:0;transition:opacity .3s}
+#sniffArrow div{position:absolute;left:-30px;top:-170px;width:60px;height:170px;transform-origin:30px 170px}
+#sniffArrow div:before{content:"";position:absolute;left:0;top:0;border-left:30px solid transparent;border-right:30px solid transparent;border-bottom:46px solid #ffd23f;filter:drop-shadow(0 0 2px #4a2366) drop-shadow(0 3px 0 #4a2366) drop-shadow(0 0 12px rgba(255,210,63,.9));animation:pulse .35s infinite alternate}
+#sniffArrow span{position:absolute;left:-60px;top:-235px;width:120px;text-align:center;font-weight:700;font-size:20px;-webkit-text-stroke:1px var(--ink);paint-order:stroke fill;text-shadow:0 2px 0 var(--ink)}
+#crosshair{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#fff;border:2px solid var(--ink);opacity:.7}
+#vignette{position:fixed;inset:0;pointer-events:none;z-index:4;opacity:0;background:radial-gradient(ellipse at center,transparent 45%,rgba(255,0,60,.55) 100%)}
+#speedLines{position:fixed;inset:0;pointer-events:none;z-index:4;opacity:0;background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,255,255,.0) 0deg 4deg,rgba(255,255,255,.35) 4deg 5deg);-webkit-mask:radial-gradient(circle,transparent 35%,#000 75%);mask:radial-gradient(circle,transparent 35%,#000 75%)}
+#labels{position:fixed;inset:0;pointer-events:none;z-index:6;overflow:hidden}
+.lbl{position:absolute;left:0;top:0;transform:translate(-50%,-100%);white-space:nowrap;font-weight:700;font-size:14px;padding:1px 8px;border-radius:10px;background:rgba(74,35,102,.7);border:2px solid #fff}
+.lbl.seeker{background:#ff3b5c}
+.bub{position:absolute;left:0;top:0;transform:translate(-50%,-100%);background:#fff;color:var(--ink);border:3px solid var(--ink);border-radius:16px;padding:5px 11px;font-weight:700;font-size:15px;white-space:nowrap;box-shadow:0 3px 0 var(--ink);animation:bubIn .25s cubic-bezier(.3,1.8,.5,1)}
+.bub:after{content:"";position:absolute;left:50%;bottom:-11px;margin-left:-8px;border:8px solid transparent;border-top-color:var(--ink)}
+@keyframes bubIn{from{transform:translate(-50%,-100%) scale(.2)}}
+.mark{position:absolute;left:0;top:0;transform:translate(-50%,-100%);font-size:40px;font-weight:800;color:#ffd23f;-webkit-text-stroke:2px var(--ink);animation:pulse .3s infinite alternate}
+.pop{position:fixed;left:50%;top:38%;transform:translateX(-50%);font-size:34px;font-weight:800;color:var(--yellow);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:0 4px 0 var(--ink);pointer-events:none;z-index:9;animation:popUp 1.4s ease-out forwards;white-space:nowrap}
+@keyframes popUp{0%{transform:translateX(-50%) scale(.3);opacity:0}15%{transform:translateX(-50%) scale(1.25);opacity:1}30%{transform:translateX(-50%) scale(1)}100%{transform:translateX(-50%) translateY(-90px);opacity:0}}
+#bigWrap{position:fixed;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none;z-index:8}
+#bigText{font-size:min(10vw,96px);font-weight:800;color:var(--yellow);-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;text-shadow:0 8px 0 var(--ink),0 0 40px rgba(255,210,63,.6);text-align:center;opacity:0;line-height:1.05;padding:0 20px}
+#subText{font-size:min(4vw,30px);font-weight:700;color:#fff;-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;text-shadow:0 3px 0 var(--ink);margin-top:10px;opacity:0;text-align:center}
+.bigIn{animation:bigIn 2.2s cubic-bezier(.2,1.6,.4,1) forwards}
+@keyframes bigIn{0%{transform:scale(0) rotate(-12deg);opacity:0}12%{transform:scale(1.15) rotate(3deg);opacity:1}20%{transform:scale(1) rotate(-1deg)}80%{transform:scale(1);opacity:1}100%{transform:scale(1.4);opacity:0}}
+.rainbow{animation:bigIn 2.2s cubic-bezier(.2,1.6,.4,1) forwards,hue .4s linear infinite}
+@keyframes hue{from{filter:hue-rotate(0)}to{filter:hue-rotate(360deg)}}
+#blindfold{position:fixed;inset:0;z-index:7;background:radial-gradient(circle,rgba(30,10,45,.88),rgba(10,0,20,.97));display:flex;flex-direction:column;align-items:center;justify-content:center;pointer-events:none}
+#blindfold .t{font-size:40px;font-weight:700}
+#bfCount{font-size:150px;font-weight:800;color:var(--yellow);-webkit-text-stroke:4px var(--ink);paint-order:stroke fill;text-shadow:0 8px 0 #000;line-height:1.1}
+#bfLine{font-size:22px;opacity:.85;font-style:italic;min-height:30px}
+#muteIcon{position:fixed;bottom:14px;right:14px;z-index:9;font-size:26px;background:rgba(255,255,255,.85);border:3px solid var(--ink);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+#pauseNote{position:fixed;inset:0;z-index:12;background:rgba(40,10,60,.55);display:flex;align-items:center;justify-content:center;flex-direction:column;font-size:40px;cursor:pointer}
+/* ---------- MENU ---------- */
+#menu{position:fixed;inset:0;z-index:10;display:flex;align-items:center;padding-left:4vw;background:linear-gradient(90deg,rgba(74,35,102,.55),rgba(74,35,102,0) 60%)}
+#menuPanel{width:min(520px,92vw);max-height:96vh;overflow:auto;background:rgba(255,255,255,.93);border:4px solid var(--ink);border-radius:28px;padding:18px 24px;color:var(--ink);box-shadow:0 8px 0 var(--ink)}
+#title{font-size:76px;font-weight:800;text-align:center;line-height:1;margin:0 0 4px;white-space:nowrap}
+#title span{display:inline-block;color:var(--c);-webkit-text-stroke:3px var(--ink);paint-order:stroke fill;text-shadow:0 6px 0 var(--ink);animation:bob 1.2s ease-in-out infinite;animation-delay:calc(var(--i)*.09s)}
+@keyframes bob{0%,100%{transform:translateY(0) scale(1,1)}25%{transform:translateY(-10px) scale(.92,1.1)}50%{transform:translateY(0) scale(1.1,.9)}}
+#tag{text-align:center;font-weight:600;margin-bottom:10px;opacity:.85}
+.row{margin:10px 0}
+.row label.h{display:block;font-weight:700;font-size:15px;margin-bottom:5px}
+#swatches{display:flex;flex-wrap:wrap;gap:7px}
+.sw{width:32px;height:40px;border-radius:50%/58%;border:3px solid var(--ink);cursor:pointer;transition:transform .15s}
+.sw:hover{transform:scale(1.15) rotate(-8deg)}
+.sw.sel{transform:scale(1.2);box-shadow:0 0 0 3px #fff,0 0 0 6px var(--ink)}
+.seg{display:flex;gap:6px;flex-wrap:wrap}
+.seg button{font-family:var(--font);font-weight:700;font-size:15px;border:3px solid var(--ink);border-radius:12px;background:#fff;color:var(--ink);padding:5px 12px;cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+.seg button.sel{background:var(--yellow)}
+.seg button:active{transform:translateY(2px);box-shadow:0 1px 0 var(--ink)}
+input[type=text]{font-family:var(--font);font-size:16px;font-weight:700;border:3px solid var(--ink);border-radius:12px;padding:5px 10px;color:var(--ink);width:200px}
+input[type=range]{width:220px;accent-color:#ff5fa2}
+#play{display:block;width:100%;margin-top:14px;font-family:var(--font);font-size:34px;font-weight:800;color:#fff;background:linear-gradient(#ff7ab8,#ff3d8b);border:4px solid var(--ink);border-radius:20px;padding:8px;cursor:pointer;box-shadow:0 6px 0 var(--ink);-webkit-text-stroke:2px var(--ink);paint-order:stroke fill;animation:wiggle 2.5s infinite}
+#play:hover{filter:brightness(1.08)}
+@keyframes wiggle{0%,90%,100%{transform:rotate(0)}93%{transform:rotate(-2deg) scale(1.03)}96%{transform:rotate(2deg) scale(1.03)}}
+details{background:#f3e9ff;border-radius:14px;padding:6px 12px;border:2px solid var(--ink)}
+details summary{font-weight:700;cursor:pointer}
+details ul{margin:6px 0;padding-left:20px;font-size:14px;line-height:1.45}
+kbd{display:inline-block;background:#fff;border:2px solid var(--ink);border-radius:6px;padding:0 5px;font-family:var(--font);font-weight:700;font-size:12px;box-shadow:0 2px 0 var(--ink)}
+/* ---------- SCOREBOARD ---------- */
+#scoreboard{position:fixed;inset:0;z-index:11;display:flex;align-items:center;justify-content:center;background:rgba(74,35,102,.45)}
+#sbPanel{width:min(560px,94vw);background:#fff;border:4px solid var(--ink);border-radius:28px;padding:20px 26px;color:var(--ink);box-shadow:0 8px 0 var(--ink);animation:bubIn2 .5s cubic-bezier(.3,1.7,.5,1)}
+@keyframes bubIn2{from{transform:scale(.3) rotate(-6deg)}}
+#sbTitle{font-size:48px;text-align:center;margin:0}
+#sbSub{text-align:center;font-weight:600;margin-bottom:12px}
+#sbTable{width:100%;border-collapse:collapse;font-weight:700}
+#sbTable td{padding:6px 8px;border-bottom:2px dashed #e4d4f5}
+#sbTable tr.me{background:#fff3a8}
+#sbTable td.n{text-align:right}
+#sbTable .plus{color:#2bb24c;font-size:13px}
+#sbNext{display:block;width:100%;margin-top:16px;font-family:var(--font);font-size:26px;font-weight:800;color:#fff;background:linear-gradient(#6fd0ff,#2f8fff);border:4px solid var(--ink);border-radius:18px;padding:6px;cursor:pointer;box-shadow:0 5px 0 var(--ink);-webkit-text-stroke:1.5px var(--ink);paint-order:stroke fill}
+
+#play{font-size:28px!important}
+#mpRow{display:flex;gap:10px;margin-top:10px}
+#menuBtns{position:sticky;bottom:-18px;background:rgba(255,255,255,.97);margin:0 -24px -18px;padding:2px 24px 14px;border-radius:0 0 24px 24px}
+#menuBtns #play{margin-top:10px}
+@media (max-height:700px){#title{font-size:44px!important}#tag{display:none}}
+.mpb{font-family:var(--font);font-weight:800;font-size:18px;color:var(--ink);background:#fff;border:3px solid var(--ink);border-radius:14px;padding:7px 12px;cursor:pointer;box-shadow:0 4px 0 var(--ink)}
+.mpb:hover{filter:brightness(1.05)}.mpb:active{transform:translateY(2px);box-shadow:0 2px 0 var(--ink)}
+.mpb.go{color:#fff;background:linear-gradient(#7be08a,#3fbf55);-webkit-text-stroke:1px var(--ink)}
+.mpb:disabled{opacity:.5;cursor:default}
+#mpRow .mpb{flex:1}
+#joinBox{margin-top:10px;background:rgba(255,255,255,.18);border-radius:14px;padding:8px}
+.jrow{display:flex;gap:8px}
+#joinCode{flex:1;font-family:var(--font);font-size:20px;font-weight:800;text-transform:uppercase;border:3px solid var(--ink);border-radius:12px;padding:5px 10px;color:var(--ink);letter-spacing:1px;min-width:0}
+#joinMsg{min-height:18px;font-size:14px;font-weight:700;margin-top:4px}
+#inviteBanner{font-weight:700;font-size:15px;margin-bottom:6px;background:#ffd23f;color:var(--ink);border:2px solid var(--ink);border-radius:10px;padding:4px 8px}
+#lobby{position:fixed;inset:0;z-index:11;display:flex;align-items:center;padding-left:4vw;background:linear-gradient(90deg,rgba(74,35,102,.6),rgba(74,35,102,0) 65%)}
+#lobbyPanel,#netMsgPanel{background:rgba(74,35,102,.82);border:4px solid #fff;border-radius:24px;padding:16px 20px;width:min(440px,92vw);max-height:94vh;overflow:auto;color:#fff;box-shadow:0 10px 40px rgba(0,0,0,.35)}
+.lbTitle{font-size:36px;text-align:center}
+.lbCodeWrap{text-align:center;font-weight:700;margin-top:4px}
+#lbCode{font-size:40px;font-weight:900;letter-spacing:3px;color:#ffd23f;-webkit-text-stroke:2px var(--ink);user-select:all}
+.lbInvite{display:flex;gap:6px;margin-top:6px}
+#lbLink{flex:1;min-width:0;font-size:13px;border:2px solid var(--ink);border-radius:10px;padding:4px 8px;color:var(--ink)}
+.lbInvite .mpb{font-size:14px;padding:4px 8px}
+.lbHint{font-size:13px;opacity:.9;margin:6px 0}
+.lbSec{font-weight:800;margin-top:6px}
+#lbPlayers{display:flex;flex-direction:column;gap:4px;margin:6px 0}
+.lbP{display:flex;align-items:center;gap:8px;background:rgba(255,255,255,.14);border-radius:10px;padding:4px 8px;font-weight:700}
+.lbP .dot{width:18px;height:18px;border-radius:50%;border:2px solid #fff;flex:none}
+.lbP .tagx{margin-left:auto;font-size:12px;background:#fff;color:var(--ink);border-radius:8px;padding:0 6px}
+.lbP.bot{opacity:.75}
+#lobbyPanel label.h{color:#fff}
+#lbInfo{font-size:14px;font-weight:700;margin-top:4px}
+#lbStatus{min-height:18px;font-size:14px;font-weight:700;color:#ffd23f;margin-top:4px}
+.lbBtns{display:flex;gap:10px;margin-top:10px;position:sticky;bottom:-16px;padding:8px 0 6px;background:#4f2a6b;border-radius:0 0 16px 16px}
+#lobbyPanel .row{margin:6px 0}.lbTitle{font-size:30px!important;line-height:1}#lbCode{font-size:34px!important}.lbBtns .mpb{flex:1}#lbStart{font-size:24px}
+#netMsg{position:fixed;inset:0;z-index:30;display:flex;align-items:center;justify-content:center;background:rgba(40,10,60,.5)}
+#netMsgPanel{text-align:center}#netMsgTitle{font-size:30px}#netMsgText{margin:10px 0 14px;font-weight:700;font-size:17px}
+#leaveBtn{position:fixed;bottom:18px;right:72px;z-index:9;font-family:var(--font);font-weight:800;font-size:14px;color:var(--ink);background:#fff;border:3px solid var(--ink);border-radius:12px;padding:3px 10px;cursor:pointer;box-shadow:0 3px 0 var(--ink)}
+.lbl{transition:border-color .2s}
+</style>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22%3E%3Ctext y=%22.9em%22 font-size=%2290%22%3E%F0%9F%AB%98%3C/text%3E%3C/svg%3E">
+<script src="https://unpkg.com/peerjs@1.5.4/dist/peerjs.min.js"></script>
+<script type="importmap">
+{ "imports": { "three": "https://unpkg.com/three@0.160.0/build/three.module.js" } }
+</script>
+</head>
+<body>
+<canvas id="c"></canvas>
+<div id="vignette"></div>
+<div id="speedLines"></div>
+<div id="labels"></div>
+<div id="hud" class="hidden">
+  <div id="topCenter"><div id="phase">HIDE!</div><div id="timer">25</div><div id="role">You are hiding</div></div>
+  <div id="hiders"></div>
+  <canvas id="minimap" width="180" height="180"></canvas>
+  <div id="scoreBox">SCORE<br><b id="score">0</b><div id="roundLbl">Round 1 / 5</div></div>
+  <div id="eyeMeter"><span class="eye">👁️</span><div id="eyeBar"><div id="eyeFill"></div></div></div>
+  <div id="sniffArrow"><div></div><span></span></div>
+  <div id="crosshair"></div>
+  <div id="bottom"><div id="status"></div><div id="stamina"><div id="staminaFill"></div></div><div id="abilities"></div></div>
+  <div id="hint"></div>
+</div>
+<div id="bigWrap"><div id="bigText"></div><div id="subText"></div></div>
+<div id="blindfold" class="hidden"><div class="t">🙈 You're the seeker! Counting...</div><div id="bfCount">20</div><div id="bfLine"></div></div>
+<div id="muteIcon" title="Mute (M)">🔊</div>
+<div id="pauseNote" class="hidden"><div class="chunky">⏸ Paused</div><div style="font-size:22px;margin-top:10px">Click to resume</div></div>
+
+<div id="menu">
+  <div id="menuPanel">
+    <div id="title"></div>
+    <div id="tag">The squishiest game of hide-and-seek ever bean made.</div>
+    <div class="row"><label class="h">Your name</label><input id="pname" type="text" maxlength="14" value="You"></div>
+    <div class="row"><label class="h">Bean color</label><div id="swatches"></div></div>
+    <div class="row"><label class="h">Hat</label><div class="seg" id="hats"></div></div>
+    <div class="row"><label class="h">Seeker difficulty</label><div class="seg" id="diff"><button data-v="easy">😴 Easy</button><button data-v="normal" class="sel">🙂 Normal</button><button data-v="hard">😈 Hard</button></div></div>
+    <div class="row"><label class="h">Bean bots: <span id="botN">6</span></label><input id="bots" type="range" min="3" max="7" value="6"></div>
+    <div class="row"><label class="h">Rounds</label><div class="seg" id="rounds"><button data-v="3">3</button><button data-v="5" class="sel">5</button><button data-v="7">7</button></div></div>
+    <details><summary>How to play</summary><ul>
+      <li>Each round a spotlight roulette picks one <b>Seeker</b>. Everyone else <b>hides</b>!</li>
+      <li><b>Hiders:</b> 25s to hide while the seeker counts. Crouch (<kbd>C</kbd>) inside bushes &amp; boxes or under tables/beds to be nearly invisible. <kbd>Q</kbd> Disguise as a prop, <kbd>F</kbd> Taunt for bonus points (but it reveals you!). Earn points every second you survive.</li>
+      <li><b>Seeker:</b> find and tag everyone (<kbd>E</kbd> / click when close, or just bump them). <kbd>Q</kbd> Sniff points to the nearest hider, <kbd>F</kbd> Dash.</li>
+      <li><kbd>WASD</kbd> move · mouse look · <kbd>Space</kbd> jump · <kbd>Shift</kbd> sprint · <kbd>M</kbd> mute · <kbd>Esc</kbd> pause. Caught? Fly around as a ghost — hold <kbd>T</kbd> to fast-forward.</li>
+      <li>Try the trampoline, the slide (climb the ladder!) and the pond. 🦆</li>
+    </ul></details>
+    <div id="menuBtns"><button id="play">PLAY vs BOTS!</button>
+    <div id="mpRow"><button id="hostBtn" class="mpb">🌐 Host game</button><button id="joinBtn" class="mpb">🔗 Join game</button></div>
+    <div id="joinBox" class="hidden">
+      <div id="inviteBanner" class="hidden">🎉 You've been invited! Pick your name, color &amp; hat above, then hit Join.</div>
+      <div class="jrow"><input id="joinCode" type="text" maxlength="12" placeholder="BEAN-1234" autocomplete="off" spellcheck="false"><button id="joinGo" class="mpb go">Join ▶</button></div>
+      <div id="joinMsg"></div>
+    </div></div>
+  </div>
+</div>
+
+<div id="lobby" class="hidden"><div id="lobbyPanel">
+  <div class="lbTitle chunky">Lobby</div>
+  <div class="lbCodeWrap">Room code <div id="lbCode">BEAN-0000</div></div>
+  <div class="lbInvite"><input id="lbLink" type="text" readonly><button id="lbCopy" class="mpb">📋 Copy invite link</button></div>
+  <div class="lbHint">Send the link (or just the code) to your friends. They open it, pick a bean, and join!</div>
+  <div class="lbSec">Players <span id="lbCount"></span></div>
+  <div id="lbPlayers"></div>
+  <div id="lbHost">
+    <div class="row"><label class="h">Fill empty slots with bots: <span id="lbBotN">3</span></label><input id="lbBots" type="range" min="0" max="7" value="3"></div>
+    <div class="row"><label class="h">Bot seeker difficulty</label><div class="seg" id="lbDiff"><button data-v="easy">😴 Easy</button><button data-v="normal" class="sel">🙂 Normal</button><button data-v="hard">😈 Hard</button></div></div>
+    <div class="row"><label class="h">Rounds</label><div class="seg" id="lbRounds"><button data-v="3">3</button><button data-v="5" class="sel">5</button><button data-v="7">7</button></div></div>
+  </div>
+  <div id="lbInfo"></div>
+  <div id="lbStatus"></div>
+  <div class="lbBtns"><button id="lbLeave" class="mpb">✖ Leave</button><button id="lbStart" class="mpb go">START ▶</button></div>
+</div></div>
+
+<div id="netMsg" class="hidden"><div id="netMsgPanel"><div id="netMsgTitle" class="chunky">Oops</div><div id="netMsgText"></div><button id="netMsgOk" class="mpb go">OK</button></div></div>
+<button id="leaveBtn" class="hidden" title="Leave the online game">✖ Leave</button>
+
+<div id="scoreboard" class="hidden"><div id="sbPanel"><h2 id="sbTitle" class="chunky">HIDERS WIN!</h2><div id="sbSub"></div><table id="sbTable"></table><button id="sbNext">Next round ▶</button></div></div>
+<script type="module">
+import * as THREE from 'three';
+
+// ======================================================================
+// UTILS
+// ======================================================================
+const $ = id => document.getElementById(id);
+const rand = (a, b) => a + Math.random() * (b - a);
+const randi = (a, b) => Math.floor(rand(a, b + 1));
+const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+const lerp = (a, b, t) => a + (b - a) * t;
+const damp = (a, b, l, dt) => lerp(a, b, 1 - Math.exp(-l * dt));
+const angDiff = (a, b) => { let d = (b - a) % (Math.PI * 2); if (d > Math.PI) d -= Math.PI * 2; if (d < -Math.PI) d += Math.PI * 2; return d; };
+const shuffle = a => { for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const dist2D = (a, b) => Math.hypot(a.x - b.x, a.z - b.z);
+const v3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
+
+// ======================================================================
+// AUDIO (all procedural WebAudio)
+// ======================================================================
+const Snd = {
+  ctx: null, master: null, sfx: null, music: null, muted: false, noiseBuf: null,
+  mstep: 0, nextTime: 0, intensity: 0, musicOn: true,
+  init() {
+    if (this.ctx) { if (this.ctx.state !== 'running') this.ctx.resume(); return; }
+    const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
+    this.ctx = new AC();
+    const comp = this.ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
+    this.master = this.ctx.createGain(); this.master.gain.value = this.muted ? 0 : 0.85;
+    this.master.connect(comp); comp.connect(this.ctx.destination);
+    this.sfx = this.ctx.createGain(); this.sfx.gain.value = 0.9; this.sfx.connect(this.master);
+    this.music = this.ctx.createGain(); this.music.gain.value = 0.13; this.music.connect(this.master);
+    const len = this.ctx.sampleRate; this.noiseBuf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
+    const d = this.noiseBuf.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
+    this.nextTime = this.ctx.currentTime + 0.1;
+    setInterval(() => this.schedule(), 25);
+  },
+  toggleMute() {
+    this.muted = !this.muted;
+    if (this.master) this.master.gain.setTargetAtTime(this.muted ? 0 : 0.85, this.ctx.currentTime, 0.05);
+    $('muteIcon').textContent = this.muted ? '🔇' : '🔊';
+  },
+  ok() { return this.ctx && this.ctx.state === 'running'; },
+  tone({ f = 440, f2 = 0, d = 0.2, type = 'sine', v = 0.3, delay = 0, attack = 0.005, pan = 0, dest = null, vib = 0, vibAmt = 0.04, filter = null }) {
+    if (!this.ok() || v < 0.002) return;
+    const c = this.ctx, t = c.currentTime + delay;
+    const o = c.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t);
+    if (f2) o.frequency.exponentialRampToValueAtTime(Math.max(20, f2), t + d);
+    const g = c.createGain(); g.gain.setValueAtTime(0.0001, t);
+    g.gain.exponentialRampToValueAtTime(v, t + attack); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    if (vib) { const l = c.createOscillator(); l.frequency.value = vib; const lg = c.createGain(); lg.gain.value = f * vibAmt; l.connect(lg); lg.connect(o.frequency); l.start(t); l.stop(t + d + 0.05); }
+    let node = o;
+    if (filter) { const fl = c.createBiquadFilter(); fl.type = filter.type || 'lowpass'; fl.frequency.value = filter.f; fl.Q.value = filter.q || 1; node.connect(fl); node = fl; }
+    node.connect(g); let out = g;
+    if (pan) { const p = c.createStereoPanner(); p.pan.value = clamp(pan, -1, 1); g.connect(p); out = p; }
+    out.connect(dest || this.sfx); o.start(t); o.stop(t + d + 0.05);
+  },
+  noise({ d = 0.2, v = 0.2, f = 1000, f2 = 0, type = 'bandpass', q = 1, delay = 0, pan = 0, dest = null, attack = 0.003 }) {
+    if (!this.ok() || v < 0.002) return;
+    const c = this.ctx, t = c.currentTime + delay;
+    const s = c.createBufferSource(); s.buffer = this.noiseBuf; s.loop = true;
+    const fl = c.createBiquadFilter(); fl.type = type; fl.frequency.setValueAtTime(f, t); fl.Q.value = q;
+    if (f2) fl.frequency.exponentialRampToValueAtTime(f2, t + d);
+    const g = c.createGain(); g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(v, t + attack); g.gain.exponentialRampToValueAtTime(0.0001, t + d);
+    s.connect(fl); fl.connect(g); let out = g;
+    if (pan) { const p = c.createStereoPanner(); p.pan.value = clamp(pan, -1, 1); g.connect(p); out = p; }
+    out.connect(dest || this.sfx); s.start(t, Math.random() * 0.5); s.stop(t + d + 0.05);
+  },
+  // ---- sfx ----
+  jump(v = 1) { this.tone({ f: 240, f2: 640, d: 0.18, v: 0.22 * v }); this.tone({ f: 480, f2: 1300, d: 0.1, v: 0.05 * v, type: 'triangle' }); },
+  bigBoing(v = 1) { this.tone({ f: 120, f2: 880, d: 0.45, v: 0.3 * v, vib: 14, vibAmt: 0.08 }); },
+  land(v = 1) { this.tone({ f: 150, f2: 50, d: 0.12, v: 0.25 * v }); this.noise({ d: 0.08, v: 0.08 * v, f: 500, type: 'lowpass' }); },
+  step(v = 1, wet = false) { if (wet) this.noise({ d: 0.12, v: 0.08 * v, f: 900, f2: 300, type: 'lowpass' }); else this.noise({ d: 0.05, v: 0.05 * v, f: rand(450, 900), q: 2 }); },
+  tick(p = 0) { this.tone({ f: 900 + p, d: 0.06, v: 0.22, type: 'triangle' }); this.noise({ d: 0.03, v: 0.06, f: 3000, type: 'highpass' }); },
+  ding() { [1046, 1318, 1568, 2093].forEach((f, i) => this.tone({ f, d: 0.7, v: 0.16, type: 'triangle', delay: i * 0.07 })); },
+  beep(final = false) { this.tone({ f: final ? 1320 : 880, d: final ? 0.5 : 0.12, v: 0.18, type: 'square', filter: { f: 3000 } }); },
+  pop(v = 1, pan = 0) {
+    this.tone({ f: 1300, f2: 140, d: 0.14, v: 0.35 * v, pan }); this.noise({ d: 0.06, v: 0.2 * v, f: 4000, type: 'highpass', pan });
+    this.tone({ f: 1568, d: 0.3, v: 0.1 * v, type: 'triangle', delay: 0.06, pan }); this.tone({ f: 2093, d: 0.4, v: 0.1 * v, type: 'triangle', delay: 0.12, pan });
+  },
+  sad() { const fl = { f: 1400 }; this.tone({ f: 392, f2: 380, d: 0.3, type: 'sawtooth', v: 0.12, filter: fl }); this.tone({ f: 370, f2: 360, d: 0.3, type: 'sawtooth', v: 0.12, delay: 0.32, filter: fl }); this.tone({ f: 349, f2: 340, d: 0.3, type: 'sawtooth', v: 0.12, delay: 0.64, filter: fl }); this.tone({ f: 330, f2: 300, d: 0.9, type: 'sawtooth', v: 0.13, delay: 0.96, vib: 6, filter: fl }); },
+  heartbeat(v = 1) { this.tone({ f: 75, f2: 40, d: 0.14, v: 0.55 * v }); this.tone({ f: 70, f2: 40, d: 0.14, v: 0.38 * v, delay: 0.17 }); },
+  whoosh(v = 1) { this.noise({ d: 0.35, v: 0.25 * v, f: 300, f2: 3500, q: 1.5 }); },
+  sniff() { for (let i = 0; i < 3; i++) this.noise({ d: 0.08, v: 0.15, f: 2500 + i * 400, q: 3, delay: i * 0.13 }); this.tone({ f: 1760, d: 0.6, v: 0.18, delay: 0.45 }); this.tone({ f: 1760, d: 0.6, v: 0.06, delay: 0.75 }); },
+  poof(pan = 0, v = 1) { this.noise({ d: 0.35, v: 0.28 * v, f: 1500, f2: 150, type: 'lowpass', pan }); this.tone({ f: 700, f2: 180, d: 0.25, v: 0.1 * v, pan }); },
+  splash(v = 1) { this.noise({ d: 0.45, v: 0.22 * v, f: 2500, f2: 300, type: 'lowpass' }); },
+  whiff() { this.noise({ d: 0.16, v: 0.12, f: 1400, f2: 400, q: 2 }); },
+  alarm(pan = 0, v = 1) { this.tone({ f: 660, d: 0.1, v: 0.15 * v, type: 'square', pan, filter: { f: 2500 } }); this.tone({ f: 990, d: 0.18, v: 0.15 * v, type: 'square', delay: 0.1, pan, filter: { f: 2500 } }); },
+  giggle(pan = 0, v = 1) { [950, 1100, 1000, 1150].forEach((f, i) => this.tone({ f, f2: f * 0.85, d: 0.09, v: 0.07 * v, delay: i * 0.1, vib: 30, vibAmt: 0.06, pan })); },
+  drum() { for (let i = 0; i < 6; i++) this.noise({ d: 0.05, v: 0.08 + i * 0.02, f: 300, type: 'lowpass', delay: i * 0.04 }); },
+  fanfare() { const n = [523, 659, 784, 1046]; n.forEach((f, i) => this.tone({ f, d: 0.25, v: 0.15, type: 'square', delay: i * 0.09, filter: { f: 2500 } })); [523, 659, 784].forEach(f => this.tone({ f: f * 2, d: 0.9, v: 0.08, type: 'triangle', delay: 0.4 })); },
+  jingle(win = true) {
+    const seq = win ? [523, 659, 784, 1046, 784, 1046, 1318] : [659, 587, 523, 392];
+    seq.forEach((f, i) => { this.tone({ f, d: 0.22, v: 0.15, type: 'triangle', delay: i * 0.12 }); this.tone({ f: f / 2, d: 0.22, v: 0.08, type: 'square', delay: i * 0.12, filter: { f: 1500 } }); });
+    if (win) [1046, 1318, 1568].forEach(f => this.tone({ f, d: 1.2, v: 0.08, type: 'triangle', delay: seq.length * 0.12 }));
+  },
+  taunt(kind, pan = 0, v = 1) {
+    if (kind === 0) { // kazoo nyah nyah
+      [784, 659, 880, 784, 659].forEach((f, i) => this.tone({ f, d: i === 4 ? 0.35 : 0.16, v: 0.16 * v, type: 'sawtooth', delay: i * 0.17, vib: 8, filter: { type: 'bandpass', f: 1300, q: 3 }, pan }));
+    } else if (kind === 1) { // honk honk
+      for (let i = 0; i < 2; i++) this.tone({ f: 320, f2: 290, d: 0.22, v: 0.2 * v, type: 'square', delay: i * 0.28, filter: { f: 1100, q: 4 }, pan });
+    } else if (kind === 2) { // slide whistle
+      this.tone({ f: 600, f2: 2100, d: 0.35, v: 0.16 * v, pan }); this.tone({ f: 2100, f2: 500, d: 0.45, v: 0.16 * v, delay: 0.35, pan });
+    } else { // boing boing
+      for (let i = 0; i < 3; i++) this.tone({ f: 200, f2: 700, d: 0.16, v: 0.18 * v, delay: i * 0.18, vib: 20, pan });
+    }
+  },
+  // ---- music: cheerful little loop ----
+  schedule() {
+    if (!this.ok()) return;
+    const spb = 60 / 116 / 4; // 16th note
+    while (this.nextTime < this.ctx.currentTime + 0.12) {
+      if (this.musicOn) this.playStep(this.mstep, this.nextTime - this.ctx.currentTime);
+      this.nextTime += spb; this.mstep = (this.mstep + 1) % 64;
+    }
+  },
+  playStep(s, delay) {
+    if (delay < 0) delay = 0;
+    const m = n => 440 * Math.pow(2, (n - 69) / 12);
+    const bar = Math.floor(s / 16), st = s % 16, M = this.music;
+    const chords = [[60, 64, 67], [57, 60, 64], [53, 57, 60], [55, 59, 62]];
+    const ch = chords[bar];
+    const tense = this.intensity;
+    if (st === 0 || st === 8 || (tense > 0.5 && st === 10)) this.tone({ f: 130, f2: 45, d: 0.16, v: 0.5, dest: M, delay });
+    if (st === 4 || st === 12) this.noise({ d: 0.1, v: 0.2, f: 1800, q: 0.8, dest: M, delay });
+    if (st % 4 === 2 || (tense > 0.5 && st % 2 === 1)) this.noise({ d: 0.03, v: 0.07, f: 8000, type: 'highpass', dest: M, delay });
+    if (st === 0 || st === 6 || st === 8 || st === 14) this.tone({ f: m(ch[0] - 24 + (st === 6 ? 7 : 0)), d: 0.25, v: 0.35, type: 'triangle', dest: M, delay });
+    if (st % 2 === 0) { const pat = [0, 1, 2, 1, 0, 2, 1, 2]; this.tone({ f: m(ch[pat[st / 2]] + 12), d: 0.12, v: 0.09, type: 'square', filter: { f: 1800 }, dest: M, delay }); }
+    const mel = [76, 0, 79, 0, 81, 79, 76, 0, 72, 0, 76, 0, 74, 72, 69, 0, 72, 0, 74, 0, 76, 77, 76, 74, 74, 0, 71, 0, 74, 0, 79, 0];
+    if (st % 2 === 0) { const n = mel[bar * 8 + st / 2]; if (n) this.tone({ f: m(n), d: 0.22, v: 0.12, type: 'triangle', dest: M, delay, vib: 5, vibAmt: 0.01 }); }
+  },
+};
+
+// ======================================================================
+// RENDERER / SCENE
+// ======================================================================
+const renderer = new THREE.WebGLRenderer({ canvas: $('c'), antialias: true, powerPreference: 'high-performance' });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 1.75));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true; renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.outputColorSpace = THREE.SRGBColorSpace;
+renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
+const scene = new THREE.Scene();
+scene.fog = new THREE.Fog(0xcfeeff, 70, 170);
+const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.1, 500);
+addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
+
+const hemi = new THREE.HemisphereLight(0xd6ecff, 0x7aa35a, 1.1); scene.add(hemi);
+const sun = new THREE.DirectionalLight(0xfff0d8, 2.4);
+sun.position.set(30, 55, 22); sun.castShadow = true;
+sun.shadow.mapSize.set(2048, 2048);
+Object.assign(sun.shadow.camera, { left: -48, right: 48, top: 48, bottom: -48, near: 1, far: 140 });
+sun.shadow.bias = -0.0004; sun.shadow.normalBias = 0.03;
+scene.add(sun); scene.add(sun.target);
+const BASE_LIGHT = { hemi: 1.1, sun: 2.4 };
+
+// sky dome
+{
+  const g = new THREE.SphereGeometry(300, 32, 16);
+  const m = new THREE.ShaderMaterial({
+    side: THREE.BackSide, depthWrite: false, fog: false,
+    uniforms: { top: { value: new THREE.Color(0x3d9bff) }, mid: { value: new THREE.Color(0x9fd8ff) }, bot: { value: new THREE.Color(0xfff2d6) } },
+    vertexShader: 'varying vec3 vP; void main(){ vP = normalize(position); gl_Position = projectionMatrix*modelViewMatrix*vec4(position,1.0); }',
+    fragmentShader: 'uniform vec3 top; uniform vec3 mid; uniform vec3 bot; varying vec3 vP; void main(){ float h = vP.y; vec3 c = h>0.0 ? mix(mid, top, pow(clamp(h*1.6,0.0,1.0),0.7)) : mix(mid, bot, clamp(-h*4.0,0.0,1.0)); vec3 sd = normalize(vec3(30.0,55.0,22.0)); float s = max(dot(vP, sd),0.0); c += vec3(1.0,0.9,0.6)*(pow(s,400.0)*1.5 + pow(s,12.0)*0.15); gl_FragColor = vec4(c,1.0);\n#include <colorspace_fragment>\n}'
+  });
+  scene.add(new THREE.Mesh(g, m));
+}
+
+// ======================================================================
+// WORLD BUILDING (all procedural)
+// ======================================================================
+const colliders = [];  // AABBs {minX,maxX,minY,maxY,minZ,maxZ,solid,occ,cam}
+const zones = [];      // hide zones
+const spots = [];      // AI hiding spots
+const ramps = [];
+const ladders = [];
+const trampolines = [];
+const bushes = [];
+const animated = [];   // fn(t, dt)
+const BOXG = new THREE.BoxGeometry(1, 1, 1);
+const SPHG = new THREE.IcosahedronGeometry(1, 2);
+const matCache = new Map();
+function mat(color, o = {}) { const k = color + '|' + JSON.stringify(o); if (!matCache.has(k)) matCache.set(k, new THREE.MeshStandardMaterial({ color, roughness: 0.82, ...o })); return matCache.get(k); }
+function addCol(minX, maxX, minY, maxY, minZ, maxZ, o = {}) { const c = { minX, maxX, minY, maxY, minZ, maxZ, solid: o.solid !== false, occ: o.occ !== false, cam: o.cam !== false }; colliders.push(c); return c; }
+function box(x, y, z, w, h, d, color, o = {}) {
+  const m = new THREE.Mesh(BOXG, color instanceof THREE.Material ? color : mat(color, o.mat || {}));
+  m.scale.set(w, h, d); m.position.set(x, y + h / 2, z); m.castShadow = o.cast !== false; m.receiveShadow = true;
+  if (o.rotY) m.rotation.y = o.rotY;
+  (o.parent || scene).add(m);
+  if (o.collide !== false) addCol(x - w / 2, x + w / 2, y, y + h, z - d / 2, z + d / 2, o);
+  return m;
+}
+function mesh(geo, color, x, y, z, o = {}) {
+  const m = new THREE.Mesh(geo, color instanceof THREE.Material ? color : mat(color, o.mat || {}));
+  m.position.set(x, y, z); m.castShadow = o.cast !== false; m.receiveShadow = o.receive !== false;
+  (o.parent || scene).add(m); return m;
+}
+function canvasTex(w, h, draw, rep) { const c = document.createElement('canvas'); c.width = w; c.height = h; draw(c.getContext('2d'), w, h); const t = new THREE.CanvasTexture(c); t.colorSpace = THREE.SRGBColorSpace; t.anisotropy = 4; if (rep) { t.wrapS = t.wrapT = THREE.RepeatWrapping; } return t; }
+
+const POND = { x: 16, z: 18, rx: 7, rz: 5, depth: 0.5 };
+const PLAZA = { x: 6, z: 4 };
+const BOUND = 35.3;
+
+// ---------- ground ----------
+{
+  const tex = canvasTex(256, 256, (g, w, h) => {
+    g.fillStyle = '#74c655'; g.fillRect(0, 0, w, h);
+    for (let i = 0; i < 50; i++) { const x = rand(0, w), y = rand(0, h), r = rand(14, 44); g.fillStyle = `hsla(${rand(85, 120)},55%,${rand(42, 58)}%,.22)`; for (const ox of [-w, 0, w]) for (const oy of [-h, 0, h]) { g.beginPath(); g.arc(x + ox, y + oy, r, 0, 7); g.fill(); } }
+    for (let i = 0; i < 2600; i++) { g.fillStyle = `hsl(${rand(88, 118)},${rand(45, 62)}%,${rand(36, 60)}%)`; g.fillRect(rand(0, w), rand(0, h), rand(1, 2.5), rand(2, 6)); }
+  }, true);
+  tex.repeat.set(0.16, 0.16);
+  const S = 160, shape = new THREE.Shape();
+  shape.moveTo(-S, -S); shape.lineTo(S, -S); shape.lineTo(S, S); shape.lineTo(-S, S); shape.lineTo(-S, -S);
+  const hole = new THREE.Path(); hole.absellipse(POND.x, -POND.z, POND.rx, POND.rz, 0, Math.PI * 2, true, 0); shape.holes.push(hole);
+  const geo = new THREE.ShapeGeometry(shape, 64); geo.rotateX(-Math.PI / 2);
+  const ground = new THREE.Mesh(geo, new THREE.MeshStandardMaterial({ map: tex, roughness: 1 }));
+  ground.receiveShadow = true; scene.add(ground);
+  // pond bowl + water
+  const bowl = new THREE.Mesh(new THREE.SphereGeometry(1, 48, 12, 0, Math.PI * 2, Math.PI / 2, Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x5f8f6a, side: THREE.BackSide, roughness: 1 }));
+  bowl.scale.set(POND.rx, POND.depth, POND.rz); bowl.position.set(POND.x, 0.0, POND.z); bowl.receiveShadow = true; scene.add(bowl);
+  const water = new THREE.Mesh(new THREE.CircleGeometry(1, 64).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0x3fc0f0, transparent: true, opacity: 0.72, roughness: 0.05, metalness: 0.25 }));
+  water.scale.set(POND.rx, 1, POND.rz); water.position.set(POND.x, -0.1, POND.z); scene.add(water);
+  animated.push(t => { water.material.color.setHSL(0.54 + Math.sin(t * 0.7) * 0.01, 0.8, 0.6 + Math.sin(t * 1.3) * 0.02); });
+  // rocks around pond
+  const rockG = new THREE.DodecahedronGeometry(1, 0);
+  for (let i = 0; i < 26; i++) { const a = i / 26 * Math.PI * 2 + rand(-0.08, 0.08); const r = mesh(rockG, i % 3 ? 0x9aa3ad : 0xb7bec6, POND.x + Math.cos(a) * (POND.rx + 0.25), 0.05, POND.z + Math.sin(a) * (POND.rz + 0.25)); r.scale.set(rand(0.3, 0.55), rand(0.2, 0.35), rand(0.3, 0.55)); r.rotation.set(rand(0, 3), rand(0, 3), 0); }
+  // lily pads
+  const padG = new THREE.CircleGeometry(0.55, 16, 0.3, Math.PI * 2 - 0.6).rotateX(-Math.PI / 2);
+  for (let i = 0; i < 7; i++) { const a = rand(0, 6.28), r = rand(0.2, 0.75); const p = mesh(padG, 0x4caf50, POND.x + Math.cos(a) * POND.rx * r, -0.08, POND.z + Math.sin(a) * POND.rz * r, { cast: false }); p.rotation.y = rand(0, 6); if (i % 2) mesh(SPHG, 0xff8fc8, p.position.x, -0.02, p.position.z, { cast: false }).scale.set(0.14, 0.1, 0.14); }
+  // rubber ducks
+  for (let i = 0; i < 3; i++) {
+    const d = new THREE.Group();
+    mesh(SPHG, 0xffd60a, 0, 0.05, 0, { parent: d }).scale.set(0.32, 0.24, 0.4);
+    mesh(SPHG, 0xffd60a, 0, 0.33, 0.18, { parent: d }).scale.setScalar(0.18);
+    mesh(SPHG, 0xff7b00, 0, 0.3, 0.37, { parent: d }).scale.set(0.09, 0.04, 0.1);
+    mesh(SPHG, 0x111111, 0.09, 0.38, 0.3, { parent: d, cast: false }).scale.setScalar(0.03);
+    mesh(SPHG, 0x111111, -0.09, 0.38, 0.3, { parent: d, cast: false }).scale.setScalar(0.03);
+    scene.add(d);
+    const ph = i * 2.1, rr = 0.35 + i * 0.15;
+    animated.push(t => { const a = t * 0.15 * (i % 2 ? 1 : -1) + ph; d.position.set(POND.x + Math.cos(a) * POND.rx * rr, -0.12 + Math.sin(t * 2 + ph) * 0.03, POND.z + Math.sin(a) * POND.rz * rr); d.rotation.y = -a + (i % 2 ? 0 : Math.PI); d.rotation.z = Math.sin(t * 1.7 + ph) * 0.08; });
+  }
+  // cattails
+  for (let i = 0; i < 8; i++) { const a = rand(2.2, 3.6), x = POND.x + Math.cos(a) * (POND.rx - 0.4), z = POND.z + Math.sin(a) * (POND.rz - 0.4); mesh(new THREE.CylinderGeometry(0.02, 0.02, 1.4), 0x4f7a28, x, 0.5, z); mesh(new THREE.CapsuleGeometry(0.06, 0.25, 4, 8), 0x7a4a21, x, 1.25, z); }
+}
+
+function table(x, z, w, d, h, topColor, legColor, o = {}) {
+  const top = 0.13; box(x, h - top, z, w, top, d, topColor);
+  const lx = w / 2 - 0.15, lz = d / 2 - 0.15;
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) box(x + sx * lx, 0, z + sz * lz, 0.14, h - top, 0.14, legColor, { occ: false });
+  if (o.hide) { zones.push({ type: 'under', minX: x - w / 2 + 0.1, maxX: x + w / 2 - 0.1, minZ: z - d / 2 + 0.1, maxZ: z + d / 2 - 0.1 }); spots.push({ x, z, type: 'under', q: o.q || 0.6 }); }
+}
+function chair(x, z, c) { box(x, 0, z, 0.8, 0.6, 0.8, c, { occ: false }); box(x, 0.6, z - 0.35, 0.8, 0.9, 0.1, c, { collide: false }); }
+function pottedPlant(x, z) {
+  mesh(new THREE.CylinderGeometry(0.32, 0.24, 0.55, 14), 0xe76f51, x, 0.28, z);
+  for (let i = 0; i < 4; i++) mesh(SPHG, 0x52b788, x + rand(-0.2, 0.2), 0.85 + rand(0, 0.4), z + rand(-0.2, 0.2)).scale.setScalar(rand(0.25, 0.35));
+  addCol(x - 0.32, x + 0.32, 0, 1.3, z - 0.32, z + 0.32);
+}
+const cardboard = mat(0xc9955c), cardDark = mat(0xa8763f), tape = mat(0xe9d8a6);
+function openBox(x, z) {
+  const s = 1.5, h = 1.1, t = 0.06;
+  box(x, 0, z - s / 2, s, h, t, cardboard, { collide: false }); // back
+  box(x - s / 2, 0, z, t, h, s, cardboard, { collide: false }); box(x + s / 2, 0, z, t, h, s, cardboard, { collide: false });
+  box(x, 0, z + s / 2, s, 0.55, t, cardboard, { collide: false }); // low front (hop in!)
+  box(x, 0.02, z, s, 0.02, s, cardDark, { collide: false, cast: false });
+  box(x, h - 0.25, z - s / 2 - 0.035, 0.3, 0.25, 0.02, tape, { collide: false, cast: false });
+  // flaps
+  for (const [fx, fz, ry, rz] of [[x - s / 2 - 0.3, z, 0, 0.6], [x + s / 2 + 0.3, z, 0, -0.6]]) { const f = box(fx, h - 0.05, fz, 0.6, 0.04, s, cardboard, { collide: false }); f.rotation.z = rz; }
+  const f = box(x, h - 0.05, z - s / 2 - 0.3, s, 0.04, 0.6, cardboard, { collide: false }); f.rotation.x = -0.6;
+  zones.push({ type: 'box', minX: x - s / 2, maxX: x + s / 2, minZ: z - s / 2, maxZ: z + s / 2 });
+  spots.push({ x, z, type: 'box', q: 0.9 });
+}
+const crateTex = canvasTex(128, 128, (g, w) => { g.fillStyle = '#c98a4b'; g.fillRect(0, 0, w, w); g.strokeStyle = '#8a5a2b'; g.lineWidth = 10; g.strokeRect(5, 5, w - 10, w - 10); g.beginPath(); g.moveTo(10, 10); g.lineTo(w - 10, w - 10); g.stroke(); g.fillStyle = 'rgba(0,0,0,.08)'; for (let i = 0; i < 6; i++) g.fillRect(0, i * 22, w, 2); });
+const crateMat = new THREE.MeshStandardMaterial({ map: crateTex, roughness: 0.9 });
+function crate(x, y, z, s = 1) { const m = box(x, y, z, s, s, s, crateMat); m.rotation.y = 0; return m; }
+const bushMats = [mat(0x3fa34d), mat(0x4cb85a), mat(0x2f8f3f), mat(0x5ac466)];
+function makeBush(x, z, s = 1) {
+  const g = new THREE.Group(); g.position.set(x, 0, z);
+  const n = randi(4, 6);
+  for (let i = 0; i < n; i++) { const a = i / n * Math.PI * 2 + rand(-0.3, 0.3), r = rand(0.35, 0.6) * s; const m = mesh(SPHG, bushMats[i % 4], Math.cos(a) * r, rand(0.55, 0.8) * s, Math.sin(a) * r, { parent: g }); m.scale.setScalar(rand(0.65, 0.85) * s); }
+  const top = mesh(SPHG, bushMats[3], 0, 1.05 * s, 0, { parent: g }); top.scale.setScalar(0.7 * s);
+  for (let i = 0; i < 6; i++) { const a = rand(0, 6.28), r = rand(0.7, 1.0) * s; mesh(SPHG, pick([0xff4d6d, 0xffffff, 0xffd60a, 0xc77dff]), Math.cos(a) * r, rand(0.5, 1.3) * s, Math.sin(a) * r, { parent: g, cast: false }).scale.setScalar(0.07); }
+  scene.add(g);
+  const b = { group: g, x, z, r: 1.25 * s, wig: 0, wigV: 0 };
+  bushes.push(b); zones.push({ type: 'bush', x, z, r: 1.15 * s, bush: b }); spots.push({ x, z, type: 'bush', q: 0.85 });
+  return b;
+}
+function makeTree(x, z, kind = 0, s = 1, collide = true) {
+  mesh(new THREE.CylinderGeometry(0.25 * s, 0.38 * s, 2.8 * s, 10), 0x8b5a2b, x, 1.4 * s, z);
+  if (kind === 0) {
+    const cols = [0x4caf50, 0x66bb6a, 0x43a047];
+    for (let i = 0; i < 4; i++) mesh(SPHG, cols[i % 3], x + rand(-0.9, 0.9) * s, (3.4 + rand(0, 1.3)) * s, z + rand(-0.9, 0.9) * s).scale.setScalar(rand(1.3, 1.8) * s);
+    if (Math.random() < 0.6) for (let i = 0; i < 6; i++) { const a = rand(0, 6.28); mesh(SPHG, 0xff3b3b, x + Math.cos(a) * 1.5 * s, rand(3.2, 4.6) * s, z + Math.sin(a) * 1.5 * s, { cast: false }).scale.setScalar(0.13 * s); }
+  } else {
+    for (let i = 0; i < 3; i++) mesh(new THREE.ConeGeometry((1.9 - i * 0.45) * s, 2.0 * s, 9), i % 2 ? 0x2e8b57 : 0x3a9d63, x, (3 + i * 1.15) * s, z);
+  }
+  if (collide) addCol(x - 0.38 * s, x + 0.38 * s, 0, 3 * s, z - 0.38 * s, z + 0.38 * s);
+}
+function hedge(x1, z1, x2, z2) {
+  const w = Math.abs(x2 - x1) || 0.9, d = Math.abs(z2 - z1) || 0.9;
+  const x = (x1 + x2) / 2, z = (z1 + z2) / 2;
+  box(x, 0, z, w, 1.85, d, 0x3d8f45, { mat: { roughness: 1 } });
+  const n = Math.round(Math.max(w, d) / 0.9);
+  for (let i = 0; i <= n; i++) { const t = i / n; mesh(SPHG, 0x4aa653, lerp(x - w / 2 + 0.45, x + w / 2 - 0.45, w > d ? t : 0.5), 1.85, lerp(z - d / 2 + 0.45, z + d / 2 - 0.45, d > w ? t : 0.5), { cast: false }).scale.set(0.5, 0.28, 0.5); }
+}
+function gnome(x, z, ry) {
+  const g = new THREE.Group(); g.position.set(x, 0, z); g.rotation.y = ry;
+  mesh(new THREE.ConeGeometry(0.25, 0.5, 12), 0x3a86ff, 0, 0.25, 0, { parent: g });
+  mesh(SPHG, 0xffd6a5, 0, 0.6, 0, { parent: g }).scale.setScalar(0.14);
+  mesh(new THREE.ConeGeometry(0.13, 0.25, 10), 0xffffff, 0, 0.5, 0.1, { parent: g }).rotation.x = Math.PI;
+  mesh(new THREE.ConeGeometry(0.15, 0.4, 12), 0xe63946, 0, 0.88, 0, { parent: g });
+  mesh(SPHG, 0xff8fa3, 0, 0.6, 0.14, { parent: g }).scale.setScalar(0.04);
+  scene.add(g); addCol(x - 0.25, x + 0.25, 0, 1.0, z - 0.25, z + 0.25, { occ: false });
+}
+
+// ---------- house ----------
+const WALL_H = 2.8, WT = 0.3;
+const wallMat = mat(0xfff0d4), wallOutMat = mat(0xffc8a8), trimMat = mat(0xffffff);
+function wallX(x1, x2, z) { box((x1 + x2) / 2, 0, z, x2 - x1, WALL_H, WT, wallMat); box((x1 + x2) / 2, WALL_H, z, x2 - x1 + 0.1, 0.14, WT + 0.16, trimMat, { collide: false }); box((x1 + x2) / 2, 0, z, x2 - x1 + 0.02, 0.22, WT + 0.06, 0xd9b38c, { collide: false, cast: false }); }
+function wallZ(z1, z2, x) { box(x, 0, (z1 + z2) / 2, WT, WALL_H, z2 - z1, wallMat); box(x, WALL_H, (z1 + z2) / 2, WT + 0.16, 0.14, z2 - z1 + 0.1, trimMat, { collide: false }); box(x, 0, (z1 + z2) / 2, WT + 0.06, 0.22, z2 - z1 + 0.02, 0xd9b38c, { collide: false, cast: false }); }
+function lintelX(x1, x2, z) { box((x1 + x2) / 2, 2.25, z, x2 - x1, WALL_H - 2.25, WT, wallMat, { solid: true }); }
+function lintelZ(z1, z2, x) { box(x, 2.25, (z1 + z2) / 2, WT, WALL_H - 2.25, z2 - z1, wallMat, { solid: true }); }
+{
+  const floorTex = canvasTex(256, 256, (g, w, h) => { for (let r = 0; r < 8; r++) { let x = (r % 2) * -60; while (x < w) { const l = rand(80, 160); g.fillStyle = `hsl(${rand(26, 34)},${rand(45, 60)}%,${rand(55, 66)}%)`; g.fillRect(x, r * 32, l, 32); g.fillStyle = 'rgba(90,50,20,.35)'; g.fillRect(x, r * 32, 2, 32); x += l; } g.fillStyle = 'rgba(90,50,20,.35)'; g.fillRect(0, r * 32, w, 2); } }, true);
+  floorTex.repeat.set(5, 4);
+  box(-14, 0, -10, 20.2, 0.05, 16.2, new THREE.MeshStandardMaterial({ map: floorTex, roughness: 0.7 }), { collide: false, cast: false });
+  // outer walls
+  wallX(-24.15, -3.85, -18);
+  wallX(-24.15, -21, -2); wallX(-18, -11, -2); wallX(-8, -3.85, -2);
+  lintelX(-21, -18, -2); lintelX(-11, -8, -2);
+  wallZ(-18, -2, -24);
+  wallZ(-18, -12, -4); wallZ(-9, -2, -4); lintelZ(-12, -9, -4);
+  // interior wall
+  wallZ(-18, -11, -14); wallZ(-8, -2, -14); lintelZ(-11, -8, -14);
+  // windows (outside decoration)
+  const glass = mat(0x9fe3ff, { roughness: 0.1, metalness: 0.3 });
+  for (const x of [-20, -9]) { box(x, 1.0, -18.2, 2, 1.2, 0.08, glass, { collide: false, cast: false }); box(x, 0.95, -18.25, 2.3, 0.1, 0.12, trimMat, { collide: false }); box(x, 2.2, -18.25, 2.3, 0.1, 0.12, trimMat, { collide: false }); box(x, 1.0, -18.25, 0.08, 1.2, 0.12, trimMat, { collide: false }); }
+  for (const z of [-14, -6]) { box(-24.2, 1.0, z, 0.08, 1.2, 2, glass, { collide: false, cast: false }); box(-24.25, 0.95, z, 0.12, 0.1, 2.3, trimMat, { collide: false }); box(-24.25, 2.2, z, 0.12, 0.1, 2.3, trimMat, { collide: false }); }
+  for (const x of [-23, -6]) { box(x, 1.0, -1.8, 1.6, 1.1, 0.08, glass, { collide: false, cast: false }); box(x, 0.95, -1.75, 1.9, 0.1, 0.14, trimMat, { collide: false }); }
+  // pictures on inner walls
+  const pics = [[-9, 1.7, -17.83, 0xff9f1c], [-6.5, 1.8, -17.83, 0x2ec4b6], [-19.5, 2.2, -17.83, 0xe71d36]];
+  for (const [x, y, z, c] of pics) { box(x, y - 0.45, z, 1.1, 0.9, 0.05, 0x6b4226, { collide: false, cast: false }); box(x, y - 0.38, z + 0.03, 0.9, 0.75, 0.04, c, { collide: false, cast: false }); }
+
+  // --- living room ---
+  mesh(new THREE.CylinderGeometry(2.8, 2.8, 0.03, 40), 0xffd166, -9, 0.06, -9, { cast: false });
+  mesh(new THREE.CylinderGeometry(2.2, 2.2, 0.035, 40), 0xff9fb2, -9, 0.065, -9, { cast: false });
+  const cc = 0xff6b6b;
+  box(-9, 0, -13.6, 4.4, 0.5, 1.2, cc); box(-9, 0, -14.4, 4.4, 1.25, 0.4, cc);
+  box(-11.0, 0, -13.8, 0.4, 0.8, 1.6, cc); box(-7.0, 0, -13.8, 0.4, 0.8, 1.6, cc);
+  for (let i = -1; i <= 1; i++) { box(-9 + i * 1.3, 0.5, -13.45, 1.22, 0.18, 1.0, 0xff8f8f, { collide: false }); box(-9 + i * 1.3, 0.75, -14.05, 1.2, 0.6, 0.25, 0xff8f8f, { collide: false }); }
+  spots.push({ x: -9, z: -15.6, type: 'behind', q: 0.55 });
+  box(-9, 0, -11.2, 2.0, 0.42, 1.0, 0x8d5a3b); box(-9, 0.42, -11.2, 2.1, 0.06, 1.1, 0xc68b59, { collide: false });
+  mesh(new THREE.CylinderGeometry(0.12, 0.1, 0.25, 12), 0xffffff, -9.4, 0.6, -11.2); // mug
+  // bookshelf
+  box(-5.6, 0, -17.4, 2.2, 2.3, 0.7, 0x9c6b43);
+  for (let s = 0; s < 3; s++) for (let b = 0; b < 7; b++) box(-6.5 + b * 0.28, 0.35 + s * 0.7, -17.02, 0.2, rand(0.4, 0.55), 0.06, pick([0xe63946, 0x457b9d, 0xf4a261, 0x2a9d8f, 0x9b5de5, 0xffbe0b]), { collide: false, cast: false });
+  // dining table with tablecloth
+  table(-8, -5.6, 3.2, 2.0, 1.45, 0xffffff, 0x8d5a3b, { hide: true, q: 0.6 });
+  const cloth = mat(0xff7aa8);
+  box(-8, 0.82, -6.62, 3.3, 0.63, 0.04, cloth, { collide: false }); box(-8, 0.82, -4.58, 3.3, 0.63, 0.04, cloth, { collide: false });
+  for (let i = 0; i < 8; i++) box(-9.5 + i * 0.43, 0.8, -6.65, 0.2, 0.05, 0.05, 0xffffff, { collide: false, cast: false });
+  mesh(new THREE.CylinderGeometry(0.15, 0.1, 0.4, 12), 0x8ecae6, -8, 1.65, -5.6);
+  for (let i = 0; i < 4; i++) mesh(SPHG, pick([0xff006e, 0xffbe0b, 0xfb5607]), -8 + rand(-0.12, 0.12), 1.95 + rand(0, 0.1), -5.6 + rand(-0.12, 0.12)).scale.setScalar(0.09);
+  for (const x of [-9.3, -6.7]) chair(x, -7.4, 0x6d4c41);
+  openBox(-5.3, -14.4);
+  pottedPlant(-13.2, -2.8); pottedPlant(-4.8, -2.8);
+  // floor lamp
+  box(-12.6, 0, -16.6, 0.5, 0.06, 0.5, 0x444444, { collide: false }); mesh(new THREE.CylinderGeometry(0.04, 0.04, 2.0), 0x444444, -12.6, 1.0, -16.6);
+  mesh(new THREE.CylinderGeometry(0.25, 0.45, 0.45, 16, 1, true), mat(0xfff3b0, { side: THREE.DoubleSide, emissive: 0xffe08a, emissiveIntensity: 0.4 }), -12.6, 2.0, -16.6);
+  addCol(-12.8, -12.4, 0, 2.2, -16.8, -16.4, { occ: false });
+
+  // --- bedroom ---
+  mesh(new THREE.CylinderGeometry(2.3, 2.3, 0.03, 40), 0xb5a1ff, -18.8, 0.06, -9.6, { cast: false });
+  // bed (high frame so you can hide under it!)
+  for (const sx of [-1, 1]) for (const sz of [-1, 1]) box(-20.5 + sx * 1.4, 0, -15.85 + sz * 1.85, 0.2, 1.32, 0.2, 0x8d5a3b, { occ: false });
+  box(-20.5, 1.32, -15.85, 3.0, 0.32, 4.0, 0xffffff);
+  box(-20.5, 1.64, -15.2, 3.08, 0.12, 2.8, 0x5fb8ff, { collide: false });
+  box(-20.5, 1.64, -17.2, 2.2, 0.24, 0.7, 0xffffff, { collide: false });
+  box(-20.5, 0, -17.75, 3.3, 2.4, 0.2, 0x8d5a3b);
+  box(-22.02, 0.95, -15.4, 0.04, 0.45, 2.9, 0x5fb8ff, { collide: false }); box(-18.98, 0.95, -15.4, 0.04, 0.45, 2.9, 0x5fb8ff, { collide: false }); box(-20.5, 0.95, -13.83, 3.06, 0.45, 0.04, 0x5fb8ff, { collide: false });
+  zones.push({ type: 'under', minX: -21.9, maxX: -19.1, minZ: -17.6, maxZ: -14.0 });
+  spots.push({ x: -20.5, z: -15.6, type: 'under', q: 0.65 });
+  // wardrobe
+  box(-15.25, 0, -17.2, 1.7, 2.4, 1.3, 0xc58b5a); box(-15.25, 0.1, -16.53, 0.03, 2.2, 0.04, 0x6b4226, { collide: false });
+  mesh(SPHG, 0xffd166, -15.45, 1.2, -16.5).scale.setScalar(0.06); mesh(SPHG, 0xffd166, -15.05, 1.2, -16.5).scale.setScalar(0.06);
+  // desk
+  table(-22.7, -6.5, 1.4, 2.4, 1.42, 0xe8c39e, 0x9c6b43, { hide: true, q: 0.5 });
+  mesh(new THREE.ConeGeometry(0.22, 0.3, 16, 1, true), mat(0x7bdff2, { side: THREE.DoubleSide }), -22.8, 1.85, -7.3);
+  mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.4), 0x333333, -22.8, 1.6, -7.3);
+  // bean bag
+  mesh(SPHG, 0xff9f1c, -17.6, 0.3, -9.4).scale.set(0.95, 0.55, 0.95);
+  addCol(-18.3, -16.9, 0, 0.5, -10.1, -8.7, { occ: false });
+  openBox(-16.3, -4.0);
+  // toy blocks
+  for (let i = 0; i < 5; i++) box(-19 + rand(-1.5, 1.5), 0.05, -5 + rand(-1, 1), 0.35, 0.35, 0.35, pick([0xe63946, 0xffbe0b, 0x3a86ff, 0x8ac926]), { collide: false, rotY: rand(0, 3) });
+}
+
+// ---------- backyard ----------
+{
+  // plaza
+  mesh(new THREE.CylinderGeometry(5.5, 5.5, 0.05, 48), 0xf1e3c8, PLAZA.x, 0.02, PLAZA.z, { cast: false });
+  mesh(new THREE.CylinderGeometry(4.6, 4.6, 0.055, 48), 0xe8d3ae, PLAZA.x, 0.025, PLAZA.z, { cast: false });
+  mesh(new THREE.CylinderGeometry(1.2, 1.2, 0.06, 32), 0xff9fb2, PLAZA.x, 0.03, PLAZA.z, { cast: false });
+  // stepping stones
+  const stoneG = new THREE.CylinderGeometry(0.45, 0.5, 0.06, 10);
+  for (let i = 0; i < 7; i++) { const t = i / 6; mesh(stoneG, 0xd6ccc2, lerp(-9.5, PLAZA.x - 4.5, t) + rand(-0.2, 0.2), 0.02, lerp(-1, PLAZA.z - 1.5, t), { cast: false }); }
+  for (let i = 0; i < 6; i++) { const t = i / 5; mesh(stoneG, 0xd6ccc2, lerp(-19.5, -10, t) + rand(-0.2, 0.2), 0.02, lerp(-0.8, 3, Math.sin(t * Math.PI) * 0.5 + t * 0.3), { cast: false }); }
+
+  // fence
+  const picketG = new THREE.BoxGeometry(0.16, 1.3, 0.08);
+  const pts = []; const L = 36;
+  for (let p = -L; p <= L; p += 0.55) { pts.push([p, -L, 0], [p, L, 0], [-L, p, 1], [L, p, 1]); }
+  const fence = new THREE.InstancedMesh(picketG, mat(0xffffff), pts.length); fence.castShadow = true; fence.receiveShadow = true;
+  const dm = new THREE.Object3D();
+  pts.forEach(([a, b, r], i) => { if (r) dm.position.set(a < 0 ? -L : L, 0.65, b); else dm.position.set(a, 0.65, b); dm.rotation.set(0, r ? Math.PI / 2 : 0, 0); dm.updateMatrix(); fence.setMatrixAt(i, dm.matrix); });
+  scene.add(fence);
+  for (const y of [0.35, 0.95]) { box(0, y, -L, 72, 0.1, 0.05, 0xf4f4f4, { collide: false }); box(0, y, L, 72, 0.1, 0.05, 0xf4f4f4, { collide: false }); box(-L, y, 0, 0.05, 0.1, 72, 0xf4f4f4, { collide: false }); box(L, y, 0, 0.05, 0.1, 72, 0xf4f4f4, { collide: false }); }
+  addCol(-L - 1, L + 1, 0, 3, -L - 1, -L + 0.1, { occ: false }); addCol(-L - 1, L + 1, 0, 3, L - 0.1, L + 1, { occ: false });
+  addCol(-L - 1, -L + 0.1, 0, 3, -L, L, { occ: false }); addCol(L - 0.1, L + 1, 0, 3, -L, L, { occ: false });
+
+  // hills + far trees
+  for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, r = rand(75, 95); const h = mesh(SPHG, i % 2 ? 0x8fd16f : 0x7cc35f, Math.cos(a) * r, -8, Math.sin(a) * r, { cast: false }); h.scale.set(rand(22, 34), rand(14, 22), rand(22, 34)); }
+  for (let i = 0; i < 26; i++) { const a = rand(0, 6.28), r = rand(42, 60); makeTree(Math.cos(a) * r, Math.sin(a) * r, i % 3 === 0 ? 1 : 0, rand(1.1, 1.6), false); }
+
+  // trees inside
+  [[-30, 30, 0], [-31, -30, 1], [31, -31, 0], [33.2, 33.2, 1], [-22, 32, 0], [32, 9, 0], [-7, 32, 1], [13, -31, 0], [-18, -29, 0], [-32, -6, 1], [25, 6, 0], [-2, -32, 1], [33, -14, 1], [-32, 16, 0]].forEach(([x, z, k]) => makeTree(x, z, k));
+
+  // bushes
+  [[-7, 3], [-1, 11], [-25.5, 12], [-19.5, 17.5], [-12, 20], [-25, 22.5], [7, 24], [26, 21.5], [9.5, -12], [27.5, -19], [34, -2], [-34, -12], [1, 33], [-10, -25], [21, 0], [-30, -22], [-14, 30], [33, 20], [-3, -27], [18, 32], [-28, 4], [14, 9.5], [-6, -20.5]].forEach(([x, z]) => makeBush(x, z, rand(0.95, 1.12)));
+
+  // hedge garden
+  hedge(-27, 8, -19, 8); hedge(-15, 8, -10, 8); hedge(-23, 8.45, -23, 16); hedge(-19, 13, -13, 13); hedge(-16, 13.45, -16, 22); hedge(-27, 19, -20, 19);
+  spots.push({ x: -21, z: 9.3, type: 'behind', q: 0.45 }, { x: -17.2, z: 14.3, type: 'behind', q: 0.45 }, { x: -17.3, z: 20.8, type: 'behind', q: 0.5 }, { x: -24.3, z: 15, type: 'behind', q: 0.45 });
+  // flowers
+  const fl = []; for (let i = 0; i < 140; i++) fl.push([rand(-24, -4), rand(-1.4, -0.6)]); for (let i = 0; i < 120; i++) fl.push([rand(-27, -12), rand(9, 23)]);
+  const flower = new THREE.InstancedMesh(new THREE.IcosahedronGeometry(0.09, 0), mat(0xffffff), fl.length); const col = new THREE.Color();
+  fl.forEach(([x, z], i) => { dm.position.set(x, rand(0.1, 0.25), z); dm.rotation.set(0, 0, 0); dm.scale.setScalar(rand(0.8, 1.4)); dm.updateMatrix(); flower.setMatrixAt(i, dm.matrix); flower.setColorAt(i, col.set(pick([0xff4d6d, 0xffd60a, 0xffffff, 0xc77dff, 0xff9f1c, 0x4cc9f0]))); });
+  scene.add(flower);
+  // grass tufts
+  const tufts = []; while (tufts.length < 900) { const x = rand(-35, 35), z = rand(-35, 35); if (x > -25 && x < -3 && z > -19 && z < -1) continue; if (((x - POND.x) / (POND.rx + 0.6)) ** 2 + ((z - POND.z) / (POND.rz + 0.6)) ** 2 < 1) continue; if (Math.hypot(x - PLAZA.x, z - PLAZA.z) < 5.6) continue; tufts.push([x, z]); }
+  const tuft = new THREE.InstancedMesh(new THREE.ConeGeometry(0.07, 0.38, 4), mat(0xffffff), tufts.length);
+  tufts.forEach(([x, z], i) => { dm.position.set(x, 0.15, z); dm.rotation.set(rand(-0.3, 0.3), rand(0, 3), rand(-0.3, 0.3)); dm.scale.setScalar(rand(0.7, 1.4)); dm.updateMatrix(); tuft.setMatrixAt(i, dm.matrix); tuft.setColorAt(i, col.setHSL(rand(0.25, 0.33), 0.55, rand(0.32, 0.45))); });
+  scene.add(tuft);
+
+  // picnic table
+  table(3, -9, 3.2, 1.9, 1.42, 0xe09f5a, 0x8d5a3b, { hide: true, q: 0.5 });
+  box(3, 0, -10.35, 3.0, 0.55, 0.4, 0x9c6b43, { occ: false }); box(3, 0, -7.65, 3.0, 0.55, 0.4, 0x9c6b43, { occ: false });
+  mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.3, 12), 0xe63946, 2.4, 1.6, -9); // basket-ish
+  // BBQ
+  mesh(SPHG, 0x222222, -1.5, 1.0, -6).scale.set(0.5, 0.4, 0.5); box(-1.5, 0, -6, 0.15, 0.9, 0.15, 0x333333, { collide: false });
+  addCol(-2, -1, 0, 1.3, -6.5, -5.5, { occ: false });
+  // crate stacks
+  crate(-0.6, 0, -14); crate(0.45, 0, -14); crate(-0.1, 1, -14); spots.push({ x: -0.1, z: -15.3, type: 'behind', q: 0.45 });
+  crate(30, 0, -4); crate(30, 0, -5.05); spots.push({ x: 31.2, z: -4.5, type: 'behind', q: 0.45 });
+  crate(10, 0, -28); crate(11.05, 0, -28); crate(10.5, 1, -28); spots.push({ x: 10.5, z: -29.3, type: 'behind', q: 0.45 });
+  crate(-8, 0, 26); crate(-8, 0, 27.05, 1); spots.push({ x: -9.2, z: 26.5, type: 'behind', q: 0.45 });
+  // open cardboard boxes outside
+  openBox(3, -22); openBox(31, 12.5); openBox(-31, 1); openBox(9, 31); openBox(-29.5, -14);
+  // gnomes
+  gnome(-3, -1, 0.4); gnome(10, 12, -2); gnome(-12, 16, 1); gnome(23, -24, 2.5);
+
+  // --- playground: slide ---
+  const pink = 0xff5d8f, yel = 0xffd166;
+  for (const sx of [15.1, 16.9]) for (const sz of [-15.9, -14.1]) box(sx, 0, sz, 0.16, 2.1, 0.16, yel, { occ: false });
+  box(16, 2.05, -15, 2, 0.15, 2, pink);
+  box(16, 2.2, -15.95, 2, 0.6, 0.06, 0x4cc9f0, { collide: false }); box(16, 2.2, -14.05, 2, 0.6, 0.06, 0x4cc9f0, { collide: false });
+  const ang = Math.atan2(2.2, 5), len = Math.hypot(5, 2.2);
+  const slide = box(19.5, 1.05, -15, len, 0.1, 1.6, mat(0x4cc9f0, { roughness: 0.35 }), { collide: false }); slide.rotation.z = -ang;
+  for (const zz of [-15.85, -14.15]) { const r = box(19.5, 1.25, zz, len, 0.3, 0.1, mat(0x3a86ff), { collide: false }); r.rotation.z = -ang; }
+  ramps.push({ minX: 17, maxX: 22, minZ: -15.8, maxZ: -14.2, h: (x) => 2.2 * (1 - (x - 17) / 5) });
+  for (const zz of [-15.6, -14.4]) box(14.75, 0, zz, 0.1, 2.9, 0.1, yel, { collide: false });
+  for (let i = 0; i < 6; i++) box(14.75, 0.35 + i * 0.4, -15, 0.08, 0.07, 1.2, yel, { collide: false });
+  ladders.push({ minX: 14.2, maxX: 15.15, minZ: -15.6, maxZ: -14.4, top: 2.25 });
+  zones.push({ type: 'under', minX: 15.25, maxX: 16.75, minZ: -15.8, maxZ: -14.2 }); spots.push({ x: 16, z: -15, type: 'under', q: 0.4 });
+  // swings
+  for (const x of [20, 26]) for (const z of [-8.7, -7.3]) box(x, 0, z, 0.18, 3.3, 0.18, 0xe63946, { occ: false });
+  mesh(new THREE.CylinderGeometry(0.09, 0.09, 6.2, 10), 0xe63946, 23, 3.3, -8).rotation.z = Math.PI / 2;
+  for (const [x, ph] of [[21.8, 0], [24.2, 1.7]]) {
+    const piv = new THREE.Group(); piv.position.set(x, 3.3, -8); scene.add(piv);
+    for (const dx of [-0.3, 0.3]) mesh(new THREE.CylinderGeometry(0.02, 0.02, 2.6), 0x666666, dx, -1.3, 0, { parent: piv });
+    box(0, -2.65, 0, 0.8, 0.08, 0.4, 0x8338ec, { parent: piv, collide: false });
+    animated.push(t => { piv.rotation.z = 0; piv.rotation.x = Math.sin(t * 1.8 + ph) * 0.35; });
+  }
+  // sandbox
+  for (const [x, z, w, d] of [[12, -25, 4.3, 0.3], [12, -21, 4.3, 0.3], [10, -23, 0.3, 4.3], [14, -23, 0.3, 4.3]]) box(x, 0, z, w, 0.32, d, 0xffb4a2);
+  box(12, 0, -23, 3.8, 0.12, 3.8, 0xf6d998, { collide: false, cast: false });
+  mesh(new THREE.CylinderGeometry(0.4, 0.5, 0.5, 8), 0xe9c46a, 12.6, 0.37, -23.4); mesh(new THREE.ConeGeometry(0.35, 0.4, 8), 0xe9c46a, 12.6, 0.82, -23.4);
+  mesh(new THREE.CylinderGeometry(0.2, 0.15, 0.3, 12), 0x3a86ff, 11.2, 0.27, -22.4);
+  // trampoline
+  {
+    const tx = -4, tz = 18, tr = 2.1;
+    mesh(new THREE.TorusGeometry(tr, 0.12, 8, 40).rotateX(Math.PI / 2), 0x3a86ff, tx, 0.45, tz);
+    const matM = mesh(new THREE.CylinderGeometry(tr - 0.05, tr - 0.05, 0.04, 40), 0x222244, tx, 0.43, tz);
+    for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; box(tx + Math.cos(a) * tr, 0, tz + Math.sin(a) * tr, 0.1, 0.45, 0.1, 0x555555, { collide: false }); }
+    const ring = mesh(new THREE.TorusGeometry(tr - 0.15, 0.05, 6, 40).rotateX(Math.PI / 2), 0xffd166, tx, 0.47, tz, { cast: false });
+    trampolines.push({ x: tx, z: tz, r: tr - 0.1, top: 0.45, mesh: matM, dip: 0, dipV: 0 });
+  }
+  // shed
+  {
+    const sc = mat(0x8ecae6);
+    box(27.5, 0, 30, 5.3, 2.4, 0.25, sc); box(27.5, 0, 25, 5.3, 2.4, 0.25, sc); box(30, 0, 27.5, 0.25, 2.4, 5.3, sc);
+    box(25, 0, 25.75, 0.25, 2.4, 1.5, sc); box(25, 0, 29.25, 0.25, 2.4, 1.5, sc); box(25, 2.0, 27.5, 0.25, 0.4, 2.0, sc);
+    box(24.9, 0, 26.45, 0.1, 2.0, 0.1, 0xffffff, { collide: false }); box(24.9, 0, 28.55, 0.1, 2.0, 0.1, 0xffffff, { collide: false });
+    box(27.5, 0, 27.5, 4.9, 0.05, 4.9, 0x9c6b43, { collide: false, cast: false });
+    const roof = new THREE.Group(); scene.add(roof);
+    box(27.5, 2.4, 27.5, 5.6, 0.15, 5.6, 0xe76f51, { parent: roof, collide: false });
+    const cone = mesh(new THREE.ConeGeometry(4.1, 1.6, 4), 0xe76f51, 27.5, 3.35, 27.5, { parent: roof }); cone.rotation.y = Math.PI / 4;
+    addCol(24.7, 30.3, 2.4, 2.6, 24.7, 30.3, { cam: false });
+    crate(29.2, 0, 26); crate(29.2, 0, 29); box(28.6, 1.2, 29.6, 2, 0.08, 0.5, 0x9c6b43, { collide: false });
+    for (let i = 0; i < 3; i++) mesh(new THREE.CylinderGeometry(0.15, 0.15, 0.3, 10), pick([0xe63946, 0x2a9d8f, 0xffbe0b]), 27.9 + i * 0.4, 1.4, 29.6);
+    spots.push({ x: 27.6, z: 27.5, type: 'shed', q: 0.6 });
+    window.__shedRoof = roof;
+  }
+  // clouds
+  for (let i = 0; i < 12; i++) {
+    const c = new THREE.Group(); const n = randi(4, 7);
+    for (let j = 0; j < n; j++) { const s = mesh(SPHG, mat(0xffffff, { emissive: 0xffffff, emissiveIntensity: 0.35, roughness: 1 }), j * 2.5 - n * 1.2, rand(-0.5, 1), rand(-1.5, 1.5), { parent: c, cast: false, receive: false }); s.scale.setScalar(rand(2.2, 3.8)); }
+    c.position.set(rand(-150, 150), rand(48, 75), rand(-130, 100)); scene.add(c);
+    const sp = rand(0.6, 1.4);
+    animated.push((t, dt) => { c.position.x += sp * dt; if (c.position.x > 170) c.position.x = -170; });
+  }
+}
+const occluders = colliders.filter(c => c.occ);
+const camOccluders = colliders.filter(c => c.cam && c.occ && (c.maxY - c.minY) > 0.9);
+
+// ======================================================================
+// PHYSICS / COLLISION / LINE OF SIGHT
+// ======================================================================
+const BEAN_R = 0.42, BEAN_H = 1.3, CROUCH_H = 0.8, STEP = 0.5, GRAV = 30, JUMP_V = 9.8;
+let gType = 'grass', gTramp = null;
+function inPond(x, z) { return ((x - POND.x) / POND.rx) ** 2 + ((z - POND.z) / POND.rz) ** 2; }
+function groundHeight(x, z, y) {
+  let h = 0; gType = 'grass';
+  const e = inPond(x, z);
+  if (e < 1) { h = -POND.depth * Math.sqrt(1 - e) * 0.9; gType = 'water'; }
+  if (x > -24 && x < -4 && z > -18 && z < -2) { h = 0.05; gType = 'wood'; }
+  const r = 0.16;
+  for (let i = 0; i < colliders.length; i++) { const c = colliders[i]; if (!c.solid) continue; if (c.maxY > h && c.maxY <= y + STEP && x > c.minX - r && x < c.maxX + r && z > c.minZ - r && z < c.maxZ + r) { h = c.maxY; gType = 'solid'; } }
+  for (const rp of ramps) if (x > rp.minX && x < rp.maxX && z > rp.minZ && z < rp.maxZ) { const rh = rp.h(x, z); if (rh > h && rh <= y + 0.75) { h = rh; gType = 'ramp'; } }
+  for (const t of trampolines) if (Math.hypot(x - t.x, z - t.z) < t.r && t.top > h && t.top <= y + STEP) { h = t.top; gType = 'tramp'; gTramp = t; }
+  return h;
+}
+function resolveXZ(b) {
+  const R = BEAN_R;
+  for (let i = 0; i < colliders.length; i++) {
+    const c = colliders[i];
+    if (!c.solid || c.maxY <= b.pos.y + STEP || c.minY >= b.pos.y + b.height) continue;
+    if (b.pos.x < c.minX - R || b.pos.x > c.maxX + R || b.pos.z < c.minZ - R || b.pos.z > c.maxZ + R) continue;
+    const cx = clamp(b.pos.x, c.minX, c.maxX), cz = clamp(b.pos.z, c.minZ, c.maxZ);
+    let dx = b.pos.x - cx, dz = b.pos.z - cz; const d2 = dx * dx + dz * dz;
+    if (d2 >= R * R) continue;
+    if (d2 > 1e-9) {
+      const d = Math.sqrt(d2), p = R - d; dx /= d; dz /= d; b.pos.x += dx * p; b.pos.z += dz * p;
+      const vn = b.vel.x * dx + b.vel.z * dz; if (vn < 0) { b.vel.x -= vn * dx; b.vel.z -= vn * dz; }
+    } else {
+      const pl = b.pos.x - c.minX, pr = c.maxX - b.pos.x, pb = b.pos.z - c.minZ, pf = c.maxZ - b.pos.z, m = Math.min(pl, pr, pb, pf);
+      if (m === pl) b.pos.x = c.minX - R; else if (m === pr) b.pos.x = c.maxX + R; else if (m === pb) b.pos.z = c.minZ - R; else b.pos.z = c.maxZ + R;
+    }
+  }
+}
+// returns entry t in [0,1] or Infinity
+function rayAABB(c, ax, ay, az, dx, dy, dz) {
+  let t0 = 0, t1 = 1;
+  if (Math.abs(dx) < 1e-9) { if (ax < c.minX || ax > c.maxX) return Infinity; } else { let ta = (c.minX - ax) / dx, tb = (c.maxX - ax) / dx; if (ta > tb) { const q = ta; ta = tb; tb = q; } if (ta > t0) t0 = ta; if (tb < t1) t1 = tb; if (t0 > t1) return Infinity; }
+  if (Math.abs(dy) < 1e-9) { if (ay < c.minY || ay > c.maxY) return Infinity; } else { let ta = (c.minY - ay) / dy, tb = (c.maxY - ay) / dy; if (ta > tb) { const q = ta; ta = tb; tb = q; } if (ta > t0) t0 = ta; if (tb < t1) t1 = tb; if (t0 > t1) return Infinity; }
+  if (Math.abs(dz) < 1e-9) { if (az < c.minZ || az > c.maxZ) return Infinity; } else { let ta = (c.minZ - az) / dz, tb = (c.maxZ - az) / dz; if (ta > tb) { const q = ta; ta = tb; tb = q; } if (ta > t0) t0 = ta; if (tb < t1) t1 = tb; if (t0 > t1) return Infinity; }
+  return t0;
+}
+function segBlocked(ax, ay, az, bx, by, bz) {
+  const dx = bx - ax, dy = by - ay, dz = bz - az;
+  for (let i = 0; i < occluders.length; i++) if (rayAABB(occluders[i], ax, ay, az, dx, dy, dz) < 1) return true;
+  return false;
+}
+function bushesBetween(a, b, exclude) {
+  let n = 0; const dx = b.x - a.x, dz = b.z - a.z, L2 = dx * dx + dz * dz;
+  for (const bu of bushes) {
+    if (bu === exclude) continue;
+    const t = clamp(((bu.x - a.x) * dx + (bu.z - a.z) * dz) / (L2 || 1), 0, 1);
+    if (t <= 0.02 || t >= 0.98) continue;
+    if (Math.hypot(a.x + dx * t - bu.x, a.z + dz * t - bu.z) < bu.r * 0.8) n++;
+  }
+  return n;
+}
+function zoneAt(p, y) {
+  for (const z of zones) {
+    if (z.type === 'bush') { if (Math.hypot(p.x - z.x, p.z - z.z) < z.r && y < 1.0) return z; }
+    else if (p.x > z.minX && p.x < z.maxX && p.z > z.minZ && p.z < z.maxZ && y < 0.6) return z;
+  }
+  return null;
+}
+
+// ======================================================================
+// NAVIGATION GRID + A*
+// ======================================================================
+const NAV = { cs: 0.5, min: -36, n: 144 };
+NAV.grid = new Uint8Array(NAV.n * NAV.n);
+{
+  const inf = 0.42, n = NAV.n;
+  for (const c of colliders) {
+    if (!c.solid || c.minY >= 1.28 || c.maxY <= STEP) continue;
+    const x0 = Math.max(0, Math.floor((c.minX - inf - NAV.min) / NAV.cs)), x1 = Math.min(n - 1, Math.floor((c.maxX + inf - NAV.min) / NAV.cs));
+    const z0 = Math.max(0, Math.floor((c.minZ - inf - NAV.min) / NAV.cs)), z1 = Math.min(n - 1, Math.floor((c.maxZ + inf - NAV.min) / NAV.cs));
+    for (let i = x0; i <= x1; i++) for (let j = z0; j <= z1; j++) {
+      const cx = NAV.min + (i + 0.5) * NAV.cs, cz = NAV.min + (j + 0.5) * NAV.cs;
+      if (cx > c.minX - inf && cx < c.maxX + inf && cz > c.minZ - inf && cz < c.maxZ + inf) NAV.grid[j * n + i] = 1;
+    }
+  }
+  for (const t of trampolines) for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const cx = NAV.min + (i + 0.5) * NAV.cs, cz = NAV.min + (j + 0.5) * NAV.cs; if (Math.hypot(cx - t.x, cz - t.z) < t.r + 0.6) NAV.grid[j * n + i] = 1; }
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const cx = NAV.min + (i + 0.5) * NAV.cs, cz = NAV.min + (j + 0.5) * NAV.cs; if (Math.abs(cx) > 35.2 || Math.abs(cz) > 35.2) NAV.grid[j * n + i] = 1; }
+}
+const navCell = (x, z) => { const i = Math.floor((x - NAV.min) / NAV.cs), j = Math.floor((z - NAV.min) / NAV.cs); if (i < 0 || j < 0 || i >= NAV.n || j >= NAV.n) return -1; return j * NAV.n + i; };
+const navFree = c => c >= 0 && NAV.grid[c] === 0;
+function nearestFree(c) {
+  if (navFree(c)) return c; if (c < 0) return -1;
+  const n = NAV.n, ci = c % n, cj = (c / n) | 0;
+  for (let r = 1; r < 12; r++) for (let di = -r; di <= r; di++) for (let dj = -r; dj <= r; dj++) { if (Math.abs(di) !== r && Math.abs(dj) !== r) continue; const i = ci + di, j = cj + dj; if (i < 0 || j < 0 || i >= n || j >= n) continue; const k = j * n + i; if (!NAV.grid[k]) return k; }
+  return -1;
+}
+function lineWalkable(ax, az, bx, bz) {
+  const d = Math.hypot(bx - ax, bz - az), st = Math.max(1, Math.ceil(d / 0.25));
+  for (let s = 0; s <= st; s++) { const t = s / st; if (!navFree(navCell(ax + (bx - ax) * t, az + (bz - az) * t))) return false; }
+  return true;
+}
+const AS = { g: new Float32Array(NAV.n * NAV.n), came: new Int32Array(NAV.n * NAV.n), stamp: new Uint32Array(NAV.n * NAV.n), closed: new Uint32Array(NAV.n * NAV.n), gen: 0 };
+function findPath(sx, sz, tx, tz) {
+  const n = NAV.n;
+  const s = nearestFree(navCell(sx, sz)), t = nearestFree(navCell(tx, tz));
+  if (s < 0 || t < 0) return null;
+  const gen = ++AS.gen;
+  const ti = t % n, tj = (t / n) | 0;
+  const h = k => { const dx = Math.abs(k % n - ti), dz = Math.abs(((k / n) | 0) - tj); return (dx + dz) + (1.4142 - 2) * Math.min(dx, dz); };
+  const heap = [], hf = [];
+  const push = (k, f) => { heap.push(k); hf.push(f); let i = heap.length - 1; while (i > 0) { const p = (i - 1) >> 1; if (hf[p] <= hf[i]) break; [heap[p], heap[i]] = [heap[i], heap[p]]; [hf[p], hf[i]] = [hf[i], hf[p]]; i = p; } };
+  const pop = () => { const top = heap[0]; const lk = heap.pop(), lf = hf.pop(); if (heap.length) { heap[0] = lk; hf[0] = lf; let i = 0; for (;;) { const l = i * 2 + 1, r = l + 1; let m = i; if (l < heap.length && hf[l] < hf[m]) m = l; if (r < heap.length && hf[r] < hf[m]) m = r; if (m === i) break; [heap[m], heap[i]] = [heap[i], heap[m]]; [hf[m], hf[i]] = [hf[i], hf[m]]; i = m; } } return top; };
+  AS.g[s] = 0; AS.stamp[s] = gen; AS.came[s] = -1; push(s, h(s));
+  let found = false, iter = 0;
+  while (heap.length && iter++ < 20000) {
+    const k = pop(); if (AS.closed[k] === gen) continue; AS.closed[k] = gen;
+    if (k === t) { found = true; break; }
+    const ki = k % n, kj = (k / n) | 0;
+    for (let di = -1; di <= 1; di++) for (let dj = -1; dj <= 1; dj++) {
+      if (!di && !dj) continue; const i = ki + di, j = kj + dj; if (i < 0 || j < 0 || i >= n || j >= n) continue;
+      const nk = j * n + i; if (NAV.grid[nk] || AS.closed[nk] === gen) continue;
+      if (di && dj && (NAV.grid[kj * n + i] || NAV.grid[j * n + ki])) continue;
+      const ng = AS.g[k] + (di && dj ? 1.4142 : 1);
+      if (AS.stamp[nk] !== gen || ng < AS.g[nk]) { AS.stamp[nk] = gen; AS.g[nk] = ng; AS.came[nk] = k; push(nk, ng + h(nk)); }
+    }
+  }
+  if (!found) return null;
+  const cells = []; for (let k = t; k !== -1; k = AS.came[k]) cells.push(k); cells.reverse();
+  const pts = cells.map(k => ({ x: NAV.min + (k % n + 0.5) * NAV.cs, z: NAV.min + (((k / n) | 0) + 0.5) * NAV.cs }));
+  if (navFree(navCell(tx, tz))) pts[pts.length - 1] = { x: tx, z: tz };
+  // string pulling
+  const out = []; let a = { x: sx, z: sz }, i = 0;
+  while (i < pts.length - 1) { let j = pts.length - 1; while (j > i + 1 && !lineWalkable(a.x, a.z, pts[j].x, pts[j].z)) j--; out.push(pts[j]); a = pts[j]; i = j; }
+  if (!out.length) out.push(pts[pts.length - 1]);
+  return out;
+}
+function randomFreePoint() { for (let k = 0; k < 200; k++) { const x = rand(-33, 33), z = rand(-33, 33); if (navFree(navCell(x, z)) && inPond(x, z) > 1.1) return { x, z }; } return { x: PLAZA.x, z: PLAZA.z }; }
+
+// ======================================================================
+// PARTICLES
+// ======================================================================
+const FX = {
+  conf: new THREE.InstancedMesh(new THREE.PlaneGeometry(0.17, 0.1), new THREE.MeshBasicMaterial({ side: THREE.DoubleSide }), 900),
+  puff: new THREE.InstancedMesh(new THREE.IcosahedronGeometry(1, 1), new THREE.MeshLambertMaterial({ color: 0xffffff }), 400),
+  cl: [], pl: [], dm: new THREE.Object3D(), col: new THREE.Color(),
+};
+for (const im of [FX.conf, FX.puff]) { im.frustumCulled = false; im.count = 0; for (let i = 0; i < im.instanceMatrix.count; i++) im.setColorAt(i, FX.col.set(0xffffff)); scene.add(im); }
+const CONFETTI_COLS = [0xff4d6d, 0xffd60a, 0x4cc9f0, 0x80ed99, 0xc77dff, 0xff9f1c, 0xffffff];
+function confetti(p, n = 60, cols = CONFETTI_COLS, power = 7) {
+  for (let i = 0; i < n && FX.cl.length < 900; i++) {
+    const a = rand(0, 6.28), s = rand(0.3, 1) * power;
+    FX.cl.push({ x: p.x, y: p.y, z: p.z, vx: Math.cos(a) * s * 0.6, vy: rand(0.5, 1.3) * power, vz: Math.sin(a) * s * 0.6, rx: rand(0, 6), ry: rand(0, 6), sr: rand(-12, 12), life: rand(2, 3.5), c: pick(cols) });
+  }
+}
+function puff(p, n = 8, color = 0xffffff, size = 0.3, spread = 1, up = 1) {
+  for (let i = 0; i < n && FX.pl.length < 400; i++) {
+    const a = rand(0, 6.28), s = rand(0.5, 1.5) * spread;
+    FX.pl.push({ x: p.x + Math.cos(a) * 0.2, y: p.y + rand(0, 0.2), z: p.z + Math.sin(a) * 0.2, vx: Math.cos(a) * s, vy: rand(0.3, 1.2) * up, vz: Math.sin(a) * s, life: rand(0.4, 0.8), max: 0, size: size * rand(0.7, 1.3), c: color });
+    FX.pl[FX.pl.length - 1].max = FX.pl[FX.pl.length - 1].life;
+  }
+}
+function updateFX(dt) {
+  const dm = FX.dm;
+  let k = 0;
+  for (let i = FX.cl.length - 1; i >= 0; i--) {
+    const p = FX.cl[i]; p.life -= dt; if (p.life <= 0) { FX.cl.splice(i, 1); continue; }
+    if (p.y > 0.03) { p.vy -= 9 * dt; p.vx *= 0.985; p.vz *= 0.985; if (p.vy < -2.5) p.vy = -2.5; p.x += p.vx * dt + Math.sin(p.life * 5 + i) * 0.01; p.y += p.vy * dt; p.z += p.vz * dt; p.rx += p.sr * dt; p.ry += p.sr * 0.7 * dt; } else p.y = 0.03;
+  }
+  FX.cl.forEach(p => { dm.position.set(p.x, p.y, p.z); dm.rotation.set(p.rx, p.ry, 0); dm.scale.setScalar(Math.min(1, p.life * 2)); dm.updateMatrix(); FX.conf.setMatrixAt(k, dm.matrix); FX.conf.setColorAt(k, FX.col.set(p.c)); k++; });
+  FX.conf.count = k; FX.conf.instanceMatrix.needsUpdate = true; if (FX.conf.instanceColor) FX.conf.instanceColor.needsUpdate = true;
+  k = 0;
+  for (let i = FX.pl.length - 1; i >= 0; i--) { const p = FX.pl[i]; p.life -= dt; if (p.life <= 0) { FX.pl.splice(i, 1); continue; } p.x += p.vx * dt; p.y += p.vy * dt; p.z += p.vz * dt; p.vx *= 0.92; p.vz *= 0.92; }
+  FX.pl.forEach(p => { const t = 1 - p.life / p.max; dm.position.set(p.x, p.y, p.z); dm.rotation.set(0, 0, 0); dm.scale.setScalar(p.size * (t < 0.3 ? t / 0.3 : 1 - (t - 0.3) / 0.7 * 0.9)); dm.updateMatrix(); FX.puff.setMatrixAt(k, dm.matrix); FX.puff.setColorAt(k, FX.col.set(p.c)); k++; });
+  FX.puff.count = k; FX.puff.instanceMatrix.needsUpdate = true; if (FX.puff.instanceColor) FX.puff.instanceColor.needsUpdate = true;
+}
+
+// ======================================================================
+// BEANS
+// ======================================================================
+const beanGeo = (() => {
+  const g = new THREE.CapsuleGeometry(0.42, 0.44, 12, 28); const p = g.attributes.position;
+  for (let i = 0; i < p.count; i++) { const y = p.getY(i), t = y / 0.64; const bul = 1 - 0.06 * t; p.setX(i, p.getX(i) * bul); p.setZ(i, p.getZ(i) * bul * 0.92 - 0.08 * (1 - t * t)); }
+  g.computeVertexNormals(); g.translate(0, 0.64, 0); return g;
+})();
+const eyeWhiteM = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.2 });
+const pupilM = new THREE.MeshStandardMaterial({ color: 0x1a1030, roughness: 0.15 });
+const shineM = new THREE.MeshBasicMaterial({ color: 0xffffff });
+const blushM = new THREE.MeshBasicMaterial({ color: 0xff7aa2, transparent: true, opacity: 0.55 });
+const mouthM = new THREE.MeshBasicMaterial({ color: 0x3a1530 });
+const goldM = new THREE.MeshStandardMaterial({ color: 0xffc83d, roughness: 0.25, metalness: 0.7 });
+function makeHat(kind, color) {
+  const g = new THREE.Group(); g.position.y = 1.24;
+  const M = c => mat(c, { roughness: 0.6 });
+  if (kind === 'party') {
+    const c = mesh(new THREE.ConeGeometry(0.2, 0.52, 18), M(0xff5fa2), 0, 0.24, 0, { parent: g });
+    for (let i = 0; i < 3; i++) mesh(new THREE.TorusGeometry(0.17 - i * 0.05, 0.022, 6, 18).rotateX(Math.PI / 2), M(0xffd60a), 0, 0.08 + i * 0.13, 0, { parent: g });
+    mesh(SPHG, M(0x4cc9f0), 0, 0.52, 0, { parent: g }).scale.setScalar(0.08); g.rotation.z = 0.25; g.position.x = -0.06;
+  } else if (kind === 'top') {
+    mesh(new THREE.CylinderGeometry(0.34, 0.34, 0.04, 24), M(0x1d1d2b), 0, 0.02, 0, { parent: g });
+    mesh(new THREE.CylinderGeometry(0.21, 0.22, 0.42, 24), M(0x1d1d2b), 0, 0.24, 0, { parent: g });
+    mesh(new THREE.CylinderGeometry(0.225, 0.225, 0.08, 24), M(0xe63946), 0, 0.09, 0, { parent: g }); g.rotation.z = -0.12;
+  } else if (kind === 'propeller') {
+    const cap = mesh(new THREE.SphereGeometry(0.3, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), M(0xffd60a), 0, -0.04, 0, { parent: g }); cap.scale.y = 0.75;
+    for (let i = 0; i < 4; i++) { const s = mesh(new THREE.SphereGeometry(0.302, 4, 10, i * Math.PI / 2, Math.PI / 4, 0, Math.PI / 2), M(i % 2 ? 0xe63946 : 0x3a86ff), 0, -0.04, 0, { parent: g }); s.scale.y = 0.76; }
+    mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.14), M(0x333333), 0, 0.24, 0, { parent: g });
+    const pr = new THREE.Group(); pr.position.y = 0.31; g.add(pr); g.userData.prop = pr;
+    for (const s of [-1, 1]) { const b = mesh(SPHG, M(s > 0 ? 0xe63946 : 0x3a86ff), s * 0.17, 0, 0, { parent: pr }); b.scale.set(0.17, 0.02, 0.055); }
+  } else if (kind === 'crown') {
+    mesh(new THREE.CylinderGeometry(0.22, 0.2, 0.16, 20, 1, true), goldM, 0, 0.06, 0, { parent: g });
+    for (let i = 0; i < 6; i++) { const a = i / 6 * Math.PI * 2; mesh(new THREE.ConeGeometry(0.05, 0.14, 6), goldM, Math.cos(a) * 0.2, 0.2, Math.sin(a) * 0.2, { parent: g }); mesh(SPHG, M(pick([0xe63946, 0x4cc9f0, 0x80ed99])), Math.cos(a) * 0.215, 0.06, Math.sin(a) * 0.215, { parent: g }).scale.setScalar(0.03); }
+    g.rotation.z = 0.15;
+  } else if (kind === 'bow') {
+    for (const s of [-1, 1]) { const b = mesh(SPHG, M(0xff4d8d), s * 0.13, 0.03, 0.05, { parent: g }); b.scale.set(0.13, 0.09, 0.05); b.rotation.z = s * 0.4; }
+    mesh(SPHG, M(0xff85b3), 0, 0.03, 0.06, { parent: g }).scale.setScalar(0.055); g.position.set(0.16, 1.18, 0.05); g.rotation.z = -0.5;
+  } else if (kind === 'sprout') {
+    mesh(new THREE.CylinderGeometry(0.018, 0.022, 0.24), M(0x4f9a2a), 0, 0.1, 0, { parent: g });
+    for (const s of [-1, 1]) { const l = mesh(SPHG, M(0x6ccf3a), s * 0.1, 0.22, 0, { parent: g }); l.scale.set(0.11, 0.025, 0.06); l.rotation.z = s * 0.4; }
+    g.userData.sprout = true;
+  } else if (kind === 'cap') {
+    const c = mesh(new THREE.SphereGeometry(0.29, 20, 10, 0, Math.PI * 2, 0, Math.PI / 2), M(0x3a86ff), 0, -0.05, 0, { parent: g }); c.scale.y = 0.7;
+    const br = mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.03, 20, 1, false, -Math.PI / 2, Math.PI), M(0x3a86ff), 0, -0.04, 0.2, { parent: g }); br.rotation.y = Math.PI / 2; br.scale.z = 1.2;
+    mesh(SPHG, M(0xffffff), 0, 0.15, 0, { parent: g }).scale.setScalar(0.04);
+  } else if (kind === 'chef') {
+    mesh(new THREE.CylinderGeometry(0.2, 0.2, 0.22, 20), M(0xffffff), 0, 0.08, 0, { parent: g });
+    for (let i = 0; i < 5; i++) { const a = i / 5 * 6.28; mesh(SPHG, M(0xffffff), Math.cos(a) * 0.12, 0.27, Math.sin(a) * 0.12, { parent: g }).scale.setScalar(0.13); }
+    mesh(SPHG, M(0xffffff), 0, 0.33, 0, { parent: g }).scale.setScalar(0.14);
+  }
+  return g;
+}
+const PROP_KINDS = ['box', 'plant', 'barrel', 'cone', 'ball'];
+function makeProp(kind) {
+  const g = new THREE.Group();
+  if (kind === 'box') { box(0, 0, 0, 0.95, 0.85, 0.95, cardboard, { parent: g, collide: false }); box(0, 0.6, 0.48, 0.3, 0.2, 0.02, tape, { parent: g, collide: false }); }
+  else if (kind === 'plant') { mesh(new THREE.CylinderGeometry(0.35, 0.26, 0.5, 14), 0xe76f51, 0, 0.25, 0, { parent: g }); for (let i = 0; i < 4; i++) mesh(SPHG, 0x52b788, rand(-0.2, 0.2), 0.8 + rand(0, 0.3), rand(-0.2, 0.2), { parent: g }).scale.setScalar(rand(0.28, 0.36)); }
+  else if (kind === 'barrel') { mesh(new THREE.CylinderGeometry(0.4, 0.4, 1.0, 16), 0x2a9d8f, 0, 0.5, 0, { parent: g }); for (const y of [0.2, 0.8]) mesh(new THREE.TorusGeometry(0.405, 0.03, 6, 20).rotateX(Math.PI / 2), 0x264653, 0, y, 0, { parent: g }); }
+  else if (kind === 'cone') { mesh(new THREE.ConeGeometry(0.32, 0.95, 16), 0xff7b00, 0, 0.5, 0, { parent: g }); mesh(new THREE.CylinderGeometry(0.2, 0.25, 0.14, 16), 0xffffff, 0, 0.45, 0, { parent: g }); box(0, 0, 0, 0.8, 0.06, 0.8, 0xff7b00, { parent: g, collide: false }); }
+  else { const b = mesh(new THREE.SphereGeometry(0.45, 16, 12), mat(0xffffff, { roughness: 0.4 }), 0, 0.45, 0, { parent: g }); for (let i = 0; i < 3; i++) { const s = mesh(new THREE.SphereGeometry(0.455, 16, 12, i * 2.09, 0.7), [0xe63946, 0x3a86ff, 0xffd60a][i], 0, 0.45, 0, { parent: g }); } }
+  return g;
+}
+
+class Bean {
+  constructor({ id = 0, name, color, hat, isPlayer = false, human, remote = false }) {
+    this.id = id; this.name = name; this.color = color; this.hatKind = hat; this.isPlayer = isPlayer;
+    this.human = human === undefined ? isPlayer : human; this.remote = remote; this.nb = []; this.tp = 0; this.camYaw = 0; this.lastIn = 0;
+    this.root = new THREE.Group(); scene.add(this.root);
+    this.pos = this.root.position; this.vel = v3(); this.wish = v3(); this.yaw = 0; this.height = BEAN_H;
+    this.wob = new THREE.Group(); this.root.add(this.wob);
+    this.mat = new THREE.MeshPhysicalMaterial({ color, roughness: 0.32, clearcoat: 1, clearcoatRoughness: 0.12, emissive: new THREE.Color(color).multiplyScalar(0.14) });
+    this.body = new THREE.Mesh(beanGeo, this.mat); this.body.castShadow = true; this.body.position.y = 0.06; this.wob.add(this.body);
+    // face
+    this.face = new THREE.Group(); this.face.position.y = 0.06; this.wob.add(this.face);
+    this.eyes = [];
+    for (const s of [-1, 1]) {
+      const e = new THREE.Group(); e.position.set(s * 0.15, 0.9, 0.27); e.rotation.y = s * 0.3; this.face.add(e);
+      const w = new THREE.Mesh(SPHG, eyeWhiteM); w.scale.set(0.125, 0.14, 0.07); e.add(w);
+      const p = new THREE.Mesh(SPHG, pupilM); p.scale.set(0.07, 0.08, 0.04); p.position.z = 0.05; e.add(p);
+      const sh = new THREE.Mesh(SPHG, shineM); sh.scale.setScalar(0.022); sh.position.set(0.025, 0.035, 0.088); e.add(sh);
+      this.eyes.push({ g: e, p });
+    }
+    for (const s of [-1, 1]) { const b = new THREE.Mesh(SPHG, blushM); b.scale.set(0.065, 0.04, 0.02); b.position.set(s * 0.27, 0.74, 0.215); b.rotation.y = s * 0.65; this.face.add(b); }
+    this.mouth = new THREE.Mesh(new THREE.TorusGeometry(0.055, 0.016, 6, 14, Math.PI), mouthM); this.mouth.position.set(0, 0.74, 0.305); this.mouth.rotation.z = Math.PI; this.face.add(this.mouth);
+    this.mouthO = new THREE.Mesh(SPHG, mouthM); this.mouthO.scale.set(0.05, 0.065, 0.03); this.mouthO.position.set(0, 0.72, 0.3); this.mouthO.visible = false; this.face.add(this.mouthO);
+    // feet
+    const fm = new THREE.MeshStandardMaterial({ color: new THREE.Color(color).multiplyScalar(0.65), roughness: 0.4 });
+    this.feet = [-1, 1].map(s => { const f = new THREE.Mesh(SPHG, fm); f.scale.set(0.12, 0.075, 0.17); f.position.set(s * 0.17, 0.07, 0.05); f.castShadow = true; this.wob.add(f); return f; });
+    this.footMat = fm;
+    // blindfold
+    this.blindfold = new THREE.Mesh(new THREE.CylinderGeometry(0.44, 0.44, 0.17, 28, 1, true), new THREE.MeshStandardMaterial({ color: 0x2b2250, side: THREE.DoubleSide, roughness: 0.7 }));
+    this.blindfold.scale.set(1.02, 1, 0.93); this.blindfold.position.set(0, 0.96, -0.04); this.blindfold.visible = false; this.wob.add(this.blindfold);
+    const knot = new THREE.Mesh(SPHG, this.blindfold.material); knot.scale.set(0.08, 0.06, 0.05); knot.position.set(0, 0, -0.44); this.blindfold.add(knot);
+    // halo for ghosts
+    this.halo = new THREE.Mesh(new THREE.TorusGeometry(0.22, 0.035, 8, 24).rotateX(Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xfff27a })); this.halo.position.y = 1.55; this.halo.visible = false; this.wob.add(this.halo);
+    this.setHat(hat);
+    // state
+    this.onGround = true; this.coyote = 0; this.jumpReq = false; this.jumpHeld = false; this.crouch = false;
+    this.sq = 1; this.sqv = 0; this.walkPh = 0; this.lastStepPh = 0; this.blinkT = rand(1, 4); this.spinT = 0; this.lookOff = 0;
+    this.role = 'hider'; this.caught = false; this.ghost = false; this.score = 0; this.roundScore = 0; this.timesSeeker = 0; this.catches = 0;
+    this.stamina = 1; this.tired = false; this.cdA = 0; this.cdB = 0; this.disguiseT = 0; this.dashT = 0; this.tauntT = 0; this.sniffT = 0; this.aware = 0; this.inWater = false;
+    this.zone = null; this.prop = null; this.lastSeen = v3();
+    this.ai = { mode: 'idle', path: null, pi: 0, goal: null, t: 0, think: 0, stuckT: 0, stuckN: 0, lastP: v3(), spot: null, lookT: 0, lookBase: 0, fleeT: 0, sayT: rand(3, 9), bravery: rand(0.2, 1) };
+    // dom
+    this.lbl = document.createElement('div'); this.lbl.className = 'lbl'; this.lbl.textContent = name; $('labels').appendChild(this.lbl);
+    this.bub = document.createElement('div'); this.bub.className = 'bub'; this.bub.style.display = 'none'; $('labels').appendChild(this.bub);
+    this.mark = document.createElement('div'); this.mark.className = 'mark'; this.mark.style.display = 'none'; $('labels').appendChild(this.mark);
+    this.bubT = 0; this.markT = 0;
+  }
+  setHat(kind) { if (this.hat) this.wob.remove(this.hat); this.hatKind = kind; this.hat = makeHat(kind, this.color); this.wob.add(this.hat); }
+  setColor(c) { this.color = c; this.mat.color.set(c); this.mat.emissive.set(c).multiplyScalar(0.14); this.footMat.color.set(c).multiplyScalar(0.65); }
+  dispose() { scene.remove(this.root); this.lbl.remove(); this.bub.remove(); this.mark.remove(); }
+  fwd() { return { x: Math.sin(this.yaw), z: Math.cos(this.yaw) }; }
+  reset() {
+    this.caught = false; this.setGhost(false); this.vel.set(0, 0, 0); this.wish.set(0, 0, 0); this.crouch = false; this.height = BEAN_H;
+    this.stamina = 1; this.tired = false; this.cdA = 0; this.cdB = 0; this.disguiseT = 0; this.dashT = 0; this.tauntT = 0; this.sniffT = 0; this.aware = 0;
+    this.roundScore = 0; this.blindfold.visible = false; this.endDisguise(true); this.markT = 0; this.mark.style.display = 'none';
+    Object.assign(this.ai, { mode: 'idle', path: null, goal: null, spot: null, t: 0, stuckT: 0, stuckN: 0, fleeT: 0 });
+  }
+  setGhost(on) {
+    this.ghost = on; this.halo.visible = on;
+    this.mat.transparent = on; this.mat.opacity = on ? 0.45 : 1; this.mat.depthWrite = !on; if (on) this.mat.emissive.set(0x8888aa); else this.mat.emissive.set(this.color).multiplyScalar(0.14); this.mat.needsUpdate = true;
+    this.body.castShadow = !on; this.feet.forEach(f => f.visible = !on);
+    if (this.hat) this.hat.visible = true;
+  }
+  startDisguise(kind) { if (!this.prop) { this.propKind = kind || pick(PROP_KINDS); this.prop = makeProp(this.propKind); this.root.add(this.prop); } this.prop.visible = true; this.wob.visible = false; }
+  endDisguise(silent) { if (this.prop) { this.root.remove(this.prop); this.prop = null; } this.wob.visible = true; if (!silent && this.disguiseT > 0) { } this.disguiseT = 0; }
+  say(text, dur = 2.6, fromNet) { if (G.inGame && isClient() && !fromNet) return; if (G.inGame) netEv({ e: 'say', id: this.id, tx: text, d: dur }); this.bub.textContent = text; this.bub.style.display = 'block'; this.bub.style.animation = 'none'; void this.bub.offsetWidth; this.bub.style.animation = ''; this.bubT = dur; }
+  showMark(t, dur = 1.5, fromNet) { if (G.inGame && isClient() && !fromNet) return; if (G.inGame) netEv({ e: 'mk', id: this.id, tx: t, d: dur }); this.mark.textContent = t; this.markT = dur; this.mark.style.display = 'block'; }
+  physics(dt, speed) {
+    const accel = this.onGround ? 14 : 5;
+    this.vel.x = damp(this.vel.x, this.wish.x * speed, accel, dt);
+    this.vel.z = damp(this.vel.z, this.wish.z * speed, accel, dt);
+    let onLadder = false;
+    const wl = this.wish.x * this.wish.x + this.wish.z * this.wish.z;
+    for (const l of ladders) if (this.pos.x > l.minX && this.pos.x < l.maxX && this.pos.z > l.minZ && this.pos.z < l.maxZ && this.pos.y < l.top && wl > 0.1) { onLadder = true; this.vel.y = 4.2; }
+    if (!onLadder) this.vel.y -= GRAV * dt;
+    this.coyote -= dt;
+    if (this.jumpReq && (this.onGround || this.coyote > 0)) { this.vel.y = JUMP_V; this.onGround = false; this.coyote = 0; this.sqv += 4; this.crouch = false; this.onJump(); }
+    this.jumpReq = false;
+    const prevY = this.pos.y;
+    this.pos.x += this.vel.x * dt; this.pos.z += this.vel.z * dt; this.pos.y += this.vel.y * dt;
+    if (this.vel.y > 0) for (const c of colliders) { if (!c.solid) continue; if (c.minY >= prevY + this.height - 0.05 && this.pos.y + this.height > c.minY && this.pos.x > c.minX - 0.3 && this.pos.x < c.maxX + 0.3 && this.pos.z > c.minZ - 0.3 && this.pos.z < c.maxZ + 0.3) { this.pos.y = c.minY - this.height; this.vel.y = 0; } }
+    resolveXZ(this);
+    this.pos.x = clamp(this.pos.x, -BOUND, BOUND); this.pos.z = clamp(this.pos.z, -BOUND, BOUND);
+    const wasGround = this.onGround;
+    const g = groundHeight(this.pos.x, this.pos.z, this.pos.y);
+    const gt = gType, tr = gTramp;
+    if (this.pos.y <= g || (wasGround && this.vel.y <= 0 && this.pos.y - g < 0.35 && !onLadder)) {
+      const impact = -this.vel.y;
+      this.pos.y = g; this.vel.y = 0; this.onGround = true; this.coyote = 0.12;
+      if (gt === 'tramp' && tr) {
+        this.vel.y = clamp(Math.max(impact * 0.9, 9) + (this.jumpHeld ? 5 : 0), 9, 19); this.onGround = false; tr.dipV -= 4 + impact * 0.3; this.sqv -= 3; this.onBounce(this.vel.y);
+      } else if (!wasGround && impact > 3) this.onLand(impact);
+    } else this.onGround = false;
+    this.inWater = gt === 'water' && this.pos.y < 0;
+    if (gt === 'ramp' && this.onGround) { this.vel.x += 14 * dt; this.sliding = true; } else this.sliding = false;
+  }
+  onJump() { if (this.isPlayer || near(this.pos, 12)) Snd.jump(volAt(this.pos)); puff(this.pos, 5, 0xffffff, 0.18, 0.8, 0.3); }
+  onLand(impact) { this.sqv -= impact * 0.32; if (impact > 7) puff(this.pos, 8, this.inWater ? 0x9fe3ff : 0xffffff, 0.22, 1.5, 0.3); if (this.isPlayer || near(this.pos, 12)) { Snd.land(Math.min(1, impact / 12) * volAt(this.pos)); if (this.inWater) Snd.splash(volAt(this.pos)); } if (this.isPlayer && impact > 13) shake(0.25); }
+  onBounce(v) { if (near(this.pos, 25)) Snd.bigBoing(volAt(this.pos)); puff(this.pos, 6, 0xffffff, 0.2, 1, 0.2); if (this.isPlayer && v > 15) { confetti(this.pos, 10, CONFETTI_COLS, 4); } }
+  animate(dt, t) {
+    const sp = Math.hypot(this.vel.x, this.vel.z), k = Math.min(sp / 5, 1.2);
+    const target = (this.crouch ? 0.62 : 1) + (this.onGround ? 0 : clamp(this.vel.y * 0.02, -0.12, 0.22));
+    this.sqv += (target - this.sq) * 240 * dt; this.sqv *= Math.exp(-11 * dt); this.sq = clamp(this.sq + this.sqv * dt, 0.4, 1.6);
+    if (this.onGround && sp > 0.4) this.walkPh += dt * (3 + sp * 1.8);
+    const bob = this.onGround ? Math.abs(Math.sin(this.walkPh)) * k * 0.09 : 0;
+    const sy = this.sq * (1 + Math.cos(this.walkPh * 2) * 0.05 * k);
+    const sxz = 1 / Math.sqrt(sy);
+    this.wob.scale.set(sxz, sy, sxz);
+    this.wob.position.y = bob;
+    this.wob.rotation.x = damp(this.wob.rotation.x, this.sliding ? -0.3 : clamp(sp * 0.04, 0, 0.32), 8, dt);
+    this.wob.rotation.z = Math.sin(this.walkPh) * 0.1 * k;
+    for (let i = 0; i < 2; i++) { const ph = this.walkPh + i * Math.PI; this.feet[i].position.z = 0.05 + Math.sin(ph) * 0.15 * Math.min(k, 1); this.feet[i].position.y = 0.07 + Math.max(0, Math.cos(ph)) * 0.08 * Math.min(k, 1); }
+    // blink
+    this.blinkT -= dt; const bl = this.blinkT < 0.12 ? 0.1 : 1; if (this.blinkT < 0) this.blinkT = rand(1.5, 4.5);
+    for (const e of this.eyes) { e.g.scale.y = bl; e.p.position.x = damp(e.p.position.x, this.lookOff * 0.04, 6, dt); }
+    if (this.hat && this.hat.userData.prop) this.hat.userData.prop.rotation.y += dt * (6 + sp * 4);
+    if (this.hat && this.hat.userData.sprout) this.hat.rotation.z = Math.sin(t * 3 + this.walkPh) * 0.15;
+    // spin (taunt / celebrate)
+    let extra = 0; if (this.spinT > 0) { this.spinT -= dt; extra = (1 - Math.max(0, this.spinT) / 0.7) * Math.PI * 2; }
+    this.root.rotation.y = this.yaw + extra;
+    this.mouth.visible = !this.mouthOpen; this.mouthO.visible = !!this.mouthOpen;
+    if (this.ghost) { this.wob.position.y = 0.15 + Math.sin(t * 2.5 + this.yaw) * 0.12; this.wob.rotation.z = Math.sin(t * 1.7) * 0.1; }
+    if (this.prop && this.prop.visible) { this.prop.rotation.y = -extra; this.prop.position.y = Math.abs(Math.sin(this.walkPh)) * 0.08 * k; }
+  }
+}
+
+// ======================================================================
+// GAME STATE
+// ======================================================================
+const HIDE_T = 25, SEEK_T = 100;
+const DIFF = {
+  easy:   { range: 12, fov: 1.5, rate: 1.1, walk: 4.0, chase: 6.0, dashCd: 10, memory: 1.5, tagR: 1.1, hunch: 0, sniffCd: 45, sniffErr: 12, hear: 4, pokeR: 1.6, find: 0.5 },
+  normal: { range: 18, fov: 1.9, rate: 2.0, walk: 5.0, chase: 7.0, dashCd: 7, memory: 2.5, tagR: 1.25, hunch: 0.3, sniffCd: 28, sniffErr: 8, hear: 7.5, pokeR: 1.8, find: 0.8 },
+  hard:   { range: 23, fov: 2.2, rate: 3.0, walk: 5.6, chase: 7.6, dashCd: 5.5, memory: 3.5, tagR: 1.35, hunch: 0.6, sniffCd: 20, sniffErr: 5, hear: 10, pokeR: 2.0, find: 1.0 },
+};
+const BOT_DEFS = [
+  { name: 'Gumdrop', color: '#ff4d6d', hat: 'party' }, { name: 'Sir Jellington', color: '#3fa7ff', hat: 'top' },
+  { name: 'Lil Pinto', color: '#ffb703', hat: 'propeller' }, { name: 'Mr. Wobbles', color: '#7bd142', hat: 'sprout' },
+  { name: 'Princess Pea', color: '#b77dff', hat: 'crown' }, { name: 'Bean Diesel', color: '#ff7b00', hat: 'cap' },
+  { name: 'Mochi', color: '#ffb3d1', hat: 'bow' }, { name: 'Garbanzo', color: '#2ec4b6', hat: 'chef' },
+  { name: 'Jellybelly', color: '#e9ff70', hat: 'none' },
+];
+const COLORS = ['#ff69b4', '#ff4d6d', '#ff9f1c', '#ffd60a', '#80ed99', '#2ec4b6', '#3fa7ff', '#7b5cff', '#c77dff', '#ffffff', '#5a3a2e', '#222244'];
+const HATS = [['none', '🚫'], ['party', '🥳'], ['top', '🎩'], ['propeller', '🚁'], ['crown', '👑'], ['bow', '🎀'], ['sprout', '🌱'], ['cap', '🧢'], ['chef', '👨‍🍳']];
+const LINES = {
+  hide: ["You'll never find me!", "I am one with the bush.", "Shhh... I'm a plant now.", "Is this a good spot? It's a good spot.", "Beans don't sweat... right?", "Hehe, so sneaky!", "Nobody look under here.", "I'm basically invisible."],
+  count: ["1... 2... uh... 7...", "No peeking! (peeks)", "Ready or not...", "I can hear you giggling!", "...19... 20... wait, 18?", "Counting is hard."],
+  search: ["Is that a bean behind the couch?", "Come out, come out, wherever you are!", "I smell jelly...", "Bush, I'm watching you.", "Hmm... suspicious box.", "Here, beany beany!", "I know you're here somewhere..."],
+  spot: ["THERE YOU ARE!", "I SEE YOU!", "Bean spotted!", "Gotcha... almost!", "Ah-HA!"],
+  flee: ["AAAAH!", "Nope nope nope!", "Run, bean, run!", "Not today!", "Eek!"],
+  caught: ["Aww, beans!", "I was so close!", "Boo... I'm a ghost now.", "Rematch!", "Tell my jelly I love them.", "How?!"],
+  catch: ["Tag! You're out!", "Found one!", "Too easy!", "Beaned!"],
+  taunt: ["Nyah nyah!", "Over heeere!", "Can't catch me!", "Beep beep!", "Yoo-hoo!"],
+  ghost: ["Wooo~ I'm a ghost", "Spooky bean hours.", "Go left! No, right!", "Being dead is chill."],
+  lost: ["Where'd they go?!", "Hmph. Lost 'em.", "They were JUST here!"],
+  fooled: ["Just a box... probably.", "Nice plant.", "Nothing to see here."],
+};
+const G = {
+  state: 'menu', round: 0, totalRounds: 5, difficulty: 'normal', botCount: 6, beans: [], player: null, seeker: null, lastSeeker: null,
+  timer: 0, t: 0, paused: false, settings: { name: 'You', color: '#ff69b4', hat: 'party' }, hidersVer: 0, rl: null, endT: 0, forceSeeker: null,
+  trauma: 0, sniffTarget: null, feed: [],
+};
+G.debug = new URLSearchParams(location.search).has('debug');
+if (G.debug) window.__bh = G;
+const isClient = () => !!(G.net && G.net.role === 'client');
+const isHost = () => !!(G.net && G.net.role === 'host');
+function netEv(ev) { if (isHost()) Net.broadcast({ t: 'ev', ...ev }); }
+function beanById(id) { for (const b of G.beans) if (b.id === id) return b; return null; }
+const esc = s => String(s).replace(/[&<>"'`]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
+const hiders = () => G.beans.filter(b => b !== G.seeker);
+const aliveHiders = () => G.beans.filter(b => b !== G.seeker && !b.caught);
+function near(p, r) { return camera.position.distanceTo(p) < r + 8; }
+function volAt(p) { const d = G.player ? G.player.pos.distanceTo(p) : 10; return clamp(1.2 - d / 30, 0.05, 1); }
+function panAt(p) { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; const yaw = CAM.yaw; const rx = -Math.cos(yaw), rz = Math.sin(yaw); const d = Math.hypot(dx, dz) || 1; return clamp((dx * rx + dz * rz) / d, -1, 1) * 0.8; }
+function shake(a) { G.trauma = Math.min(1, G.trauma + a); }
+
+// ---------- HUD helpers ----------
+function bigText(text, sub = '', rainbow = false) {
+  const b = $('bigText'), s = $('subText');
+  b.innerHTML = text; s.innerHTML = sub;
+  for (const el of [b, s]) { el.className = ''; void el.offsetWidth; }
+  b.className = rainbow ? 'rainbow' : 'bigIn'; s.className = 'bigIn';
+}
+function popup(text, color = '#ffd23f') { const d = document.createElement('div'); d.className = 'pop'; d.textContent = text; d.style.color = color; document.body.appendChild(d); setTimeout(() => d.remove(), 1500); }
+function feed(text) { const f = $('feed'); if (!f) return; const d = document.createElement('div'); d.className = 'feedItem'; d.innerHTML = text; f.prepend(d); setTimeout(() => d.remove(), 5000); while (f.children.length > 4) f.lastChild.remove(); }
+function addScore(b, pts, label) { if (isClient()) return; b.score += pts; b.roundScore += pts; if (b.isPlayer && label) popup(`+${pts} ${label}`); else if (b.remote && label) netEv({ e: 'pop', id: b.id, tx: `+${pts} ${label}` }); }
+
+// ---------- roster ----------
+function buildRoster(menuMode) {
+  G.beans.forEach(b => b.dispose()); G.beans = [];
+  const s = G.settings;
+  const p = new Bean({ id: 0, name: s.name || 'You', color: s.color, hat: s.hat, isPlayer: true });
+  G.player = p; G.beans.push(p);
+  const defs = shuffle(BOT_DEFS.slice()).filter(d => d.color.toLowerCase() !== s.color.toLowerCase()).slice(0, menuMode ? 6 : G.botCount);
+  defs.forEach((d, i) => G.beans.push(new Bean({ ...d, id: i + 1 })));
+}
+
+// ======================================================================
+// ABILITIES
+// ======================================================================
+function doTaunt(b) {
+  if (b.cdB > 0 || b.caught || b.role !== 'hider' || G.state !== 'seeking') return;
+  b.cdB = 10; b.tauntT = 2.5;
+  const k = randi(0, 3);
+  fxTaunt(b, k); netEv({ e: 'taunt', id: b.id, k });
+  b.say(pick(LINES.taunt), 2); b.showMark('📣', 2.5);
+  addScore(b, 50, 'TAUNT!');
+  if (G.seeker && !G.seeker.human) seekerHear(G.seeker, b.pos, 2.5, true);
+}
+function fxTaunt(b, k) {
+  if (!b) return;
+  b.tauntT = 2.5; b.spinT = 0.7; if (!b.remote) b.jumpReq = true;
+  if (b.prop) { b.endDisguise(); puff(b.pos, 10, 0xffffff, 0.4); }
+  Snd.taunt(k, b.isPlayer ? 0 : panAt(b.pos), b.isPlayer ? 1 : clamp(1.3 - camera.position.distanceTo(b.pos) / 45, 0.25, 1));
+  confetti(v3(b.pos.x, b.pos.y + 1.4, b.pos.z), 14, [b.color, 0xffffff], 4);
+  if (!b.isPlayer) feed(`<b style="color:${b.color}">${esc(b.name)}</b> taunted! 📣`);
+}
+function doDisguise(b) {
+  if (b.cdA > 0 || b.caught || b.role !== 'hider' || !(G.state === 'seeking' || G.state === 'hiding')) return;
+  b.cdA = 18;
+  const k = pick(PROP_KINDS);
+  fxDisguise(b, k); netEv({ e: 'disg', id: b.id, k });
+}
+function fxDisguise(b, k) {
+  if (!b) return;
+  b.disguiseT = 7; b.crouch = false; b.startDisguise(k);
+  puff(v3(b.pos.x, b.pos.y + 0.3, b.pos.z), 14, 0xffffff, 0.45, 1.6, 0.8);
+  Snd.poof(b.isPlayer ? 0 : panAt(b.pos), b.isPlayer ? 1 : volAt(b.pos));
+}
+function doSniff(b) {
+  if (b.cdA > 0 || b.role !== 'seeker' || G.state !== 'seeking') return;
+  b.cdA = 15; b.say('*sniff sniff*', 1.5);
+  let best = null, bd = 1e9; for (const h of aliveHiders()) { const d = dist2D(h.pos, b.pos); if (d < bd) { bd = d; best = h; } }
+  fxSniff(b, best); netEv({ e: 'sniff', id: b.id, tg: best ? best.id : -1 });
+}
+function fxSniff(b, best) {
+  if (!b) return;
+  b.sniffT = 4.5;
+  if (b.isPlayer) { Snd.sniff(); G.sniffTarget = best; }
+  if (best) puff(v3(b.pos.x, b.pos.y + 1, b.pos.z), 8, 0xffe066, 0.25, 1, 0.5);
+}
+function doDash(b) {
+  if (b.cdB > 0 || b.role !== 'seeker' || G.state !== 'seeking') return;
+  b.cdB = 6; fxDash(b); netEv({ e: 'dash', id: b.id });
+}
+function fxDash(b) {
+  if (!b) return;
+  b.dashT = 0.45; if (b.isPlayer || near(b.pos, 15)) Snd.whoosh(b.isPlayer ? 1 : volAt(b.pos)); puff(b.pos, 10, 0xffffff, 0.3, 1.5, 0.3);
+  if (b.isPlayer) { const f = { x: Math.sin(CAM.yaw), z: Math.cos(CAM.yaw) }; if (b.wish.lengthSq() < 0.01) b.wish.set(f.x, 0, f.z); shake(0.15); }
+}
+// local "lunge" juice for a tag attempt (also used by clients before the host confirms)
+function tagLunge(s) {
+  const f = { x: Math.sin(CAM.yaw), z: Math.cos(CAM.yaw) };
+  s.yaw = CAM.yaw; s.vel.x += f.x * 6; s.vel.z += f.z * 6; s.sqv += 3;
+}
+function tryTag(s) {
+  if (s.role !== 'seeker' || G.state !== 'seeking' || s.tagCd > 0 || s.caught) return;
+  s.tagCd = 0.55;
+  const yaw = s.isPlayer ? CAM.yaw : s.remote ? s.camYaw : s.yaw;
+  const f = { x: Math.sin(yaw), z: Math.cos(yaw) };
+  if (s.isPlayer) tagLunge(s);
+  let best = null, bd = 1e9;
+  for (const h of aliveHiders()) {
+    const dx = h.pos.x - s.pos.x, dz = h.pos.z - s.pos.z, d = Math.hypot(dx, dz);
+    const reach = s.remote ? 2.9 : 2.5; // a little latency forgiveness for remote seekers
+    if (Math.abs(h.pos.y - s.pos.y) > 1.6 || d > reach) continue;
+    if (d > 1.3 && (dx * f.x + dz * f.z) / d < 0.3) continue;
+    if (segBlocked(s.pos.x, s.pos.y + 0.6, s.pos.z, h.pos.x, h.pos.y + 0.5, h.pos.z)) continue;
+    if (d < bd) { bd = d; best = h; }
+  }
+  if (best) catchBean(best, s); else if (s.isPlayer) { Snd.whiff(); s.mouthOpen = true; setTimeout(() => s.mouthOpen = false, 300); }
+}
+function catchBean(h, s) {
+  if (h.caught) return;
+  if (G.debug) (G.catchLog = G.catchLog || []).push(`${G.timer.toFixed(0)}s ${h.name} by ${s.name} mode=${s.ai.mode} zone=${h.zone ? h.zone.type : 'open'} crouch=${h.crouch} hmode=${h.ai.mode}`);
+  s.catches++;
+  addScore(s, 100, 'GOTCHA!');
+  fxCatch(h, s); netEv({ e: 'catch', h: h.id, s: s.id });
+  h.say(pick(LINES.caught), 2.5); setTimeout(() => s.say(pick(LINES.catch), 2), 400);
+  h.showMark('👻', 1.5);
+  if (s.ai.target === h) s.ai.mode = 'look', s.ai.lookT = 1.2, s.ai.target = null, s.ai.path = null;
+}
+function fxCatch(h, s) {
+  if (!h || !s || (h.caught && isClient())) return;
+  h.caught = true; h.endDisguise(); h.crouch = false; h.aware = 0;
+  h.setGhost(true); if (!h.remote) h.vel.set(0, 6, 0);
+  const p = v3(h.pos.x, h.pos.y + 0.9, h.pos.z);
+  confetti(p, 90, [h.color, s.color, 0xffffff, 0xffd60a], 8); puff(p, 14, 0xffffff, 0.45, 2, 1);
+  const involved = h.isPlayer || s.isPlayer;
+  Snd.pop(involved ? 1 : volAt(h.pos), involved ? 0 : panAt(h.pos));
+  if (involved) shake(0.55);
+  feed(`<b style="color:${s.color}">${s.isPlayer ? 'You' : esc(s.name)}</b> found <b style="color:${h.color}">${h.isPlayer ? 'you' : esc(h.name)}</b>!`);
+  if (h.isPlayer) { Snd.sad(); bigText('CAUGHT!', G.net ? 'You\'re a ghost now 👻 Fly around (Space/C) and watch the hunt!' : 'You\'re a ghost now 👻 Fly around (Space/C) &middot; hold <b>T</b> to fast-forward'); }
+  if (s.isPlayer) { Snd.ding(); }
+  G.hidersVer++;
+}
+
+// ======================================================================
+// AI
+// ======================================================================
+function setGoal(b, x, z) { b.ai.goal = { x, z }; b.ai.path = findPath(b.pos.x, b.pos.z, x, z); b.ai.pi = 0; b.ai.stuckT = 0; b.ai.stuckN = 0; return !!b.ai.path; }
+function followPath(b) {
+  const ai = b.ai; if (!ai.path) { b.wish.set(0, 0, 0); return 'none'; }
+  const wp = ai.path[ai.pi]; const dx = wp.x - b.pos.x, dz = wp.z - b.pos.z, d = Math.hypot(dx, dz);
+  const last = ai.pi === ai.path.length - 1;
+  if (d < (last ? 0.3 : 0.55)) { ai.pi++; if (ai.pi >= ai.path.length) { ai.path = null; b.wish.set(0, 0, 0); return 'arrived'; } return 'moving'; }
+  const m = last ? Math.min(1, d / 0.8 + 0.25) : 1;
+  b.wish.set(dx / d * m, 0, dz / d * m);
+  return 'moving';
+}
+function faceMove(b, dt, rate = 10) { if (b.wish.lengthSq() > 0.01) b.yaw += angDiff(b.yaw, Math.atan2(b.wish.x, b.wish.z)) * Math.min(1, rate * dt); }
+function stuckCheck(b, dt) {
+  const ai = b.ai; ai.stuckT += dt;
+  if (ai.stuckT > 0.8) {
+    const moved = dist2D(b.pos, ai.lastP); ai.lastP.copy(b.pos); ai.stuckT = 0;
+    if (b.wish.lengthSq() > 0.1 && moved < 0.3) {
+      ai.stuckN++; b.jumpReq = true;
+      if (ai.stuckN >= 2 && ai.goal) { ai.path = findPath(b.pos.x, b.pos.z, ai.goal.x, ai.goal.z); ai.pi = 0; }
+      if (ai.stuckN >= 4) { ai.path = null; ai.stuckN = 0; return true; }
+    } else ai.stuckN = 0;
+  }
+  return false;
+}
+function chooseHideSpot(b, awayFrom) {
+  const taken = new Set(G.beans.filter(o => o !== b && o.ai.spot).map(o => o.ai.spot));
+  let best = null, bs = -1e9;
+  for (const s of spots) {
+    if (taken.has(s)) continue;
+    const d = Math.hypot(s.x - b.pos.x, s.z - b.pos.z);
+    let sc = s.q * 3 + rand(0, 2.2) - d * 0.03;
+    if (d > 45) sc -= 3;
+    if (awayFrom) { const ds = Math.hypot(s.x - awayFrom.x, s.z - awayFrom.z); sc += Math.min(ds, 25) * 0.15; if (ds < 9) sc -= 5; if (d > 26) sc -= 4; }
+    else { const dp = Math.hypot(s.x - PLAZA.x, s.z - PLAZA.z); if (dp < 8) sc -= 2; }
+    if (sc > bs) { bs = sc; best = s; }
+  }
+  if (!best) return false;
+  b.ai.spot = best;
+  return setGoal(b, best.x, best.z);
+}
+function botHider(b, dt) {
+  const ai = b.ai, S = G.seeker;
+  b.ai.sayT -= dt;
+  if (ai.mode === 'toSpot' || ai.mode === 'flee') {
+    const sprint = ai.mode === 'flee' && b.stamina > 0.05 && !b.tired;
+    const spd = (sprint ? 7.6 : 5.0) * (b.inWater ? 0.6 : 1) * (b.disguiseT > 0 ? 0.45 : 1);
+    b.crouch = false;
+    if (sprint) { b.stamina = Math.max(0, b.stamina - dt * 0.28); if (b.stamina <= 0.02) b.tired = true; }
+    const r = followPath(b); faceMove(b, dt);
+    if (stuckCheck(b, dt) || r === 'none') { if (!chooseHideSpot(b, ai.mode === 'flee' ? S.pos : null)) b.wish.set(0, 0, 0); }
+    if (r === 'arrived') { ai.mode = 'hidden'; b.crouch = true; ai.lookBase = rand(0, 6.28); if (ai.sayT < 0 && Math.random() < 0.5) { b.say(pick(LINES.hide)); ai.sayT = rand(8, 16); } }
+    b.physics(dt, spd);
+    return;
+  }
+  if (ai.mode === 'hidden') {
+    b.wish.set(0, 0, 0); b.crouch = b.disguiseT <= 0;
+    b.yaw += angDiff(b.yaw, ai.lookBase + Math.sin(G.t * 0.5 + b.score) * 0.6) * Math.min(1, 2 * dt);
+    if (G.state === 'seeking' && S) {
+      const d = dist2D(b.pos, S.pos);
+      ai.think -= dt;
+      const chased = !S.human && S.ai.mode === 'chase' && S.ai.target === b;
+      if (chased && ai.think < 0) { startFlee(b); return; }
+      if (ai.think < 0) {
+        ai.think = 0.4;
+        if (S.human) {
+          const losOK = d < 8 && !segBlocked(S.pos.x, S.pos.y + 1, S.pos.z, b.pos.x, b.pos.y + 0.6, b.pos.z);
+          if (losOK) {
+            const f = { x: Math.sin(S.camYaw), z: Math.cos(S.camYaw) }; const dot = ((b.pos.x - S.pos.x) * f.x + (b.pos.z - S.pos.z) * f.z) / (d || 1);
+            if (b.disguiseT <= 0 && b.cdA <= 0 && d > 3 && Math.random() < 0.25) doDisguise(b);
+            else if (b.disguiseT <= 0 && ((d < 3.2 && Math.random() < 0.55) || (dot > 0.8 && Math.random() < 0.18 * (1.3 - ai.bravery)))) { startFlee(b); return; }
+          }
+        } else if (d < 7 && b.disguiseT <= 0 && b.cdA <= 0 && Math.random() < 0.3) doDisguise(b);
+        if (d > 16 && b.cdB <= 0 && Math.random() < 0.035 * ai.bravery) doTaunt(b);
+        if (ai.sayT < 0 && Math.random() < 0.08) { b.say(pick(LINES.hide)); ai.sayT = rand(12, 24); }
+      }
+    }
+    b.physics(dt, 0);
+  }
+}
+function startFlee(b) {
+  const S = G.seeker; b.ai.mode = 'flee'; b.ai.think = 0.5;
+  if (b.disguiseT > 0) { b.endDisguise(); puff(b.pos, 10, 0xffffff, 0.4); }
+  b.crouch = false; b.jumpReq = true; b.sqv += 3;
+  b.say(pick(LINES.flee), 1.6); b.showMark('❗', 1);
+  if (!chooseHideSpot(b, S.pos)) { const dx = b.pos.x - S.pos.x, dz = b.pos.z - S.pos.z, d = Math.hypot(dx, dz) || 1; setGoal(b, clamp(b.pos.x + dx / d * 12, -33, 33), clamp(b.pos.z + dz / d * 12, -33, 33)); }
+}
+function visibility(s, h, D) {
+  if (h.caught) return 0;
+  const dx = h.pos.x - s.pos.x, dz = h.pos.z - s.pos.z, d = Math.hypot(dx, dz);
+  if (d > D.range) return 0;
+  const f = s.fwd(); const dot = (dx * f.x + dz * f.z) / (d || 1);
+  if (d > 1.8 && dot < Math.cos(D.fov / 2)) return 0;
+  const ey = s.pos.y + 1.05;
+  if (segBlocked(s.pos.x, ey, s.pos.z, h.pos.x, h.pos.y + h.height * 0.9, h.pos.z) && segBlocked(s.pos.x, ey, s.pos.z, h.pos.x, h.pos.y + h.height * 0.4, h.pos.z)) return 0;
+  let v = 1 - (d / D.range) * 0.6;
+  v *= concealment(h);
+  if (h.disguiseT <= 0) v *= Math.pow(0.35, bushesBetween(s.pos, h.pos, h.zone && h.zone.bush));
+  const sp = Math.hypot(h.vel.x, h.vel.z); if (sp > 6) v *= 1.6; else if (sp > 1) v *= 1.15;
+  if (h.tauntT > 0) v = Math.max(v, 1);
+  return v;
+}
+function concealment(h) {
+  if (h.disguiseT > 0) return Math.hypot(h.vel.x, h.vel.z) > 0.6 ? 0.4 : 0.05;
+  const z = h.zone;
+  if (z) { if (z.type === 'bush') return h.crouch ? 0.1 : 0.35; if (z.type === 'box') return h.crouch ? 0.08 : 0.5; if (z.type === 'under') return h.crouch ? 0.4 : 0.6; }
+  return h.crouch ? 0.7 : 1;
+}
+function seekerHear(s, p, err, loud) {
+  if (s.ai.mode === 'chase') return;
+  const d = dist2D(s.pos, p); if (!loud && (d > DIFF[G.difficulty].hear || (s.ai.hearCd || 0) > G.t)) return;
+  s.ai.hearCd = G.t + 1.2;
+  setGoal(s, clamp(p.x + rand(-err, err), -34, 34), clamp(p.z + rand(-err, err), -34, 34));
+  s.ai.mode = 'investigate'; s.ai.focus = { x: p.x, z: p.z, t: 12 };
+  s.showMark('❓', 1.2);
+  if (Math.random() < 0.6) s.say(loud ? pick(["I heard that!", "Who said that?!", "Oho! Over there!"]) : pick(["What was that?", "Hmm? Footsteps..."]), 1.8);
+}
+function chooseSearch(s, D) {
+  const ai = s.ai; ai.visited = ai.visited || new Map();
+  if (Math.random() < 0.15) { const p = randomFreePoint(); setGoal(s, p.x, p.z); ai.curSpot = null; return; }
+  const alive = aliveHiders();
+  let best = null, bs = -1e9;
+  for (const sp of spots) {
+    const d = Math.hypot(sp.x - s.pos.x, sp.z - s.pos.z);
+    let sc = sp.q * 0.8 + rand(0, 1) - d / 25;
+    const vt = ai.visited.get(sp); if (vt !== undefined && G.t - vt < 30) sc -= 3;
+    if (alive.some(h => Math.hypot(h.pos.x - sp.x, h.pos.z - sp.z) < 2.5)) sc += D.hunch;
+    if (ai.focus && ai.focus.t > 0 && Math.hypot(sp.x - ai.focus.x, sp.z - ai.focus.z) < 10) sc += 1.2;
+    if (d < 1.5) sc -= 4;
+    if (sc > bs) { bs = sc; best = sp; }
+  }
+  ai.curSpot = best;
+  if (best) {
+    // stop just outside the spot and peek in, instead of walking right into the bean
+    let gx = best.x, gz = best.z;
+    if (best.type !== 'behind' && best.type !== 'shed') { const dx = s.pos.x - best.x, dz = s.pos.z - best.z, d = Math.hypot(dx, dz) || 1; gx += dx / d * 1.45; gz += dz / d * 1.45; }
+    if (!setGoal(s, gx, gz)) setGoal(s, best.x, best.z);
+  }
+}
+function seekerPoke(s, D) {
+  for (const h of aliveHiders()) {
+    if (dist2D(h.pos, s.pos) > D.pokeR || Math.abs(h.pos.y - s.pos.y) > 1.5) continue;
+    if (segBlocked(s.pos.x, s.pos.y + 0.7, s.pos.z, h.pos.x, h.pos.y + 0.5, h.pos.z)) continue;
+    if (h.zone && h.zone.bush) { h.zone.bush.wigV += 6; }
+    if (h.disguiseT > 0 && Math.hypot(h.vel.x, h.vel.z) < 0.5 && Math.random() < 0.5) { s.say(pick(LINES.fooled), 2); continue; }
+    // well-hidden beans might survive a poke!
+    const c = concealment(h); const chance = c >= 0.7 ? 1 : clamp((0.45 + c) * D.find, 0.2, 1);
+    if (Math.random() > chance) { if (Math.random() < 0.6) s.say(pick(["Hmm... just leaves.", "Nope, nobody here.", "I could've sworn...", "Empty. Weird."]), 2); if (!h.human && Math.random() < 0.5) setTimeout(() => !h.caught && h.say(pick(["Phew...", "(holds breath)", "Hehehe"]), 1.6), 900); if (h.human) addScore(h, 25, 'PHEW!'); continue; }
+    h.aware = 1; startChase(s, h); return true;
+  }
+  return false;
+}
+function startChase(s, h) {
+  const ai = s.ai; ai.mode = 'chase'; ai.target = h; ai.lostT = 0; ai.repath = 0; h.lastSeen.copy(h.pos); ai.wasSpotted = true;
+  s.say(pick(LINES.spot), 1.6); s.showMark('❗', 1.5); s.jumpReq = true;
+  fxSpot(s, h); netEv({ e: 'spot', s: s.id, h: h.id });
+}
+function fxSpot(s, h) {
+  if (!s || !h) return;
+  s.sqv += 3;
+  Snd.alarm(h.isPlayer ? 0 : panAt(s.pos), h.isPlayer ? 1 : volAt(s.pos) * 0.7);
+  if (h.isPlayer) { shake(0.3); bigText('<span style="color:#ff4d6d">SPOTTED!</span>', 'RUN! Break line of sight!'); }
+}
+function seekerAI(s, dt) {
+  const ai = s.ai, D = DIFF[G.difficulty];
+  if (ai.focus) ai.focus.t -= dt;
+  ai.sniffCd = (ai.sniffCd ?? D.sniffCd * 0.6) - dt; ai.dashCd = (ai.dashCd ?? 0) - dt; ai.sayT -= dt;
+  // perception
+  let maxA = 0, spotted = null, sd = 1e9;
+  for (const h of aliveHiders()) {
+    const v = visibility(s, h, D);
+    if (v > 0) { h.aware = Math.min(1.2, h.aware + v * D.rate * dt); } else h.aware = Math.max(0, h.aware - 0.3 * dt);
+    if (h.aware > maxA) maxA = h.aware;
+    const d = dist2D(h.pos, s.pos);
+    if (h.aware >= 1 && d < sd) { sd = d; spotted = h; }
+    if (Math.hypot(h.vel.x, h.vel.z) > 6.5 && h.onGround) seekerHear(s, h.pos, 2, false);
+    if (d < 0.95 && Math.abs(h.pos.y - s.pos.y) < 1.2 && (h.pokeImmune || 0) < G.t) {
+      const c = concealment(h);
+      if (c >= 0.7 || Math.random() < clamp((0.45 + c) * D.find, 0.2, 1)) { catchBean(h, s); return seekerAI(s, 0.0001); }
+      h.pokeImmune = G.t + 4; if (Math.random() < 0.5) s.say(pick(LINES.fooled), 1.8);
+    }
+  }
+  ai.maxAware = maxA;
+  if (spotted && ai.mode !== 'chase') startChase(s, spotted);
+  if (ai.sniffCd <= 0 && ai.mode !== 'chase') {
+    ai.sniffCd = D.sniffCd; let best = null, bd = 1e9; for (const h of aliveHiders()) { const d = dist2D(h.pos, s.pos); if (d < bd) { bd = d; best = h; } }
+    if (best) { s.say('*sniff sniff*', 1.5); if (near(s.pos, 20)) Snd.sniff(); seekerHear(s, best.pos, D.sniffErr, true); }
+  }
+  let speed = D.walk;
+  if (ai.mode === 'idle' || ai.mode === 'search') {
+    ai.mode = 'search';
+    if (!ai.path) chooseSearch(s, D);
+    const r = followPath(s); faceMove(s, dt, 6);
+    if (stuckCheck(s, dt)) chooseSearch(s, D);
+    if (r === 'arrived' || r === 'none') {
+      if (ai.curSpot) ai.visited.set(ai.curSpot, G.t);
+      if (!seekerPoke(s, D)) { ai.mode = 'look'; ai.lookT = rand(0.7, 1.4); ai.lookBase = s.yaw; if (ai.sayT < 0 && Math.random() < 0.35) { s.say(pick(LINES.search)); ai.sayT = rand(6, 12); } }
+    }
+  } else if (ai.mode === 'look') {
+    s.wish.set(0, 0, 0); ai.lookT -= dt; s.yaw = ai.lookBase + Math.sin(ai.lookT * 4) * 1.1;
+    if (ai.lookT <= 0) { ai.mode = 'search'; ai.path = null; }
+  } else if (ai.mode === 'investigate') {
+    const r = followPath(s); faceMove(s, dt, 6); speed = D.walk * 1.15;
+    if (stuckCheck(s, dt)) ai.path = null;
+    if (r !== 'moving') { if (!seekerPoke(s, D)) { ai.mode = 'look'; ai.lookT = rand(1, 1.8); ai.lookBase = s.yaw; } }
+  } else if (ai.mode === 'chase') {
+    const h = ai.target;
+    if (!h || h.caught) { ai.mode = 'look'; ai.lookT = 1; ai.path = null; }
+    else {
+      const d = dist2D(h.pos, s.pos);
+      const sees = d < D.range * 1.15 && !segBlocked(s.pos.x, s.pos.y + 1, s.pos.z, h.pos.x, h.pos.y + h.height * 0.6, h.pos.z) && (h.disguiseT <= 0 || d < 4);
+      speed = D.chase;
+      if (sees) {
+        ai.lostT = 0; h.lastSeen.copy(h.pos); h.aware = 1;
+        if (d < 7 && lineWalkable(s.pos.x, s.pos.z, h.pos.x, h.pos.z)) { s.wish.set((h.pos.x - s.pos.x) / d, 0, (h.pos.z - s.pos.z) / d); ai.path = null; }
+        else { ai.repath -= dt; if (ai.repath <= 0 || !ai.path) { setGoal(s, h.pos.x, h.pos.z); ai.repath = 0.4; } followPath(s); }
+        if (d < 6 && ai.dashCd <= 0) { ai.dashCd = D.dashCd; s.dashT = 0.5; if (near(s.pos, 15)) Snd.whoosh(volAt(s.pos)); puff(s.pos, 8, 0xffffff, 0.3, 1.5, 0.3); }
+        if (d < D.tagR && Math.abs(h.pos.y - s.pos.y) < 1.5) { catchBean(h, s); }
+      } else {
+        ai.lostT += dt;
+        if (!ai.path || ai.lostT < dt * 1.5) setGoal(s, h.lastSeen.x, h.lastSeen.z);
+        const r = followPath(s);
+        if (ai.lostT > D.memory || r !== 'moving') {
+          ai.mode = 'look'; ai.lookT = 1.5; ai.lookBase = s.yaw; ai.focus = { x: h.lastSeen.x, z: h.lastSeen.z, t: 10 }; h.aware = 0.35;
+          s.say(pick(LINES.lost), 1.8); s.showMark('❓', 1.2);
+          addScore(h, 75, 'CLOSE CALL!'); if (!h.human) h.say(pick(["Phew!", "Hehe, lost you!", "Too slow!"]), 1.8);
+          if (h.isPlayer) Snd.ding();
+          ai.target = null;
+        }
+      }
+      faceMove(s, dt, 12);
+    }
+  }
+  if (s.dashT > 0) speed *= 1.9;
+  if (s.inWater) speed *= 0.6;
+  s.physics(dt, speed);
+}
+function ghostBot(b, dt) {
+  const ai = b.ai;
+  ai.t -= dt; if (ai.t <= 0 || !ai.goal) { ai.t = rand(3, 6); const p = randomFreePoint(); ai.goal = { x: lerp(b.pos.x, p.x, 0.4), z: lerp(b.pos.z, p.z, 0.4) }; }
+  const dx = ai.goal.x - b.pos.x, dz = ai.goal.z - b.pos.z, d = Math.hypot(dx, dz);
+  if (d > 0.5) { b.vel.x = damp(b.vel.x, dx / d * 2, 2, dt); b.vel.z = damp(b.vel.z, dz / d * 2, 2, dt); b.yaw += angDiff(b.yaw, Math.atan2(dx, dz)) * dt * 3; } else { b.vel.x *= 0.9; b.vel.z *= 0.9; }
+  b.vel.y = damp(b.vel.y, (1.4 - b.pos.y) * 2, 3, dt);
+  b.pos.addScaledVector(b.vel, dt);
+  ai.sayT -= dt; if (ai.sayT < 0) { ai.sayT = rand(14, 30); if (Math.random() < 0.5) b.say(pick(LINES.ghost)); }
+}
+function menuBot(b, dt) {
+  const ai = b.ai;
+  if (ai.mode === 'idle' || !ai.path) { ai.t -= dt; b.wish.set(0, 0, 0); if (ai.t <= 0) { const p = randomFreePoint(); if (Math.hypot(p.x - PLAZA.x, p.z - PLAZA.z) > 4) { setGoal(b, p.x, p.z); ai.mode = 'walk'; } ai.t = rand(1, 4); } }
+  else { const r = followPath(b); faceMove(b, dt); if (stuckCheck(b, dt) || r !== 'moving') { ai.mode = 'idle'; ai.path = null; if (Math.random() < 0.3) b.jumpReq = true; } }
+  b.physics(dt, 3.5);
+}
+
+// ======================================================================
+// ROUND FLOW
+// ======================================================================
+const spotLight = new THREE.SpotLight(0xfff0b0, 0, 0, 0.3, 0.45, 1.6);
+spotLight.position.set(PLAZA.x, 13, PLAZA.z); scene.add(spotLight); scene.add(spotLight.target);
+const beamMat = new THREE.MeshBasicMaterial({ color: 0xfff2a0, transparent: true, opacity: 0, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide });
+const beam = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 1.1, 13, 32, 1, true), beamMat); beam.position.set(PLAZA.x, 6.5, PLAZA.z); scene.add(beam);
+const ringMat = new THREE.MeshBasicMaterial({ color: 0xfff2a0, transparent: true, opacity: 0, depthWrite: false });
+const spotRing = new THREE.Mesh(new THREE.RingGeometry(0.8, 1.15, 32).rotateX(-Math.PI / 2), ringMat); scene.add(spotRing);
+let lightDim = 0;
+// AI seeker vision cone (drawn on the ground so hiders can read it)
+const visionTex = canvasTex(128, 128, (g, w) => { const gr = g.createRadialGradient(64, 64, 4, 64, 64, 64); gr.addColorStop(0, 'rgba(255,255,255,1)'); gr.addColorStop(0.8, 'rgba(255,255,255,0.7)'); gr.addColorStop(1, 'rgba(255,255,255,0)'); g.fillStyle = gr; g.fillRect(0, 0, w, w); });
+const visionMat = new THREE.MeshBasicMaterial({ color: 0xffe066, transparent: true, opacity: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -2 });
+let visionMesh = null;
+const visionEdgeMat = new THREE.MeshBasicMaterial({ color: 0xffe066, transparent: true, opacity: 0, depthWrite: false, polygonOffset: true, polygonOffsetFactor: -3 });
+function attachVision(s) {
+  if (visionMesh) { visionMesh.parent && visionMesh.parent.remove(visionMesh); visionMesh.geometry.dispose(); }
+  const D = DIFF[G.difficulty];
+  const geo = new THREE.CircleGeometry(D.range * 0.6, 40, -Math.PI / 2 - D.fov / 2, D.fov); geo.rotateX(-Math.PI / 2);
+  visionMesh = new THREE.Mesh(geo, visionMat); visionMesh.position.y = 0.09; visionMesh.renderOrder = 2; s.root.add(visionMesh);
+  const edge = new THREE.RingGeometry(D.range * 0.6 - 0.35, D.range * 0.6, 40, 1, -Math.PI / 2 - D.fov / 2, D.fov); edge.rotateX(-Math.PI / 2);
+  const em = new THREE.Mesh(edge, visionEdgeMat); em.position.y = 0.005; em.renderOrder = 3; visionMesh.add(em);
+  for (const sgn of [-1, 1]) { const a = sgn * D.fov / 2, L = D.range * 0.6; const st = new THREE.Mesh(new THREE.PlaneGeometry(0.22, L).rotateX(-Math.PI / 2), visionEdgeMat); st.position.set(Math.sin(a) * L / 2, 0.005, Math.cos(a) * L / 2); st.rotation.y = a; st.renderOrder = 3; visionMesh.add(st); }
+}
+function updateVision(dt) {
+  const s = G.seeker, show = s && !s.isPlayer && G.state === 'seeking' && G.player.role === 'hider' && !s.caught;
+  visionMat.opacity = damp(visionMat.opacity, show ? (s.ai.mode === 'chase' ? 0.5 : 0.36) : 0, 5, dt);
+  visionEdgeMat.opacity = Math.min(1, visionMat.opacity * 2.2); visionEdgeMat.color.copy(visionMat.color);
+  visionMat.color.lerp(new THREE.Color(s && s.ai.mode === 'chase' ? 0xff2a2a : (s && s.ai.maxAware > 0.3 ? 0xff9a30 : 0xffe14d)), 1 - Math.exp(-6 * dt));
+  if (visionMesh) { visionMesh.visible = visionMat.opacity > 0.01; visionMesh.position.y = 0.09 - (s ? s.pos.y - groundHeight(s.pos.x, s.pos.z, s.pos.y) : 0); }
+}
+
+function startGame() {
+  Snd.init();
+  buildRoster(false);
+  G.round = 0; G.lastSeeker = null; G.inGame = true;
+  $('menu').classList.add('hidden');
+  nextRound();
+}
+function nextRound() { // host / single-player: decide the round, then apply it everywhere
+  let sel;
+  if (typeof G.forceSeeker === 'number' && beanById(G.forceSeeker)) sel = beanById(G.forceSeeker);
+  else if (G.forceSeeker === 'player') sel = G.player; else if (G.forceSeeker === 'bot') sel = pick(G.beans.filter(b => !b.human));
+  else {
+    const pool = G.beans.length > 1 ? G.beans.filter(b => b !== G.lastSeeker) : G.beans; const w = pool.map(b => 1 / (1 + b.timesSeeker * 2.5)); let r = Math.random() * w.reduce((a, b) => a + b, 0);
+    sel = pool[pool.length - 1]; for (let i = 0; i < pool.length; i++) { r -= w[i]; if (r <= 0) { sel = pool[i]; break; } }
+  }
+  const n = G.beans.length, target = G.beans.indexOf(sel), start = randi(0, n - 1);
+  const hops = n * 2 + ((target - start + n) % n) + (n < 5 ? n : 0);
+  if (isHost()) G.beans.forEach(b => { b.tp++; b.nb.length = 0; });
+  roundSetup(G.round + 1, sel, start, hops);
+  netEv({ e: 'round', r: G.round, sk: sel.id, st: start, hp: hops, tps: G.beans.map(b => [b.id, b.tp]) });
+}
+function roundSetup(r, sel, start, hops) {
+  G.round = r;
+  $('scoreboard').classList.add('hidden');
+  G.beans.forEach(b => { b.reset(); b.nb.length = 0; });
+  const n = G.beans.length;
+  G.beans.forEach((b, i) => { const a = i / n * Math.PI * 2; b.pos.set(PLAZA.x + Math.cos(a) * 3.4, 0.05, PLAZA.z + Math.sin(a) * 3.4); b.yaw = Math.atan2(Math.cos(a), Math.sin(a)); b.role = 'hider'; });
+  G.seeker = sel; sel.timesSeeker++; G.lastSeeker = sel;
+  G.rl = { i: 0, hops, idx: start, next: 0.6, t: 0, done: false, doneT: 0 };
+  G.state = 'roulette'; G.hidersVer++; G.sniffTarget = null;
+  CAM.mode = 'roulette'; CAM.orbitA = rand(0, 6.28);
+  $('hud').classList.add('hidden');
+  bigText(`ROUND ${G.round}`, 'Who will be the seeker...?');
+  Snd.intensity = 0;
+}
+function updateRoulette(dt) {
+  const R = G.rl; R.t += dt;
+  lightDim = damp(lightDim, 1, 3, dt);
+  const cur = G.beans[R.idx];
+  if (!R.done && R.t >= R.next) {
+    R.idx = (R.idx + 1) % G.beans.length; R.i++;
+    const b = G.beans[R.idx]; b.vel.y = 4; b.onGround = false; b.sqv += 2.5;
+    Snd.tick(R.i * 25);
+    R.next += 0.06 + 0.55 * Math.pow(R.i / R.hops, 3);
+    if (R.i >= R.hops) { R.done = true; R.doneT = 0; reveal(); }
+  }
+  const b = G.beans[R.idx];
+  spotLight.target.position.lerp(b.pos, 1 - Math.exp(-25 * dt));
+  spotLight.position.set(spotLight.target.position.x, 13, spotLight.target.position.z);
+  spotLight.intensity = damp(spotLight.intensity, 500, 6, dt);
+  beam.position.set(spotLight.target.position.x, 6.5, spotLight.target.position.z); beamMat.opacity = damp(beamMat.opacity, 0.07, 5, dt);
+  spotRing.position.set(spotLight.target.position.x, 0.08, spotLight.target.position.z); ringMat.opacity = beamMat.opacity * 3;
+  spotRing.scale.setScalar(1 + Math.sin(G.t * 10) * 0.08);
+  G.beans.forEach(o => { o.wish.set(0, 0, 0); o.physics(dt, 0); });
+  if (R.done) {
+    R.doneT += dt;
+    if (R.doneT > 0.4 && R.doneT < 2.6 && Math.random() < dt * 6) G.seeker.jumpReq = true;
+    if (R.doneT > 3.0 && !isClient()) startHiding();
+  }
+}
+function reveal() {
+  const s = G.seeker;
+  Snd.ding(); setTimeout(() => Snd.fanfare(), 200);
+  confetti(v3(s.pos.x, s.pos.y + 1.5, s.pos.z), 140, CONFETTI_COLS, 9);
+  s.spinT = 0.7; s.jumpReq = true; s.mouthOpen = true; setTimeout(() => s.mouthOpen = false, 1200);
+  if (s.isPlayer) bigText('YOU ARE THE SEEKER!', 'Count to 25... then find every bean! 🔦', true);
+  else bigText(`<span style="color:${s.color}">${esc(s.name.toUpperCase())}</span><br>IS THE SEEKER!`, 'You\'re a hider — RUN AND HIDE! 🏃', true);
+  if (!isClient()) setTimeout(() => G.beans.forEach(b => { if (b !== s && !b.human && Math.random() < 0.5) b.say(pick(['Run!!', 'Eep!', 'Scatter!', 'Bye!!'])), b.mouthOpen = true; }), 500);
+  shake(0.3);
+}
+function startHiding() {
+  G.state = 'hiding'; G.timer = HIDE_T; G.lastBeep = 99;
+  netEv({ e: 'hide' });
+  const s = G.seeker;
+  s.role = 'seeker'; s.blindfold.visible = true; s.crouch = false;
+  G.beans.forEach(b => { b.mouthOpen = false; if (b !== s) { b.role = 'hider'; if (!b.human) { b.ai.mode = 'toSpot'; b.ai.spot = null; } } });
+  if (!isClient()) G.beans.filter(b => b !== s && !b.human).forEach(b => chooseHideSpot(b, null));
+  if (!s.remote) s.yaw = Math.atan2(PLAZA.x - s.pos.x, PLAZA.z - s.pos.z) + Math.PI;
+  CAM.mode = 'play'; CAM.yaw = G.player.yaw; CAM.pitch = 0.35;
+  $('hud').classList.remove('hidden');
+  buildAbilities();
+  if (s.isPlayer) { $('bigText').className = ''; $('subText').className = ''; $('blindfold').classList.remove('hidden'); $('bfLine').textContent = G.net ? 'No peeking! 🙈' : 'Hold T to count faster'; }
+  else { s.say(pick(LINES.count), 3); bigText('HIDE!', `${HIDE_T} seconds — find a sneaky spot!`); }
+  s.ai.mode = 'idle'; s.ai.path = null; s.ai.sniffCd = undefined; s.ai.dashCd = 0; s.ai.visited = new Map(); s.ai.focus = null; s.ai.sayT = 3;
+  s.lastStepN = 0;
+  attachVision(s);
+  G.hidersVer++;
+}
+function startSeeking() {
+  G.state = 'seeking'; G.timer = SEEK_T;
+  netEv({ e: 'seek' });
+  const s = G.seeker; s.blindfold.visible = false; puff(v3(s.pos.x, s.pos.y + 1, s.pos.z), 10, 0x2b2250, 0.25, 1.2, 0.5);
+  $('blindfold').classList.add('hidden');
+  s.jumpReq = true; s.say('READY OR NOT, HERE I COME!', 2.5);
+  bigText('SEEK!', s.isPlayer ? 'Find them all! Q = Sniff · F = Dash · E/Click = Tag' : 'Ready or not... here they come! 😱');
+  Snd.fanfare(); Snd.intensity = 1;
+  if (!isClient()) G.beans.forEach(b => { if (b !== s && !b.human && b.ai.mode !== 'hidden') b.ai.mode = b.ai.path ? 'toSpot' : 'hidden'; });
+}
+function endRound(seekerWon) {
+  G.state = 'roundEnd'; G.endT = 0; Snd.intensity = 0;
+  const s = G.seeker, p = G.player;
+  if (seekerWon) addScore(s, 50 + Math.round(G.timer * 2), 'CLEAN SWEEP!');
+  else aliveHiders().forEach(h => addScore(h, 300, 'SURVIVED!'));
+  netEv({ e: 'end', w: seekerWon ? 1 : 0, sc: G.beans.map(b => [b.id, b.score, b.roundScore]) });
+  const playerWon = seekerWon ? s.isPlayer : (p.role === 'hider');
+  if (seekerWon) bigText('ALL BEANS FOUND!', `${s.isPlayer ? 'You' : esc(s.name)} win${s.isPlayer ? '' : 's'} the round!`, true);
+  else bigText("TIME'S UP!", 'The hiders win the round! 🎉', true);
+  Snd.jingle(playerWon);
+  const winners = seekerWon ? [s] : aliveHiders();
+  winners.forEach(w => { confetti(v3(w.pos.x, w.pos.y + 1.5, w.pos.z), 80, CONFETTI_COLS, 8); w.spinT = 0.7; w.jumpReq = true; w.blindfold.visible = false; w.endDisguise(); w.crouch = false; if (!w.human) w.say(pick(['Woohoo!', 'Yay!', 'Bean-tastic!', 'Victory jelly!']), 3); });
+  if (p) confetti(v3(p.pos.x, p.pos.y + 3, p.pos.z), 120, CONFETTI_COLS, 6);
+  $('blindfold').classList.add('hidden');
+  G.sbShown = false;
+}
+function showScoreboard() {
+  G.sbShown = true;
+  const final = G.round >= G.totalRounds;
+  const sorted = G.beans.slice().sort((a, b) => b.score - a.score);
+  const seekerWon = aliveHiders().length === 0;
+  $('sbTitle').textContent = final ? '🏆 FINAL RESULTS 🏆' : (seekerWon ? 'SEEKER WINS!' : 'HIDERS WIN!');
+  $('sbSub').innerHTML = final ? `<b style="color:${sorted[0].color};-webkit-text-stroke:1px #4a2366">${sorted[0].isPlayer ? 'YOU' : esc(sorted[0].name)}</b> ${sorted[0].isPlayer ? 'are' : 'is'} the Supreme Bean! 👑` : `Round ${G.round} of ${G.totalRounds} complete`;
+  $('sbTable').innerHTML = sorted.map((b, i) => `<tr class="${b.isPlayer ? 'me' : ''}"><td>${['🥇', '🥈', '🥉'][i] || (i + 1)}</td><td><span class="dot" style="display:inline-block;vertical-align:middle;background:${b.color}"></span> ${esc(b.name)}${b.isPlayer && G.net ? ' (you)' : ''}${b === G.seeker ? ' 🔦' : ''}${b.caught ? ' 👻' : ''}</td><td class="n"><span class="plus">+${b.roundScore}</span></td><td class="n">${b.score}</td></tr>`).join('');
+  $('sbNext').textContent = final ? (isHost() ? 'Back to lobby ↩' : 'Play again ↺') : 'Next round ▶';
+  $('sbNext').disabled = isClient(); if (isClient()) $('sbNext').textContent = final ? 'Waiting for host… ⏳' : 'Waiting for host… ⏳';
+  $('scoreboard').classList.remove('hidden');
+  if (document.pointerLockElement) document.exitPointerLock();
+  if (final) { Snd.jingle(sorted[0].isPlayer); const w = sorted[0]; CAM.mode = 'winner'; CAM.winner = w; G.state = 'final'; }
+}
+function onNext() {
+  if (isClient()) return;
+  Snd.tick(200);
+  if (G.state === 'final' && isHost()) { $('scoreboard').classList.add('hidden'); Net.backToLobby(); return; }
+  if (G.state === 'final') { $('scoreboard').classList.add('hidden'); toMenu(); return; }
+  if (G.state === 'roundEnd') nextRound();
+}
+function toMenu() {
+  G.state = 'menu'; G.seeker = null; G.inGame = false; buildRoster(true); setupMenuScene();
+  $('menu').classList.remove('hidden'); $('hud').classList.add('hidden'); $('blindfold').classList.add('hidden');
+  CAM.mode = 'menu';
+}
+function setupMenuScene() {
+  const p = G.player; p.pos.set(PLAZA.x, 0.05, PLAZA.z); p.yaw = 0.5;
+  G.beans.forEach((b, i) => { if (b.isPlayer) return; const q = randomFreePoint(); b.pos.set(q.x, 0.05, q.z); b.ai.mode = 'idle'; b.ai.t = rand(0, 2); });
+}
+
+// ======================================================================
+// ONLINE MULTIPLAYER — WebRTC peer-to-peer via PeerJS (public broker), host-authoritative
+// ======================================================================
+const NET_PREFIX = 'beanhunt-v1-';
+const MAX_BEANS = 8;
+const SNAP_HZ = 20;
+const FUN_NAMES = ['Jelly', 'Pinto', 'Kidney', 'Lima', 'Mung', 'Fava', 'Edamame', 'Coco', 'Borlotti', 'Navy', 'Adzuki', 'Butter'];
+const HAT_KEYS = new Set(HATS.map(h => h[0]));
+const cleanName = n => (String(n || '').replace(/[<>&"'`\\]/g, '').replace(/\s+/g, ' ').trim().slice(0, 14)) || 'Bean';
+const fmtCode = raw => { const d = String(raw || '').toUpperCase().replace(/[^A-Z0-9]/g, '').replace(/^BEAN/, ''); return d ? 'BEAN-' + d : ''; };
+const nowMs = () => performance.now();
+const r2 = v => Math.round(v * 100) / 100;
+
+const Net = {
+  peer: null, role: null, code: null, myId: 0,
+  conns: new Map(),      // host: peerId -> { conn, id, name, color, hat, last }
+  conn: null,            // client: connection to host
+  nextId: 1, bots: 3, diff: 'normal', rounds: 5,
+  sendT: 0, pingT: 0, lastMsg: 0, lobbyInfo: null, tries: 0, joinTimer: 0, closing: false,
+
+  // ------------------------------------------------------------ helpers
+  ok() { return typeof window.Peer === 'function'; },
+  send(m) { if (this.conn && this.conn.open) { try { this.conn.send(m); } catch (e) {} } },
+  broadcast(m) { for (const c of this.conns.values()) if (c.conn.open) { try { c.conn.send(m); } catch (e) {} } },
+  // PeerJS's default STUN/TURN servers, plus optional extra ICE servers (e.g. your own TURN) via window.BEAN_HUNT_ICE
+  iceServers() {
+    const def = [{ urls: 'stun:stun.l.google.com:19302' }, { urls: ['turn:eu-0.turn.peerjs.com:3478', 'turn:us-0.turn.peerjs.com:3478'], username: 'peerjs', credential: 'peerjsp' }];
+    return Array.isArray(window.BEAN_HUNT_ICE) ? def.concat(window.BEAN_HUNT_ICE) : def;
+  },
+  newPeer(id) { return new Peer(id, { debug: 0, config: { iceServers: this.iceServers(), sdpSemantics: 'unified-plan' } }); },
+  mpName() { let n = G.settings.name; if (!n || n === 'You') { n = pick(FUN_NAMES); G.settings.name = n; $('pname').value = n; G.player.name = n; G.player.lbl.textContent = n; } return cleanName(n); },
+
+  // ------------------------------------------------------------ HOST
+  host() {
+    if (!this.ok()) return netMsg('Online play unavailable', 'Could not load the networking library (PeerJS). Check your internet connection and reload.');
+    Snd.init(); this.reset(); this.role = 'host'; G.net = this; this.myId = 0; this.nextId = 1;
+    this.mpName();
+    this.bots = clamp(G.botCount, 0, MAX_BEANS - 1); this.diff = G.difficulty; this.rounds = G.totalRounds;
+    $('hostBtn').disabled = true; $('joinMsg').textContent = '';
+    showLobby(); $('lbStatus').textContent = 'Creating room…'; $('lbCode').textContent = '…'; $('lbLink').value = '';
+    this.tries = 0; this.openHostPeer();
+  },
+  openHostPeer() {
+    this.code = 'BEAN-' + randi(1000, 9999);
+    const peer = this.peer = this.newPeer(NET_PREFIX + this.code.toLowerCase());
+    peer.on('open', () => { if (peer !== this.peer) return; $('hostBtn').disabled = false; $('lbStatus').textContent = 'Room ready! Waiting for friends to join…'; this.renderLobby(); });
+    peer.on('connection', conn => this.hostConn(conn));
+    peer.on('disconnected', () => { if (peer === this.peer && this.role === 'host' && !this.closing) setTimeout(() => { try { if (!peer.destroyed) peer.reconnect(); } catch (e) {} }, 1500); });
+    peer.on('error', err => {
+      if (peer !== this.peer) return;
+      if (err.type === 'unavailable-id' && this.tries++ < 6) { try { peer.destroy(); } catch (e) {} return this.openHostPeer(); }
+      if (['network', 'server-error', 'socket-error', 'socket-closed'].includes(err.type) && peer.open === false && !this.conns.size && G.state === 'lobby') {
+        $('hostBtn').disabled = false; this.leave(true); return netMsg('Could not create a room', 'The matchmaking server could not be reached (' + err.type + '). Check your connection and try again in a moment.');
+      }
+      if (err.type === 'browser-incompatible') { this.leave(true); return netMsg('Browser not supported', 'Your browser does not support WebRTC peer-to-peer connections.'); }
+    });
+  },
+  hostConn(conn) {
+    const c = { conn, id: -1, name: '', color: '#ffffff', hat: 'none', last: nowMs() };
+    conn.on('data', d => this.hostData(c, d));
+    conn.on('close', () => this.drop(c));
+    conn.on('error', () => this.drop(c));
+  },
+  humans() { return 1 + this.conns.size; },
+  hostData(c, d) {
+    if (!d || typeof d !== 'object') return;
+    c.last = nowMs();
+    if (d.t === 'hello') {
+      if (c.id >= 0) return;
+      if (G.inGame) { try { c.conn.send({ t: 'reject', why: 'That game has already started. Ask the host to go back to the lobby, then join again.' }); } catch (e) {} setTimeout(() => c.conn.close(), 500); return; }
+      if (this.humans() >= MAX_BEANS) { try { c.conn.send({ t: 'reject', why: 'That room is full (8 beans max).' }); } catch (e) {} setTimeout(() => c.conn.close(), 500); return; }
+      c.id = this.nextId++; c.name = cleanName(d.name); c.color = COLORS.includes(d.color) ? d.color : pick(COLORS); c.hat = HAT_KEYS.has(d.hat) ? d.hat : 'none';
+      this.conns.set(c.conn.peer, c);
+      c.conn.send({ t: 'welcome', id: c.id, code: this.code });
+      this.bots = Math.min(this.bots, MAX_BEANS - this.humans());
+      this.renderLobby(); this.sendLobby();
+      Snd.tick(500); $('lbStatus').textContent = `${c.name} joined! 🎉`;
+      return;
+    }
+    if (c.id < 0) return;
+    const b = G.inGame ? beanById(c.id) : null;
+    if (d.t === 'in' && b && b.remote) {
+      if (d.tp !== b.tp || G.state === 'roulette' || !Array.isArray(d.p)) return;
+      const [x, y, z] = d.p; if (![x, y, z, d.yaw].every(Number.isFinite)) return;
+      b.nb.push({ t: nowMs(), x: clamp(x, -BOUND - 1, BOUND + 1), y: clamp(y, -2, 25), z: clamp(z, -BOUND - 1, BOUND + 1), yaw: d.yaw });
+      if (b.nb.length > 40) b.nb.shift();
+      b.crouch = !!d.cr && !b.prop; if (Number.isFinite(d.cy)) b.camYaw = d.cy; b.sprinting = !!d.sp;
+    } else if (d.t === 'act' && b && b.remote) {
+      if (Number.isFinite(d.cy)) b.camYaw = d.cy;
+      const a = d.a;
+      if (a === 'disg') doDisguise(b); else if (a === 'sniff') doSniff(b); else if (a === 'taunt') doTaunt(b); else if (a === 'dash') doDash(b); else if (a === 'tag') tryTag(b);
+    } else if (d.t === 'bye') this.drop(c);
+  },
+  drop(c) {
+    if (this.role !== 'host' || !this.conns.has(c.conn.peer)) { try { c.conn.close(); } catch (e) {} return; }
+    this.conns.delete(c.conn.peer); try { c.conn.close(); } catch (e) {}
+    if (G.inGame) {
+      const b = beanById(c.id);
+      if (b && b.human) {
+        b.human = false; b.remote = false; b.nb.length = 0; b.name = cleanName(b.name).slice(0, 11) + ' 🤖'; b.lbl.textContent = b.name;
+        if (b.role === 'seeker') { Object.assign(b.ai, { mode: 'idle', path: null, sniffCd: undefined, dashCd: 0, visited: new Map(), focus: null, sayT: 3, target: null }); }
+        else if (!b.caught && (G.state === 'hiding' || G.state === 'seeking')) { b.ai.mode = 'toSpot'; b.ai.spot = null; if (!chooseHideSpot(b, G.state === 'seeking' && G.seeker ? G.seeker.pos : null)) b.ai.mode = 'hidden'; }
+        b.vel.set(0, 0, 0); b.crouch = false;
+        const msg = `<b style="color:${b.color}">${esc(c.name)}</b> left — a bot took over 🤖`;
+        feed(msg); netEv({ e: 'left', id: b.id, nm: b.name }); G.hidersVer++;
+      }
+    } else { this.renderLobby(); this.sendLobby(); $('lbStatus').textContent = `${c.name || 'A player'} left.`; }
+  },
+  lobbyPlayers() { return [{ id: 0, name: G.player.name, color: G.settings.color, hat: G.settings.hat, host: 1 }, ...[...this.conns.values()].map(c => ({ id: c.id, name: c.name, color: c.color, hat: c.hat }))]; },
+  sendLobby(extra) { if (this.role !== 'host') return; this.broadcast({ t: 'lobby', players: this.lobbyPlayers(), bots: this.bots, diff: this.diff, rounds: this.rounds, code: this.code, ...(extra || {}) }); },
+  renderLobby() { renderLobby({ players: this.role === 'host' ? this.lobbyPlayers() : (this.lobbyInfo ? this.lobbyInfo.players : []), bots: this.role === 'host' ? this.bots : (this.lobbyInfo ? this.lobbyInfo.bots : 0), diff: this.role === 'host' ? this.diff : this.lobbyInfo && this.lobbyInfo.diff, rounds: this.role === 'host' ? this.rounds : this.lobbyInfo && this.lobbyInfo.rounds, code: this.code }); },
+  start() {
+    if (this.role !== 'host' || G.inGame) return;
+    const humans = [{ id: 0, name: G.player.name, color: G.settings.color, hat: G.settings.hat, human: true }, ...[...this.conns.values()].map(c => ({ id: c.id, name: c.name, color: c.color, hat: c.hat, human: true }))];
+    const nb = clamp(this.bots, 0, MAX_BEANS - humans.length);
+    if (humans.length + nb < 2) { $('lbStatus').textContent = 'You need at least 2 beans — add a bot or invite a friend!'; return; }
+    const used = new Set(humans.map(h => h.color.toLowerCase()));
+    let defs = shuffle(BOT_DEFS.slice()); defs = defs.filter(d => !used.has(d.color.toLowerCase())).concat(defs.filter(d => used.has(d.color.toLowerCase())));
+    const roster = humans.concat(defs.slice(0, nb).map((d, i) => ({ id: 100 + i, name: d.name, color: d.color, hat: d.hat, human: false })));
+    G.difficulty = this.diff; G.totalRounds = this.rounds;
+    netRoster(roster, 0);
+    this.broadcast({ t: 'start', roster, diff: this.diff, rounds: this.rounds });
+    beginNetGame();
+    nextRound();
+  },
+  backToLobby() {
+    if (this.role !== 'host') return;
+    lobbyScene(); this.renderLobby(); this.sendLobby({ back: 1 }); $('lbStatus').textContent = 'Back in the lobby. Press START for another game!';
+  },
+  snapshot() {
+    const S = G.seeker;
+    return {
+      t: 's', st: G.state, tm: r2(G.timer), sk: S ? S.id : -1, sm: S && S.ai.mode === 'chase' ? 1 : 0, ma: S ? r2(S.ai.maxAware || 0) : 0, stg: S && S.ai.target ? S.ai.target.id : -1,
+      b: G.beans.map(b => [b.id, r2(b.pos.x), r2(b.pos.y), r2(b.pos.z), r2(b.yaw), (b.crouch ? 1 : 0) | (b.caught ? 2 : 0) | (b.prop ? 4 : 0) | (b.blindfold.visible ? 8 : 0) | (b.tauntT > 0 ? 16 : 0) | (b.dashT > 0 ? 64 : 0), b.score, r2(b.cdA), r2(b.cdB), r2(b.aware), b.tp])
+    };
+  },
+
+  // ------------------------------------------------------------ CLIENT
+  join(rawCode) {
+    if (!this.ok()) return netMsg('Online play unavailable', 'Could not load the networking library (PeerJS). Check your internet connection and reload.');
+    const code = fmtCode(rawCode);
+    if (!/^BEAN-[A-Z0-9]{3,8}$/.test(code)) { $('joinMsg').textContent = '⚠️ Enter a room code like BEAN-4821'; return; }
+    Snd.init(); this.reset(); this.role = 'client'; G.net = this; this.code = code;
+    this.mpName();
+    $('joinMsg').textContent = '⏳ Connecting to ' + code + '…'; $('joinGo').disabled = true;
+    const peer = this.peer = this.newPeer();
+    const fail = (title, text) => { if (peer !== this.peer) return; this.leave(true); $('joinGo').disabled = false; $('joinMsg').textContent = '⚠️ ' + text; netMsg(title, text); };
+    clearTimeout(this.joinTimer);
+    this.joinTimer = setTimeout(() => { if (peer === this.peer && !this.myIdSet) fail('Could not connect', `Couldn't reach room ${code}. The host may have closed it, or a firewall is blocking peer-to-peer connections.`); }, 20000);
+    peer.on('open', () => {
+      if (peer !== this.peer) return;
+      const conn = this.conn = peer.connect(NET_PREFIX + code.toLowerCase(), { reliable: true, serialization: 'json' });
+      conn.on('open', () => { this.lastMsg = nowMs(); conn.send({ t: 'hello', name: G.player.name, color: G.settings.color, hat: G.settings.hat }); });
+      conn.on('data', d => this.clientData(d));
+      conn.on('close', () => { if (conn === this.conn && !this.closing) this.hostGone(this.myIdSet ? 'The host left the game (or the connection dropped).' : null); });
+      conn.on('error', () => {});
+    });
+    peer.on('error', err => {
+      if (peer !== this.peer) return;
+      if (err.type === 'peer-unavailable') fail('Room not found', `No game found with code ${code}. Check the code, and make sure the host still has the game open.`);
+      else if (!this.myIdSet) fail('Could not connect', 'Connection problem (' + err.type + '). Please try again.');
+    });
+  },
+  clientData(d) {
+    if (!d || typeof d !== 'object') return;
+    this.lastMsg = nowMs();
+    switch (d.t) {
+      case 'welcome':
+        this.myId = d.id; this.myIdSet = true; clearTimeout(this.joinTimer); $('joinGo').disabled = false; $('joinMsg').textContent = '';
+        G.player.id = d.id; showLobby(); $('lbStatus').textContent = 'Connected! Waiting for the host to start…'; break;
+      case 'reject': this.leave(true); $('joinGo').disabled = false; $('joinMsg').textContent = '⚠️ ' + d.why; netMsg("Can't join", d.why); break;
+      case 'lobby':
+        this.lobbyInfo = d; if (d.back && G.inGame) { lobbyScene(); $('lbStatus').textContent = 'Back in the lobby — waiting for the host to start…'; }
+        this.renderLobby(); break;
+      case 'start':
+        G.difficulty = d.diff; G.totalRounds = d.rounds;
+        netRoster(d.roster, this.myId); beginNetGame(); break;
+      case 'ev': if (G.inGame) clientEv(d); break;
+      case 's': if (G.inGame) applySnap(d); break;
+      case 'ping': this.send({ t: 'pong' }); break;
+      case 'bye': this.hostGone('The host ended the game.'); break;
+    }
+  },
+  hostGone(msg) {
+    const wasRole = this.role; this.leave(true);
+    if (wasRole && msg) netMsg('Game over', msg + ' 👋');
+  },
+
+  // ------------------------------------------------------------ common
+  tick(dt) {
+    if (!this.role) return;
+    const now = nowMs();
+    this.sendT -= dt; this.pingT -= dt;
+    if (this.role === 'host') {
+      if (G.inGame && this.sendT <= 0) { this.sendT = 1 / SNAP_HZ; if (this.conns.size) this.broadcast(this.snapshot()); }
+      if (this.pingT <= 0) { this.pingT = 2; if (!G.inGame) this.broadcast({ t: 'ping' }); for (const c of [...this.conns.values()]) if (now - c.last > 10000) this.drop(c); }
+    } else if (this.myIdSet) {
+      const p = G.player;
+      if (G.inGame && this.sendT <= 0 && G.state !== 'roulette') { this.sendT = 1 / SNAP_HZ; this.send({ t: 'in', p: [r2(p.pos.x), r2(p.pos.y), r2(p.pos.z)], yaw: r2(p.yaw), cy: r2(CAM.yaw), cr: p.crouch ? 1 : 0, sp: p.sprinting ? 1 : 0, tp: p.tp }); }
+      if (now - this.lastMsg > 10000) this.hostGone('Lost connection to the host.');
+    }
+  },
+  reset() { this.closing = false; this.conns.clear(); this.conn = null; this.myIdSet = false; this.lobbyInfo = null; this.sendT = 0; this.pingT = 0; },
+  leave(silent) {
+    if (!this.role) return;
+    this.closing = true;
+    try { if (this.role === 'host') this.broadcast({ t: 'bye' }); else this.send({ t: 'bye' }); } catch (e) {}
+    const peer = this.peer, conns = [...this.conns.values()], conn = this.conn;
+    setTimeout(() => { try { conns.forEach(c => c.conn.close()); if (conn) conn.close(); if (peer && !peer.destroyed) peer.destroy(); } catch (e) {} }, 150);
+    clearTimeout(this.joinTimer);
+    this.peer = null; this.role = null; this.conn = null; this.conns.clear(); this.myIdSet = false; G.net = null;
+    $('lobby').classList.add('hidden'); $('leaveBtn').classList.add('hidden'); $('scoreboard').classList.add('hidden'); $('pauseNote').classList.add('hidden');
+    $('hostBtn').disabled = false; $('joinGo').disabled = false; $('sbNext').disabled = false;
+    G.paused = false; toMenu();
+  },
+};
+
+function netRoster(list, myId) {
+  G.beans.forEach(b => b.dispose()); G.beans = []; G.seeker = null; G.lastSeeker = null;
+  for (const r of list) {
+    const me = r.id === myId;
+    const b = new Bean({ id: r.id, name: cleanName(r.name), color: COLORS.includes(r.color) || /^#[0-9a-f]{6}$/i.test(r.color) ? r.color : '#ffffff', hat: HAT_KEYS.has(r.hat) ? r.hat : 'none', isPlayer: me, human: !!r.human, remote: !me && (isClient() || !!r.human) });
+    G.beans.push(b); if (me) G.player = b;
+  }
+}
+function beginNetGame() {
+  G.inGame = true; G.round = 0; G.paused = false;
+  $('menu').classList.add('hidden'); $('lobby').classList.add('hidden'); $('leaveBtn').classList.remove('hidden');
+  Snd.init();
+}
+function lobbyScene() {
+  G.inGame = false; G.seeker = null; buildRoster(true); setupMenuScene();
+  G.state = 'lobby'; CAM.mode = 'menu';
+  $('hud').classList.add('hidden'); $('scoreboard').classList.add('hidden'); $('blindfold').classList.add('hidden'); $('leaveBtn').classList.add('hidden'); $('pauseNote').classList.add('hidden');
+  $('menu').classList.add('hidden'); $('lobby').classList.remove('hidden');
+  if (document.pointerLockElement) document.exitPointerLock();
+}
+function showLobby() {
+  lobbyScene();
+  const host = Net.role === 'host';
+  $('lbHost').style.display = host ? '' : 'none'; $('lbStart').style.display = host ? '' : 'none';
+  $('lbCode').textContent = Net.code || '…';
+  $('lbLink').value = Net.code ? inviteLink(Net.code) : '';
+  Net.renderLobby();
+}
+function inviteLink(code) { return location.origin + location.pathname + '?room=' + encodeURIComponent(code); }
+function renderLobby(info) {
+  if (!info) return;
+  const host = Net.role === 'host';
+  $('lbCode').textContent = Net.code || '…';
+  if (Net.code && host && Net.peer && Net.peer.open) $('lbLink').value = inviteLink(Net.code); else if (!host && Net.code) $('lbLink').value = inviteLink(Net.code);
+  const ps = info.players || [];
+  const free = MAX_BEANS - ps.length, bots = Math.min(info.bots || 0, free);
+  $('lbCount').textContent = `(${ps.length} human${ps.length === 1 ? '' : 's'}${bots ? ` + ${bots} bot${bots === 1 ? '' : 's'}` : ''} / ${MAX_BEANS})`;
+  $('lbPlayers').innerHTML = ps.map(p => `<div class="lbP"><span class="dot" style="background:${esc(p.color)}"></span>${esc(p.name)} ${(HATS.find(h => h[0] === p.hat) || ['', ''])[1]}${p.host ? '<span class="tagx">HOST</span>' : ''}${p.id === Net.myId ? '<span class="tagx">YOU</span>' : ''}</div>`).join('') + (bots ? `<div class="lbP bot">🤖 ${bots} bot${bots === 1 ? '' : 's'} will fill the empty slot${bots === 1 ? '' : 's'}</div>` : '');
+  const dn = { easy: '😴 Easy', normal: '🙂 Normal', hard: '😈 Hard' };
+  if (host) {
+    $('lbBots').max = Math.max(0, MAX_BEANS - ps.length); $('lbBots').value = bots; $('lbBotN').textContent = bots;
+    $('lbStart').disabled = ps.length + bots < 2 || !(Net.peer && Net.peer.open);
+    $('lbInfo').textContent = ps.length + bots < 2 ? 'Add at least one bot or wait for a friend to start.' : '';
+  } else $('lbInfo').textContent = `Bots: ${bots} · Bot seeker: ${dn[info.diff] || info.diff} · Rounds: ${info.rounds} — the host will start the game.`;
+}
+function netMsg(title, text) { $('netMsgTitle').textContent = title; $('netMsgText').textContent = text; $('netMsg').classList.remove('hidden'); }
+
+function clientEv(e) {
+  const b = e.id !== undefined ? beanById(e.id) : null;
+  switch (e.e) {
+    case 'round': for (const [id, tp] of e.tps || []) { const x = beanById(id); if (x) x.tp = tp; } { const sk = beanById(e.sk); if (sk) roundSetup(e.r, sk, e.st, e.hp); } break;
+    case 'hide': if (G.state !== 'hiding') startHiding(); break;
+    case 'seek': if (G.state !== 'seeking') { Snd.beep(true); startSeeking(); } break;
+    case 'end': for (const [id, sc, rs] of e.sc || []) { const x = beanById(id); if (x) { x.score = sc; x.roundScore = rs; } } endRound(!!e.w); break;
+    case 'taunt': fxTaunt(b, e.k); break;
+    case 'disg': fxDisguise(b, e.k); break;
+    case 'sniff': fxSniff(b, beanById(e.tg)); break;
+    case 'dash': fxDash(b); break;
+    case 'catch': fxCatch(beanById(e.h), beanById(e.s)); break;
+    case 'spot': fxSpot(beanById(e.s), beanById(e.h)); break;
+    case 'say': if (b) b.say(String(e.tx), e.d, true); break;
+    case 'mk': if (b) b.showMark(String(e.tx), e.d, true); break;
+    case 'pop': if (b && b.isPlayer) popup(String(e.tx)); break;
+    case 'left': if (b) { feed(`<b style="color:${b.color}">${esc(b.name)}</b> left — a bot took over 🤖`); b.human = false; b.name = cleanName(e.nm || b.name); b.lbl.textContent = b.name; G.hidersVer++; } break;
+  }
+}
+function applySnap(d) {
+  if (d.st === G.state && Number.isFinite(d.tm)) G.timer = d.tm;
+  const S = G.seeker;
+  if (S && S.id === d.sk && !S.human) { S.ai.mode = d.sm ? 'chase' : 'search'; S.ai.target = beanById(d.stg); S.ai.maxAware = d.ma; }
+  const now = nowMs(), roul = G.state === 'roulette';
+  for (const a of d.b) {
+    const [id, x, y, z, yaw, f, score, cdA, cdB, aware, tp] = a;
+    const b = beanById(id); if (!b) continue;
+    b.score = score;
+    if (b.isPlayer) {
+      if (tp !== b.tp) { b.tp = tp; b.pos.set(x, y, z); b.vel.set(0, 0, 0); }
+      b.cdA = cdA; b.cdB = cdB; b.aware = aware;
+    } else {
+      if (!roul) { b.nb.push({ t: now, x, y, z, yaw }); if (b.nb.length > 40) b.nb.shift(); }
+      b.crouch = !!(f & 1); b.cdA = cdA; b.cdB = cdB;
+      if (f & 16) b.tauntT = Math.max(b.tauntT, 0.2);
+      if (f & 64) b.dashT = Math.max(b.dashT, 0.1);
+    }
+    if (!roul) b.blindfold.visible = !!(f & 8);
+    if ((f & 2) && !b.caught && !roul) fxCatch(b, G.seeker || b);
+    if ((f & 4) && !b.prop && !b.caught && !roul) { b.disguiseT = 7; b.startDisguise(); }
+    if (!(f & 4) && b.prop) { b.endDisguise(); puff(v3(b.pos.x, b.pos.y + 0.3, b.pos.z), 12, 0xffffff, 0.4, 1.4, 0.7); if (near(b.pos, 15)) Snd.poof(b.isPlayer ? 0 : panAt(b.pos), volAt(b.pos)); }
+  }
+}
+
+// ------------------------------------------------------------ UI wiring
+{
+  $('hostBtn').onclick = () => { Snd.tick(300); Net.host(); };
+  $('joinBtn').onclick = () => { Snd.tick(300); $('joinBox').classList.toggle('hidden'); if (!$('joinBox').classList.contains('hidden')) $('joinCode').focus(); };
+  $('joinGo').onclick = () => { Snd.tick(300); Net.join($('joinCode').value); };
+  $('joinCode').addEventListener('keydown', e => { if (e.key === 'Enter') Net.join($('joinCode').value); });
+  $('lbStart').onclick = () => { Snd.tick(300); Net.start(); };
+  $('lbLeave').onclick = () => { Snd.tick(100); Net.leave(true); };
+  $('leaveBtn').onclick = () => { if (confirm(Net.role === 'host' ? 'Leave? This ends the game for everyone.' : 'Leave this online game?')) Net.leave(true); };
+  $('netMsgOk').onclick = () => $('netMsg').classList.add('hidden');
+  $('lbBots').oninput = e => { Net.bots = +e.target.value; Net.renderLobby(); Net.sendLobby(); };
+  const seg = (id, key, conv) => $(id).querySelectorAll('button').forEach(b => b.onclick = () => { $(id).querySelectorAll('button').forEach(e => e.classList.remove('sel')); b.classList.add('sel'); Net[key] = conv(b.dataset.v); Snd.tick(100); Net.renderLobby(); Net.sendLobby(); });
+  seg('lbDiff', 'diff', v => v); seg('lbRounds', 'rounds', v => +v);
+  $('lbCopy').onclick = () => {
+    const link = $('lbLink').value; if (!link) return;
+    const done = () => { $('lbCopy').textContent = '✅ Copied!'; setTimeout(() => $('lbCopy').textContent = '📋 Copy invite link', 1600); };
+    const fallback = () => { const i = $('lbLink'); i.focus(); i.select(); try { document.execCommand('copy'); done(); } catch (e) { $('lbStatus').textContent = 'Select the link and copy it manually.'; } };
+    if (navigator.clipboard && window.isSecureContext) navigator.clipboard.writeText(link).then(done, fallback); else fallback();
+  };
+  // invite link: ?room=CODE pre-fills the join box
+  const room = new URLSearchParams(location.search).get('room');
+  if (room) { $('joinBox').classList.remove('hidden'); $('inviteBanner').classList.remove('hidden'); $('joinCode').value = fmtCode(room); }
+  if (!Net.ok()) { $('hostBtn').disabled = true; $('joinBtn').disabled = true; $('hostBtn').title = $('joinBtn').title = 'Online play needs the PeerJS library (offline?)'; }
+  addEventListener('beforeunload', () => { if (Net.role) { try { if (Net.role === 'host') Net.broadcast({ t: 'bye' }); else Net.send({ t: 'bye' }); } catch (e) {} } });
+  // keep the host simulation + network running when its tab is in the background (rAF stops there)
+  setInterval(() => { if (document.hidden && Net.role === 'host' && G.inGame) { update(0.05); Net.tick(0.05); } }, 50);
+}
+
+// ======================================================================
+// CAMERA
+// ======================================================================
+const CAM = { yaw: 0, pitch: 0.35, dist: 6.5, curDist: 6.5, mode: 'menu', orbitA: 0, fov: 62, pos: v3(10, 6, 14), look: v3(), tgt: v3(), winner: null };
+const tmpV = v3();
+function updateCamera(dt) {
+  const p = G.player;
+  let desired = v3(), look = v3(), k = 6;
+  if (CAM.mode === 'menu') {
+    const t = v3(p.pos.x, p.pos.y + 0.85, p.pos.z), a = 0.55 + Math.sin(G.t * 0.2) * 0.22;
+    desired.set(t.x + Math.sin(a) * 4.6, t.y + 1.0, t.z + Math.cos(a) * 4.6);
+    const right = v3(Math.cos(a), 0, -Math.sin(a));
+    look.copy(t).addScaledVector(right, -1.7); look.y += 0.15; k = 3;
+  } else if (CAM.mode === 'roulette') {
+    CAM.orbitA += dt * 0.22;
+    const R = G.rl;
+    if (R && R.done && R.doneT > 0.25) {
+      const s = G.seeker, f = s.fwd();
+      desired.set(s.pos.x + f.x * 5, s.pos.y + 2.4, s.pos.z + f.z * 5); look.set(s.pos.x, s.pos.y + 1.0, s.pos.z); k = 3.5;
+    } else { desired.set(PLAZA.x + Math.cos(CAM.orbitA) * 12.5, 7.5, PLAZA.z + Math.sin(CAM.orbitA) * 12.5); look.set(PLAZA.x, 0.8, PLAZA.z); k = 4; }
+  } else if (CAM.mode === 'winner') {
+    const w = CAM.winner || p; CAM.orbitA += dt * 0.3;
+    desired.set(w.pos.x + Math.cos(CAM.orbitA) * 6, w.pos.y + 3, w.pos.z + Math.sin(CAM.orbitA) * 6); look.set(w.pos.x, w.pos.y + 1, w.pos.z); k = 3;
+    if (Math.random() < dt * 1.5) { w.jumpReq = true; confetti(v3(w.pos.x + rand(-3, 3), w.pos.y + 5, w.pos.z + rand(-3, 3)), 20, CONFETTI_COLS, 2); }
+  } else {
+    // third person
+    CAM.tgt.x = damp(CAM.tgt.x, p.pos.x, 20, dt); CAM.tgt.z = damp(CAM.tgt.z, p.pos.z, 20, dt); CAM.tgt.y = damp(CAM.tgt.y, p.pos.y + (p.crouch ? 0.9 : 1.25), 10, dt);
+    if (keys.ArrowLeft) CAM.yaw += dt * 2.2; if (keys.ArrowRight) CAM.yaw -= dt * 2.2;
+    const cp = Math.cos(CAM.pitch), sp = Math.sin(CAM.pitch);
+    const dx = -Math.sin(CAM.yaw) * cp, dy = sp, dz = -Math.cos(CAM.yaw) * cp;
+    const T = CAM.tgt;
+    let want = CAM.dist, tmin = 1;
+    for (const c of camOccluders) { const t = rayAABB(c, T.x, T.y, T.z, dx * want, dy * want, dz * want); if (t < tmin) tmin = t; }
+    const allowed = Math.max(0.9, tmin * want - 0.3);
+    CAM.curDist = allowed < CAM.curDist ? allowed : damp(CAM.curDist, allowed, 3, dt);
+    desired.set(T.x + dx * CAM.curDist, Math.max(0.3, T.y + dy * CAM.curDist), T.z + dz * CAM.curDist);
+    look.copy(T); k = 0;
+  }
+  if (k) { CAM.pos.lerp(desired, 1 - Math.exp(-k * dt)); CAM.look.lerp(look, 1 - Math.exp(-k * 1.3 * dt)); }
+  else { CAM.pos.copy(desired); CAM.look.copy(look); }
+  camera.position.copy(CAM.pos);
+  G.trauma = Math.max(0, G.trauma - dt * 1.4);
+  const tr = G.trauma * G.trauma;
+  if (tr > 0) camera.position.add(tmpV.set(Math.sin(G.t * 47) * tr * 0.5, Math.sin(G.t * 53 + 1) * tr * 0.4, Math.sin(G.t * 41 + 2) * tr * 0.5));
+  camera.lookAt(CAM.look);
+  if (tr > 0) camera.rotation.z += Math.sin(G.t * 37) * tr * 0.05;
+  const sprinting = p && p.sprinting, fovT = 62 + (sprinting ? 7 : 0) + (p && p.dashT > 0 ? 14 : 0);
+  CAM.fov = damp(CAM.fov, fovT, 8, dt);
+  if (Math.abs(camera.fov - CAM.fov) > 0.01) { camera.fov = CAM.fov; camera.updateProjectionMatrix(); }
+  // shed roof hides when you're inside
+  const cp0 = camera.position;
+  if (window.__shedRoof) window.__shedRoof.visible = !(p && p.pos.x > 24.8 && p.pos.x < 30.2 && p.pos.z > 24.8 && p.pos.z < 30.2) && !(cp0.x > 24 && cp0.x < 31 && cp0.z > 24 && cp0.z < 31 && cp0.y < 5);
+  // keep shadows centred near the action
+  const f = CAM.mode === 'play' ? p.pos : (CAM.mode === 'menu' ? p.pos : v3(PLAZA.x, 0, PLAZA.z));
+  sun.target.position.set(Math.round(f.x / 4) * 4, 0, Math.round(f.z / 4) * 4); sun.position.set(sun.target.position.x + 30, 55, sun.target.position.z + 22);
+}
+
+// ======================================================================
+// INPUT
+// ======================================================================
+const keys = {};
+const canvas = $('c');
+let locked = false, dragging = false;
+const inPlay = () => ['hiding', 'seeking', 'roulette', 'roundEnd'].includes(G.state);
+addEventListener('keydown', e => {
+  if (e.target && e.target.tagName === 'INPUT') return;
+  if (['Space', 'Tab', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.code)) e.preventDefault();
+  if (e.repeat) { keys[e.code] = true; return; }
+  keys[e.code] = true;
+  Snd.init();
+  const p = G.player; if (!p) return;
+  if (e.code === 'KeyM') Snd.toggleMute();
+  if (e.code === 'Enter' && !$('scoreboard').classList.contains('hidden')) onNext();
+  if (G.state !== 'hiding' && G.state !== 'seeking') return;
+  if (p.caught) return;
+  const frozen = G.state === 'hiding' && p === G.seeker;
+  if (frozen) return;
+  if (e.code === 'Space') p.jumpReq = true;
+  if (e.code === 'KeyC') { if (p.role === 'hider' && p.disguiseT <= 0) { p.crouch = !p.crouch; if (p.crouch) puff(p.pos, 4, 0xffffff, 0.15, 0.6, 0.2); } else if (p.role === 'seeker') p.crouch = !p.crouch; }
+  if (e.code === 'KeyQ') act(p.role === 'hider' ? 'disg' : 'sniff');
+  if (e.code === 'KeyF') act(p.role === 'hider' ? 'taunt' : 'dash');
+  if (e.code === 'KeyE' && p.role === 'seeker') act('tag');
+});
+// run an ability for the local player (clients ask the host, which is authoritative)
+function act(a) {
+  const p = G.player; p.camYaw = CAM.yaw;
+  if (isClient()) {
+    if (a === 'tag') { if (p.tagCd > 0 || G.state !== 'seeking') return; p.tagCd = 0.55; tagLunge(p); }
+    Net.send({ t: 'act', a, cy: CAM.yaw }); return;
+  }
+  if (a === 'disg') doDisguise(p); else if (a === 'sniff') doSniff(p); else if (a === 'taunt') doTaunt(p); else if (a === 'dash') doDash(p); else if (a === 'tag') tryTag(p);
+}
+addEventListener('keyup', e => { keys[e.code] = false; });
+addEventListener('blur', () => { for (const k in keys) keys[k] = false; });
+canvas.addEventListener('mousedown', e => {
+  Snd.init();
+  if (inPlay() && !locked) { try { const r = canvas.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } catch (err) {} dragging = true; return; }
+  if (locked && e.button === 0 && G.player && G.player.role === 'seeker' && G.state === 'seeking' && !G.player.caught) act('tag');
+});
+addEventListener('mouseup', () => dragging = false);
+addEventListener('mousemove', e => {
+  if (!locked && !dragging) return;
+  CAM.yaw -= e.movementX * 0.0026; CAM.pitch = clamp(CAM.pitch + e.movementY * 0.0022, -0.25, 1.25);
+});
+addEventListener('wheel', e => { CAM.dist = clamp(CAM.dist + Math.sign(e.deltaY) * 0.6, 3, 11); }, { passive: true });
+document.addEventListener('pointerlockchange', () => {
+  const was = locked; locked = document.pointerLockElement === canvas;
+  if (was && !locked && (G.state === 'hiding' || G.state === 'seeking')) { if (!G.net) G.paused = true; $('pauseNote').classList.remove('hidden'); $('pauseNote').firstChild.textContent = G.net ? '🖱️ Mouse released' : '⏸ Paused'; $('pauseNote').children[1].textContent = G.net ? 'Online games keep running — click to jump back in' : 'Click to resume'; }
+});
+$('pauseNote').addEventListener('click', () => { G.paused = false; $('pauseNote').classList.add('hidden'); try { const r = canvas.requestPointerLock(); if (r && r.catch) r.catch(() => {}); } catch (e) {} });
+$('muteIcon').addEventListener('click', () => { Snd.init(); Snd.toggleMute(); });
+$('sbNext').addEventListener('click', onNext);
+addEventListener('pointerdown', () => Snd.init(), { once: false });
+
+// ======================================================================
+// PLAYER
+// ======================================================================
+function updatePlayer(dt) {
+  const p = G.player;
+  if (p.caught) { // ghost flight
+    let ix = 0, iz = 0, iy = 0;
+    if (keys.KeyW) iz++; if (keys.KeyS) iz--; if (keys.KeyA) ix--; if (keys.KeyD) ix++; if (keys.Space) iy++; if (keys.KeyC || keys.ShiftLeft) iy--;
+    const fx = Math.sin(CAM.yaw), fz = Math.cos(CAM.yaw), rx = -Math.cos(CAM.yaw), rz = Math.sin(CAM.yaw);
+    let wx = fx * iz + rx * ix, wz = fz * iz + rz * ix; const l = Math.hypot(wx, wz) || 1; if (ix || iz) { wx /= l; wz /= l; }
+    p.vel.x = damp(p.vel.x, wx * 9, 5, dt); p.vel.z = damp(p.vel.z, wz * 9, 5, dt);
+    p.vel.y = damp(p.vel.y, iy * 6 + (p.pos.y < 0.8 ? 2 : 0), 4, dt);
+    p.pos.addScaledVector(p.vel, dt); p.pos.y = clamp(p.pos.y, 0.3, 18); p.pos.x = clamp(p.pos.x, -40, 40); p.pos.z = clamp(p.pos.z, -40, 40);
+    if (ix || iz) p.yaw += angDiff(p.yaw, Math.atan2(wx, wz)) * Math.min(1, 8 * dt);
+    p.sprinting = false;
+    return;
+  }
+  const frozen = (G.state === 'hiding' && p === G.seeker) || !(G.state === 'hiding' || G.state === 'seeking');
+  let ix = 0, iz = 0;
+  if (!frozen) { if (keys.KeyW || keys.ArrowUp) iz++; if (keys.KeyS || keys.ArrowDown) iz--; if (keys.KeyA) ix--; if (keys.KeyD) ix++; }
+  const fx = Math.sin(CAM.yaw), fz = Math.cos(CAM.yaw), rx = -Math.cos(CAM.yaw), rz = Math.sin(CAM.yaw);
+  let wx = fx * iz + rx * ix, wz = fz * iz + rz * ix; const l = Math.hypot(wx, wz); if (l > 0) { wx /= l; wz /= l; }
+  const moving = l > 0;
+  const wantSprint = (keys.ShiftLeft || keys.ShiftRight) && moving && !p.tired && p.disguiseT <= 0;
+  if (wantSprint && p.crouch) p.crouch = false;
+  p.sprinting = wantSprint && p.stamina > 0;
+  if (p.sprinting) { p.stamina = Math.max(0, p.stamina - dt * 0.26); p.staminaWait = 0.7; if (p.stamina <= 0) { p.tired = true; p.sprinting = false; if (p.isPlayer) Snd.tone({ f: 300, f2: 200, d: 0.25, v: 0.1, type: 'triangle' }); } }
+  let speed = p.crouch ? 2.6 : p.sprinting ? 8.2 : 5.2;
+  if (p.disguiseT > 0) speed = 2.4;
+  if (p.inWater) speed *= 0.6;
+  if (p.dashT > 0) { speed = 12; if (!moving) { wx = fx; wz = fz; } }
+  p.wish.set(wx, 0, wz);
+  p.jumpHeld = !!keys.Space;
+  if (frozen) { p.wish.set(0, 0, 0); p.jumpReq = false; }
+  p.physics(dt, speed);
+  if (moving && !frozen) p.yaw += angDiff(p.yaw, Math.atan2(wx, wz)) * Math.min(1, 14 * dt);
+  // footsteps
+  const n = Math.floor(p.walkPh / Math.PI);
+  if (n !== p.lastStepN && p.onGround && Math.hypot(p.vel.x, p.vel.z) > 1) { p.lastStepN = n; Snd.step(p.sprinting ? 1.3 : p.crouch ? 0.4 : 0.9, p.inWater); if (p.inWater && Math.random() < 0.5) puff(p.pos, 3, 0xbfefff, 0.15, 0.8, 1.5); }
+  // seeker bump-tag
+  if (p.role === 'seeker' && G.state === 'seeking' && !p.caught && !isClient()) for (const h of aliveHiders()) if (dist2D(h.pos, p.pos) < 1.0 && Math.abs(h.pos.y - p.pos.y) < 1.2) catchBean(h, p);
+}
+
+// ======================================================================
+// HUD
+// ======================================================================
+{
+  const st = document.createElement('style');
+  st.textContent = `#feed{position:absolute;top:50%;left:14px;display:flex;flex-direction:column;gap:5px}.feedItem{background:rgba(255,255,255,.9);color:#4a2366;border:2px solid #4a2366;border-radius:12px;padding:3px 10px;font-weight:700;font-size:14px;animation:bubIn .3s;-webkit-text-stroke:0}.feedItem b{-webkit-text-stroke:.6px #4a2366}`;
+  document.head.appendChild(st);
+  const f = document.createElement('div'); f.id = 'feed'; $('hud').appendChild(f);
+}
+let abilityEls = [], lastRole = null;
+function buildAbilities() {
+  const p = G.player; lastRole = p.role;
+  const defs = p.role === 'seeker'
+    ? [['Q', '👃', 'Sniff', () => p.cdA, 15, () => p.sniffT > 0], ['F', '💨', 'Dash', () => p.cdB, 6, () => p.dashT > 0], ['E', '✋', 'Tag', () => p.tagCd || 0, 0.55, () => false]]
+    : [['Q', '🎭', 'Disguise', () => p.cdA, 18, () => p.disguiseT > 0], ['F', '📣', 'Taunt', () => p.cdB, 10, () => p.tauntT > 0], ['C', '🫣', 'Crouch', () => 0, 1, () => p.crouch]];
+  $('abilities').innerHTML = '';
+  abilityEls = defs.map(([k, ic, nm, cd, max, act]) => {
+    const d = document.createElement('div'); d.className = 'ab'; d.innerHTML = `<span class="key">${k}</span><span class="ic">${ic}</span><span class="nm">${nm}</span><div class="cd"></div>`;
+    $('abilities').appendChild(d); return { d, cdEl: d.querySelector('.cd'), cd, max, act, was: 0 };
+  });
+  $('hint').innerHTML = p.role === 'seeker'
+    ? '<b>Click</b> game to capture mouse<br><b>WASD</b> move · <b>Mouse</b> look · <b>Space</b> jump · <b>Shift</b> sprint<br><b>E / Click</b> tag · <b>Q</b> sniff · <b>F</b> dash · <b>M</b> mute'
+    : '<b>Click</b> game to capture mouse<br><b>WASD</b> move · <b>Mouse</b> look · <b>Space</b> jump · <b>Shift</b> sprint<br><b>C</b> crouch/hide · <b>Q</b> disguise · <b>F</b> taunt (+50) · <b>M</b> mute';
+}
+let hidersVerShown = -1, hbT = 0, lastTimerTxt = '', giggleT = 3;
+const mm = $('minimap').getContext('2d');
+const mmStatic = document.createElement('canvas'); mmStatic.width = mmStatic.height = 180;
+{
+  const g = mmStatic.getContext('2d'), S = 180 / 74, X = x => (x + 37) * S, Z = z => (z + 37) * S;
+  g.fillStyle = '#7cc96b'; g.fillRect(0, 0, 180, 180);
+  g.fillStyle = '#e8c39e'; g.fillRect(X(-24), Z(-18), 20 * S, 16 * S);
+  g.fillStyle = '#f1e3c8'; g.beginPath(); g.arc(X(PLAZA.x), Z(PLAZA.z), 5.5 * S, 0, 7); g.fill();
+  g.fillStyle = '#3fc0f0'; g.beginPath(); g.ellipse(X(POND.x), Z(POND.z), POND.rx * S, POND.rz * S, 0, 0, 7); g.fill();
+  for (const c of colliders) { if (!c.solid || c.maxX - c.minX > 60 || c.maxZ - c.minZ > 60) continue; const h = c.maxY - c.minY; if (h < 0.8) continue; g.fillStyle = h > 2.2 ? '#7a5a8c' : (c.maxY > 1.7 && c.minY < 0.1 ? '#2f7a37' : '#a77b52'); g.fillRect(X(c.minX), Z(c.minZ), Math.max(1, (c.maxX - c.minX) * S), Math.max(1, (c.maxZ - c.minZ) * S)); }
+  g.fillStyle = '#2f8f3f'; for (const b of bushes) { g.beginPath(); g.arc(X(b.x), Z(b.z), b.r * S, 0, 7); g.fill(); }
+  g.strokeStyle = '#fff'; g.lineWidth = 2; g.strokeRect(X(-36), Z(-36), 72 * S, 72 * S);
+}
+function drawMinimap() {
+  const S = 180 / 74, X = x => (x + 37) * S, Z = z => (z + 37) * S, p = G.player;
+  mm.save(); mm.clearRect(0, 0, 180, 180); mm.beginPath(); mm.arc(90, 90, 88, 0, 7); mm.clip();
+  mm.drawImage(mmStatic, 0, 0);
+  const dot = (b, r, col, stroke = '#4a2366') => { mm.fillStyle = col; mm.strokeStyle = stroke; mm.lineWidth = 2; mm.beginPath(); mm.arc(X(b.x), Z(b.z), r, 0, 7); mm.fill(); mm.stroke(); };
+  const S2 = G.seeker, playing = G.state === 'seeking' || G.state === 'hiding';
+  for (const b of G.beans) {
+    if (b === p) continue;
+    if (b.caught) { mm.globalAlpha = 0.5; dot(b.pos, 3, '#fff'); mm.globalAlpha = 1; continue; }
+    if (b.tauntT > 0) { dot(b.pos, 5 + Math.sin(G.t * 20) * 2, '#ffd23f'); continue; }
+    if (!playing) { dot(b.pos, 4, b.color); continue; }
+    if (b === S2) { if (p.role === 'hider' && (p.caught || dist2D(b.pos, p.pos) < 16 || (S2.ai.mode === 'chase' && S2.ai.target === p))) dot(b.pos, 5, '#ff3b5c', '#fff'); continue; }
+    if (p.role === 'hider' || p.caught) dot(b.pos, 3.5, b.color);
+  }
+  if (p.role === 'seeker' && p.sniffT > 0 && G.sniffTarget && !G.sniffTarget.caught) { const t = G.sniffTarget.pos; mm.strokeStyle = '#ffd23f'; mm.lineWidth = 3; mm.beginPath(); mm.arc(X(t.x), Z(t.z), 6 + (G.t * 20 % 10), 0, 7); mm.stroke(); }
+  // player arrow + view cone
+  mm.translate(X(p.pos.x), Z(p.pos.z));
+  mm.fillStyle = 'rgba(255,255,255,.25)'; mm.beginPath(); mm.moveTo(0, 0); const a = Math.atan2(Math.cos(CAM.yaw), Math.sin(CAM.yaw)); mm.arc(0, 0, 26, a - 0.55, a + 0.55); mm.fill();
+  mm.rotate(Math.atan2(Math.cos(p.yaw), Math.sin(p.yaw)));
+  mm.fillStyle = p.color; mm.strokeStyle = '#4a2366'; mm.lineWidth = 2; mm.beginPath(); mm.moveTo(8, 0); mm.lineTo(-5, -5); mm.lineTo(-2, 0); mm.lineTo(-5, 5); mm.closePath(); mm.fill(); mm.stroke();
+  mm.restore();
+}
+function project(p, yOff) { tmpV.set(p.x, p.y + yOff, p.z).project(camera); if (tmpV.z > 1 || tmpV.z < -1) return null; return { x: (tmpV.x * 0.5 + 0.5) * innerWidth, y: (-tmpV.y * 0.5 + 0.5) * innerHeight }; }
+function updateLabels(dt) {
+  const p = G.player, playing = G.state === 'hiding' || G.state === 'seeking' || G.state === 'roundEnd';
+  for (const b of G.beans) {
+    const top = b.ghost ? 2.1 : (b.crouch ? 1.35 : 1.85) + (b.hatKind !== 'none' && !b.crouch ? 0.25 : 0);
+    const sc = project(b.pos, top);
+    const camD = camera.position.distanceTo(b.pos);
+    let showL = false;
+    if (G.state === 'roulette') showL = true;
+    else if (playing && b !== p && camD < 32) {
+      if (b === G.seeker || b.caught) showL = true;
+      else if (p.role === 'hider' || p.caught) showL = G.net ? true : b.disguiseT <= 0 && !(b.zone && b.crouch);
+      else { // the seeker only sees name tags of hiders who aren't hidden and are actually in view (fair play)
+        b.lblT = (b.lblT || 0) - dt;
+        if (b.lblT <= 0) { b.lblT = 0.2; b.lblLos = camD < 6 || !segBlocked(camera.position.x, camera.position.y, camera.position.z, b.pos.x, b.pos.y + 1, b.pos.z); }
+        showL = !b.prop && b.disguiseT <= 0 && !(b.zone && b.crouch) && b.lblLos;
+      }
+    }
+    if (sc && showL) { b.lbl.style.display = 'block'; b.lbl.style.transform = `translate(${sc.x}px,${sc.y}px) translate(-50%,-100%)`; b.lbl.className = 'lbl' + (b === G.seeker && G.state !== 'roulette' ? ' seeker' : ''); b.lbl.textContent = (b === G.seeker && G.state !== 'roulette' ? '🔦 ' : '') + (b.caught ? '👻 ' : '') + b.name; b.lbl.style.borderColor = G.net && b.human ? b.color : ''; }
+    else b.lbl.style.display = 'none';
+    // bubbles
+    if (b.bubT > 0) {
+      b.bubT -= dt;
+      let vis = sc && camD < 38 && G.state !== 'menu' && G.state !== 'lobby';
+      if (vis && p.role === 'seeker' && b !== p && !b.caught && playing && b.tauntT <= 0) vis = camD < 9 || !segBlocked(camera.position.x, camera.position.y, camera.position.z, b.pos.x, b.pos.y + 1, b.pos.z);
+      if (b.disguiseT > 0) vis = false;
+      if (vis) { b.bub.style.display = 'block'; b.bub.style.left = sc.x + 'px'; b.bub.style.top = (sc.y - (showL ? 26 : 4)) + 'px'; } else b.bub.style.display = 'none';
+      if (b.bubT <= 0) b.bub.style.display = 'none';
+    }
+    // marks
+    let mk = null;
+    if (b.markT > 0) { b.markT -= dt; mk = b.mark.textContent; }
+    if (!b.human && b === G.seeker && G.state === 'seeking' && b.markT <= 0) { if (b.ai.mode === 'chase') mk = '❗'; else if (b.ai.maxAware > 0.3) mk = '❓'; if (mk) b.mark.textContent = mk; }
+    const msc = b.tauntT > 0 ? project(b.pos, top + 0.9) : sc;
+    if (mk && msc && (camD < 40 || b.tauntT > 0)) { b.mark.style.display = 'block'; b.mark.style.left = msc.x + 'px'; b.mark.style.top = (msc.y - (showL ? 28 : 0) - (b.bubT > 0 ? 40 : 0)) + 'px'; } else b.mark.style.display = 'none';
+  }
+}
+function updateHUD(dt) {
+  const p = G.player;
+  if (G.state === 'menu' || G.state === 'lobby') { G.beans.forEach(b => { b.lbl.style.display = 'none'; }); $('vignette').style.opacity = 0; return; }
+  updateLabels(dt);
+  const playing = G.state === 'hiding' || G.state === 'seeking';
+  if (!playing && G.state !== 'roundEnd') { $('vignette').style.opacity = 0; $('speedLines').style.opacity = 0; return; }
+  if (lastRole !== p.role) buildAbilities();
+  // timer & phase
+  const tt = Math.max(0, Math.ceil(G.timer)) + '';
+  if (tt !== lastTimerTxt) { $('timer').textContent = tt; lastTimerTxt = tt; }
+  $('timer').classList.toggle('low', G.state === 'seeking' && G.timer <= 10);
+  $('phase').textContent = G.state === 'hiding' ? 'HIDE!' : G.state === 'seeking' ? 'SEEK!' : 'ROUND OVER';
+  $('phase').style.background = G.state === 'hiding' ? '#5ed36a' : '#ff5fa2';
+  $('role').textContent = p.caught ? '👻 You were caught — spectating' : p.role === 'seeker' ? '🔦 You are the SEEKER' : '🫣 You are HIDING from ' + G.seeker.name;
+  $('score').textContent = p.score; $('roundLbl').textContent = `Round ${G.round} / ${G.totalRounds}`;
+  if (playing) $('bfCount').textContent = tt;
+  // hiders list
+  if (hidersVerShown !== G.hidersVer) {
+    hidersVerShown = G.hidersVer;
+    const hs = hiders(), al = hs.filter(h => !h.caught).length;
+    $('hiders').innerHTML = `<h4>🔦 ${G.seeker.isPlayer ? 'You' : esc(G.seeker.name)}</h4><h4>Hiders left: ${al} / ${hs.length}</h4>` + hs.map(h => `<div class="hrow ${h.caught ? 'caught' : ''}"><span class="dot" style="background:${h.color}"></span>${h.caught ? '👻 ' : ''}${h.isPlayer ? (h.name === 'You' ? 'You' : esc(h.name) + ' (you)') : esc(h.name)}${h.human && !h.isPlayer && G.net ? ' 🧑' : ''}</div>`).join('');
+  }
+  // abilities
+  for (const a of abilityEls) { const c = a.cd(); a.cdEl.style.setProperty('--p', c > 0 ? c / a.max : 0); a.cdEl.textContent = c > 0.6 ? Math.ceil(c) : ''; if (a.was > 0 && c <= 0) { a.d.classList.remove('ready'); void a.d.offsetWidth; a.d.classList.add('ready'); } a.was = c; a.d.classList.toggle('active', a.act()); }
+  // stamina
+  $('staminaFill').style.width = (p.stamina * 100).toFixed(1) + '%'; $('staminaFill').classList.toggle('tired', p.tired);
+  // status
+  let st = '';
+  if (p.caught) st = G.net ? '👻 Ghost mode — Space/C to float' : '👻 Ghost mode — Space/C to float · hold T to fast-forward';
+  else if (p.role === 'seeker') st = G.state === 'hiding' ? '🙈 Counting... no peeking!' : (p.sniffT > 0 ? '👃 Sniffing... follow the arrow!' : `🔎 Find them! ${aliveHiders().length} left`);
+  else if (p.disguiseT > 0) st = `🎭 Disguised! (${Math.ceil(p.disguiseT)}s) — stay still!`;
+  else if (p.zone) { const n = { bush: '🌿 bush', box: '📦 box', under: '🛋️ cover' }[p.zone.type]; st = p.crouch ? `✨ Hidden in ${n}` : `${n.split(' ')[0]} In a ${n.split(' ')[1]} — press C to crouch!`; }
+  else st = p.tired ? '😮‍💨 Out of breath!' : (p.crouch ? '🫣 Crouching' : '👀 Out in the open');
+  $('status').textContent = st;
+  // eye meter (AI seeker awareness of you)
+  const em = $('eyeMeter');
+  if (G.state === 'seeking' && p.role === 'hider' && !p.caught) { em.style.opacity = p.aware > 0.02 ? 1 : 0.0; $('eyeFill').style.width = Math.min(100, p.aware * 100) + '%'; } else em.style.opacity = 0;
+  // proximity danger
+  let inten = 0;
+  if (G.state === 'seeking' && p.role === 'hider' && !p.caught && G.seeker) {
+    const d = dist2D(G.seeker.pos, p.pos); inten = clamp(1 - (d - 2) / 12, 0, 1);
+    if (G.seeker.ai.mode === 'chase' && G.seeker.ai.target === p) inten = Math.max(inten, 0.7);
+    hbT -= dt; if (inten > 0.08 && hbT <= 0) { Snd.heartbeat(0.4 + inten * 0.6); hbT = lerp(1.1, 0.36, inten); }
+  }
+  $('vignette').style.opacity = (inten * (0.75 + Math.sin(G.t * (4 + inten * 8)) * 0.25)).toFixed(3);
+  $('speedLines').style.opacity = p.dashT > 0 ? 0.9 : (p.sprinting ? 0.3 : 0);
+  // sniff arrow
+  const sa = $('sniffArrow');
+  if (p.role === 'seeker' && p.sniffT > 0 && G.sniffTarget && !G.sniffTarget.caught) {
+    const t = G.sniffTarget.pos, ang = Math.atan2(t.x - p.pos.x, t.z - p.pos.z), rel = angDiff(CAM.yaw, ang);
+    sa.style.opacity = 1; sa.firstChild.style.transform = `rotate(${-rel}rad)`; sa.lastChild.textContent = `👃 ~${Math.round(dist2D(t, p.pos))}m`; sa.lastChild.style.transform = `translate(${Math.sin(-rel) * 215}px, ${235 - Math.cos(-rel) * 215 - 12}px)`;
+    // scent trail particles drifting toward the target
+    G.scentT = (G.scentT || 0) - dt;
+    if (G.scentT < 0) { G.scentT = 0.08; const dx = t.x - p.pos.x, dz = t.z - p.pos.z, d = Math.hypot(dx, dz) || 1, k = rand(1, Math.min(6, d)); puff(v3(p.pos.x + dx / d * k, p.pos.y + 0.3 + rand(0, 0.4), p.pos.z + dz / d * k), 1, 0xffe066, 0.12, 0.2, 0.6); }
+  } else sa.style.opacity = 0;
+  $('crosshair').style.display = p.role === 'seeker' && G.state === 'seeking' && !p.caught ? 'block' : 'none';
+  drawMinimap();
+}
+
+// ======================================================================
+// MAIN UPDATE
+// ======================================================================
+function commonBeanUpdate(b, dt) {
+  b.cdA = Math.max(0, b.cdA - dt); b.cdB = Math.max(0, b.cdB - dt); b.tauntT = Math.max(0, b.tauntT - dt); b.dashT = Math.max(0, b.dashT - dt); b.sniffT = Math.max(0, b.sniffT - dt); b.tagCd = Math.max(0, (b.tagCd || 0) - dt);
+  if (b.disguiseT > 0 && isClient()) b.disguiseT = Math.max(0.1, b.disguiseT - dt); // the host ends disguises
+  else if (b.disguiseT > 0) { b.disguiseT -= dt; if (b.disguiseT <= 0) { b.endDisguise(); puff(v3(b.pos.x, b.pos.y + 0.3, b.pos.z), 12, 0xffffff, 0.4, 1.4, 0.7); if (near(b.pos, 15)) Snd.poof(b.isPlayer ? 0 : panAt(b.pos), volAt(b.pos)); } }
+  if (!b.sprinting && b.ai.mode !== 'flee') { b.staminaWait = (b.staminaWait || 0) - dt; if (b.staminaWait <= 0) b.stamina = Math.min(1, b.stamina + dt * 0.22); }
+  if (b.tired && b.stamina > 0.35) b.tired = false;
+  b.height = b.crouch ? CROUCH_H : BEAN_H;
+  b.zone = b.ghost ? null : zoneAt(b.pos, b.pos.y);
+  if (b.zone && b.zone.bush) { const sp = Math.hypot(b.vel.x, b.vel.z); if (sp > 1) { b.zone.bush.wigV += dt * sp * 4; if (Math.random() < dt * sp * 0.8) confetti(v3(b.pos.x, 1.2, b.pos.z), 2, [0x4caf50, 0x66bb6a], 2); } }
+}
+// footsteps of any seeker that isn't you are audible to a hiding player (tension!)
+function seekerSteps(s) {
+  if (!s || s.isPlayer || !G.player || G.player.caught || !s.onGround || Math.hypot(s.vel.x, s.vel.z) <= 1) return;
+  const n = Math.floor(s.walkPh / Math.PI); if (n === s.lastStepN) return; s.lastStepN = n;
+  const v = clamp(1 - dist2D(s.pos, G.player.pos) / 18, 0, 1); if (v > 0) Snd.step(v * 1.5, s.inWater);
+}
+// smooth remote beans: render ~100ms in the past and lerp between network samples
+const INTERP_DELAY = 110;
+function applyInterp(b, dt) {
+  const nb = b.nb; if (!nb.length) return;
+  const rt = performance.now() - INTERP_DELAY;
+  while (nb.length > 2 && nb[1].t <= rt) nb.shift();
+  let x, y, z, yaw;
+  const a = nb[0], c = nb[1];
+  if (!c || rt <= a.t) { x = a.x; y = a.y; z = a.z; yaw = a.yaw; if (c && rt < a.t) {} }
+  else { const k = clamp((rt - a.t) / Math.max(1, c.t - a.t), 0, 1.2); x = lerp(a.x, c.x, k); y = lerp(a.y, c.y, k); z = lerp(a.z, c.z, k); yaw = a.yaw + angDiff(a.yaw, c.yaw) * k; }
+  if (!c && nb.length === 1 && rt > a.t + 400) { /* stale: hold position */ }
+  const ox = b.pos.x, oy = b.pos.y, oz = b.pos.z;
+  const jump = Math.hypot(x - ox, z - oz) > 6;
+  b.pos.set(x, y, z); b.yaw = yaw;
+  if (dt > 0 && !jump) { b.vel.x = damp(b.vel.x, (x - ox) / dt, 12, dt); b.vel.z = damp(b.vel.z, (z - oz) / dt, 12, dt); b.vel.y = (y - oy) / dt; } else b.vel.set(0, 0, 0);
+  if (b.ghost) { b.onGround = false; return; }
+  const g = groundHeight(x, z, y + 0.1); const was = b.onGround;
+  b.onGround = y - g < 0.12;
+  if (b.onGround && !was && b.lastVy < -3) b.onLand(-b.lastVy);
+  b.lastVy = b.vel.y;
+  b.inWater = gType === 'water' && y < 0;
+}
+function update(dt) {
+  G.t += dt;
+  const p = G.player;
+  if (G.state !== 'roulette') {
+    lightDim = damp(lightDim, 0, 3, dt); spotLight.intensity = damp(spotLight.intensity, 0, 6, dt); beamMat.opacity = damp(beamMat.opacity, 0, 6, dt); ringMat.opacity = beamMat.opacity * 3;
+  }
+  hemi.intensity = BASE_LIGHT.hemi * (1 - lightDim * 0.7); sun.intensity = BASE_LIGHT.sun * (1 - lightDim * 0.8);
+  const C = isClient();
+  switch (G.state) {
+    case 'menu': case 'lobby':
+      p.wish.set(0, 0, 0); p.physics(dt, 0); p.yaw += dt * 0.6;
+      if (Math.random() < dt * 0.25) p.jumpReq = true;
+      G.beans.forEach(b => { if (!b.isPlayer) menuBot(b, dt); });
+      break;
+    case 'roulette': updateRoulette(dt); break;
+    case 'hiding': case 'seeking': {
+      G.timer -= dt;
+      const s = G.seeker;
+      if (G.state === 'hiding') {
+        const sec = Math.ceil(G.timer); if (sec <= 5 && sec !== G.lastBeep && sec > 0) { G.lastBeep = sec; Snd.beep(false); }
+        if (!s.human && !C) { s.wish.set(0, 0, 0); s.physics(dt, 0); s.ai.sayT -= dt; if (s.ai.sayT < 0) { s.say(pick(LINES.count), 2.2); s.ai.sayT = rand(5, 8); } }
+        else if (s.isPlayer) { G.bfLineT = (G.bfLineT || 0) - dt; if (G.bfLineT < 0) { G.bfLineT = 3; $('bfLine').textContent = pick(['*giggling in the distance*', '*rustle rustle*', 'Someone just tripped over a gnome...', G.net ? 'No peeking! 🙈' : 'Hold T to count faster', 'You hear tiny footsteps...', '*a duck quacks*']); if (Math.random() < 0.6) Snd.giggle(rand(-0.8, 0.8), 0.6); } }
+        if (G.timer <= 0 && !C) { Snd.beep(true); startSeeking(); }
+      } else {
+        if (!C) for (const h of aliveHiders()) { h.ptAcc = (h.ptAcc || 0) + dt * 2; if (h.ptAcc >= 1) { const n = Math.floor(h.ptAcc); h.ptAcc -= n; h.score += n; h.roundScore += n; } }
+        if (!s.human && !C) seekerAI(s, dt);
+        if (G.timer <= 10 && Math.ceil(G.timer) !== G.lastBeep) { G.lastBeep = Math.ceil(G.timer); Snd.tick(400); }
+        seekerSteps(s);
+      }
+      if (!C) for (const b of G.beans) { if (b.human || b === s) continue; if (b.caught) ghostBot(b, dt); else botHider(b, dt); }
+      for (const b of G.beans) if (b.remote) applyInterp(b, dt);
+      updatePlayer(dt);
+      // host checks bump-tags for a remote human seeker
+      if (!C && s.remote && G.state === 'seeking' && !s.caught) for (const h of aliveHiders()) if (dist2D(h.pos, s.pos) < 1.0 && Math.abs(h.pos.y - s.pos.y) < 1.2) catchBean(h, s);
+      if (s.isPlayer && G.state === 'seeking' && !s.caught) {
+        giggleT -= dt;
+        if (giggleT < 0) { giggleT = rand(3, 6); for (const h of aliveHiders()) { const d = dist2D(h.pos, s.pos); if (d < 4.5 && h.zone && Math.random() < 0.6) { Snd.giggle(panAt(h.pos), 0.8); if (h.zone.bush) h.zone.bush.wigV += 4; break; } } }
+      }
+      if (G.state === 'seeking' && !C) { if (aliveHiders().length === 0) endRound(true); else if (G.timer <= 0) endRound(false); }
+      break;
+    }
+    case 'roundEnd': case 'final':
+      G.endT += dt;
+      if (G.state === 'roundEnd' && !G.sbShown && G.endT > 3) showScoreboard();
+      for (const b of G.beans) { if (b.isPlayer) continue; if (b.remote) applyInterp(b, dt); else if (b.caught) ghostBot(b, dt); else { b.wish.set(0, 0, 0); b.physics(dt, 0); } }
+      updatePlayer(dt);
+      break;
+  }
+  // soft bean-bean separation (only beans simulated on this machine get pushed)
+  for (let i = 0; i < G.beans.length; i++) for (let j = i + 1; j < G.beans.length; j++) {
+    const a = G.beans[i], b = G.beans[j]; if (a.ghost || b.ghost) continue;
+    const dx = b.pos.x - a.pos.x, dz = b.pos.z - a.pos.z, d = Math.hypot(dx, dz);
+    if (d < 0.8 && d > 1e-4 && Math.abs(a.pos.y - b.pos.y) < 1) {
+      const ma = !a.remote, mb = !b.remote; if (!ma && !mb) continue;
+      const push = (0.8 - d) / (ma && mb ? 2 : 1);
+      if (ma) { a.pos.x -= dx / d * push; a.pos.z -= dz / d * push; } if (mb) { b.pos.x += dx / d * push; b.pos.z += dz / d * push; }
+    }
+  }
+  for (const b of G.beans) { commonBeanUpdate(b, dt); b.animate(dt, G.t); }
+  for (const bu of bushes) { bu.wigV += -bu.wig * 90 * dt; bu.wigV *= Math.exp(-5 * dt); bu.wig += bu.wigV * dt; const w = clamp(bu.wig, -1.5, 1.5); bu.group.scale.set(1 + w * 0.08, 1 - w * 0.06, 1 + w * 0.08); bu.group.rotation.z = w * 0.06; }
+  for (const t of trampolines) { t.dipV += -t.dip * 120 * dt; t.dipV *= Math.exp(-6 * dt); t.dip += t.dipV * dt; t.mesh.position.y = 0.43 + clamp(t.dip, -0.3, 0.2) * 0.5; }
+  for (const f of animated) f(G.t, dt);
+  updateVision(dt);
+  updateFX(dt);
+}
+
+// ======================================================================
+// MENU
+// ======================================================================
+{
+  const t = 'Bean Hunt', cols = ['#ff5fa2', '#ffd23f', '#5ed36a', '#3fa7ff', '#fff', '#c77dff', '#ff9f1c', '#2ec4b6', '#ff4d6d'];
+  $('title').innerHTML = [...t].map((c, i) => c === ' ' ? '<span style="width:.3em"> </span>' : `<span style="--c:${cols[i]};--i:${i}">${c}</span>`).join('');
+  const sw = $('swatches');
+  COLORS.forEach(c => { const d = document.createElement('div'); d.className = 'sw' + (c === G.settings.color ? ' sel' : ''); d.style.background = c; d.onclick = () => { G.settings.color = c; sw.querySelectorAll('.sw').forEach(e => e.classList.remove('sel')); d.classList.add('sel'); G.player.setColor(c); G.player.jumpReq = true; G.player.sqv -= 3; Snd.tick(rand(0, 400)); puff(G.player.pos, 8, c, 0.25, 1.2, 0.5); }; sw.appendChild(d); });
+  const hs = $('hats');
+  HATS.forEach(([k, ic]) => { const b = document.createElement('button'); b.textContent = ic; b.title = k; if (k === G.settings.hat) b.className = 'sel'; b.onclick = () => { G.settings.hat = k; hs.querySelectorAll('button').forEach(e => e.classList.remove('sel')); b.classList.add('sel'); G.player.setHat(k); G.player.jumpReq = true; Snd.tick(rand(0, 400)); confetti(v3(G.player.pos.x, 1.8, G.player.pos.z), 15, CONFETTI_COLS, 3); }; hs.appendChild(b); });
+  const seg = (id, key, conv) => $(id).querySelectorAll('button').forEach(b => b.onclick = () => { $(id).querySelectorAll('button').forEach(e => e.classList.remove('sel')); b.classList.add('sel'); G[key] = conv(b.dataset.v); Snd.tick(100); });
+  seg('diff', 'difficulty', v => v); seg('rounds', 'totalRounds', v => +v);
+  $('bots').oninput = e => { G.botCount = +e.target.value; $('botN').textContent = G.botCount; };
+  $('pname').oninput = e => { G.settings.name = e.target.value.trim() || 'You'; G.player.name = G.settings.name; G.player.lbl.textContent = G.settings.name; };
+  $('play').onclick = () => { Snd.init(); Snd.tick(300); startGame(); };
+}
+
+// ======================================================================
+// BOOT
+// ======================================================================
+buildRoster(true); setupMenuScene();
+if (G.debug) G.api = { startGame, startSeeking, endRound, nextRound, CAM, aliveHiders, update, updateCamera, updateHUD, spots, zones };
+let last = performance.now(), fpsAcc = 0, fpsN = 0;
+G.fps = 0;
+function frame(now) {
+  requestAnimationFrame(frame);
+  const dt = Math.min(0.05, (now - last) / 1000); last = now;
+  fpsAcc += dt; fpsN++; if (fpsAcc > 1) { G.fps = fpsN / fpsAcc; fpsAcc = 0; fpsN = 0; }
+  const fast = !G.net && keys.KeyT && G.player && ((G.player.caught && G.state === 'seeking') || (G.state === 'hiding' && G.seeker === G.player));
+  const t0 = performance.now();
+  if (!G.paused) { const n = fast ? 4 : 1; for (let i = 0; i < n; i++) update(dt); }
+  Net.tick(dt);
+  updateCamera(dt);
+  updateHUD(dt);
+  G.updMs = G.updMs * 0.95 + (performance.now() - t0) * 0.05;
+  if (!G.noRender) renderer.render(scene, camera);
+  G.frameMs = G.frameMs * 0.95 + (performance.now() - now) * 0.05;
+}
+G.updMs = 0; G.frameMs = 0;
+if (G.debug) window.__dbg = { scene, camera, renderer, THREE };
+requestAnimationFrame(frame);
+</script>
+</body>
+</html>
