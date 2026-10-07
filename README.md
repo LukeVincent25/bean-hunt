@@ -48,3 +48,11 @@ Original procedural music (Web Audio only — no sampled tracks). Martial drums,
 ### Notes
 - If peer-to-peer is blocked by a very strict firewall or NAT (some office or school networks, some mobile carriers), joining can fail. You can add your own TURN server by setting `window.BEAN_HUNT_ICE = [{urls:'turn:your.server:3478', username:'…', credential:'…'}]` before the game script runs.
 - Add `?debug` to the URL to expose the debug hooks (`window.__bh`, `window.__dbg`).
+
+## Race mode v2 — karts, drifts & items
+- **Controls:** W/S gas/brake · A/D steer · **Shift (or Space) + steer = drift** (blue → orange → purple sparks, release for a mini-turbo) · Space in the air = trick (landing boost) · **E / left-click = item** · R / middle-click = reset camera · Backspace = respawn · hold W right at GO = rocket start.
+- **Items:** 🍮 Jelly Boost, 🍌 Banana-bean Peel, 🎯 Homing Bean, 🛡️ Bean Shield, 👹 Giant Stampede, 🪝 Grapple Yank. Racers further back get better items.
+- **Tracks:** seeded, 5 themes (Rooftop City, Candy Land, Desert Canyon, Lava Peaks, Snowy Pass), banked turns, half-pipes, gap jumps, boost pads, sometimes a shortcut plank. If you fall off you respawn at the last checkpoint.
+- **Juice:** chase camera with speed FOV, speed lines, place callouts, a final-lap banner and faster music, photo-finish slow-mo, a podium with bouncing beans, and a ghost of your best lap in single player.
+- **Bots:** Speedy / Drifter / Bully / Steady / Chaos personalities; they drift and use items.
+- **Camera settings** (⚙️ or Esc): sensitivity, invert-Y and distance, saved on this device.
