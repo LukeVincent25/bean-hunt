@@ -215,7 +215,7 @@ kbd{display:inline-block;background:#fff;border:2px solid var(--ink);border-radi
       <li>Each round a spotlight roulette picks one <b>Seeker</b>. Everyone else <b>hides</b>!</li>
       <li><b>Hiders:</b> hide while the seeker counts (longer on the big city map). Crouch (<kbd>C</kbd>) inside bushes &amp; boxes or under tables/beds to be nearly invisible. <kbd>Q</kbd> Disguise as a prop, <kbd>F</kbd> Taunt for bonus points (but it reveals you!). Earn points every second you survive.</li>
       <li><b>Seeker:</b> find and tag everyone (<kbd>E</kbd> when close, or just bump them). <kbd>Q</kbd> Sniff points to the nearest hider, <kbd>F</kbd> Dash.</li>
-      <li><kbd>WASD</kbd> move · mouse look · <kbd>Space</kbd> jump · <kbd>Shift</kbd> sprint · <kbd>M</kbd> mute · <kbd>Esc</kbd> pause. Caught? Fly around as a ghost — hold <kbd>T</kbd> to fast-forward.</li>
+      <li><kbd>WASD</kbd> move · mouse look · <kbd>Space</kbd> jump · <kbd>Shift</kbd> sprint · <kbd>M</kbd> mute (epic procedural score — gets louder when seeking / giants chase) · <kbd>Esc</kbd> pause. Caught? Fly around as a ghost — hold <kbd>T</kbd> to fast-forward.</li>
       <li><b>🪝 ODM grappling gear (every bean!):</b> aim with the reticle — it glows when a wall is in range (60 m). Hold <kbd>Left click</kbd> / <kbd>Right click</kbd> to fire &amp; hang on to the left / right hook (or hold <kbd>G</kbd>), let go to fly off with all your momentum. <kbd>Space</kbd> while hooked = gas-boost &amp; reel in, <kbd>Shift</kbd> in mid-air = gas thrust. Gas refills while you're on the ground.</li>
       <li><b>Walled City:</b> a huge AoT-style town (~2× bigger): 8–12 floor towers, a 46 m wall, bridges, a raised castle district and a taller clock tower. Hide high! (Bots grapple too.) <b>Backyard:</b> a bit roomier — trampoline, slide and pond. 🦆</li>
       <li><b>👹 Giant beans:</b> lumbering titans roam the map. If one grabs you, mash <kbd>Space</kbd> to wriggle free (~4s) or get yeeted across town (and briefly revealed if you were hiding). Slice a giant's <b>nape</b> (back of the neck) while zipping past on your hooks at high speed to stun it for ~10s and score big. Grapples stick to giants too. Toggle giants in the menu / lobby.</li>
@@ -276,26 +276,37 @@ const v3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 // AUDIO (all procedural WebAudio)
 // ======================================================================
 const Snd = {
-  ctx: null, master: null, sfx: null, music: null, muted: false, noiseBuf: null,
-  mstep: 0, nextTime: 0, intensity: 0, musicOn: true,
+  ctx: null, master: null, sfx: null, music: null, musicDuck: null, muted: false, noiseBuf: null,
+  mstep: 0, nextTime: 0, intensity: 0, targetIntensity: 0, musicOn: true,
+  phase: 'menu', // menu | hide | seek | titan | end
   init() {
     if (this.ctx) { if (this.ctx.state !== 'running') this.ctx.resume(); return; }
+    this.loadMutePref();
     const AC = window.AudioContext || window.webkitAudioContext; if (!AC) return;
     this.ctx = new AC();
     const comp = this.ctx.createDynamicsCompressor(); comp.threshold.value = -14; comp.ratio.value = 4;
     this.master = this.ctx.createGain(); this.master.gain.value = this.muted ? 0 : 0.85;
     this.master.connect(comp); comp.connect(this.ctx.destination);
-    this.sfx = this.ctx.createGain(); this.sfx.gain.value = 0.9; this.sfx.connect(this.master);
-    this.music = this.ctx.createGain(); this.music.gain.value = 0.13; this.music.connect(this.master);
+    this.sfx = this.ctx.createGain(); this.sfx.gain.value = 0.95; this.sfx.connect(this.master);
+    // music → duck → master (duck dips under big SFX)
+    this.musicDuck = this.ctx.createGain(); this.musicDuck.gain.value = 1;
+    this.musicDuck.connect(this.master);
+    this.music = this.ctx.createGain(); this.music.gain.value = 0.16; this.music.connect(this.musicDuck);
     const len = this.ctx.sampleRate; this.noiseBuf = this.ctx.createBuffer(1, len, this.ctx.sampleRate);
     const d = this.noiseBuf.getChannelData(0); for (let i = 0; i < len; i++) d[i] = Math.random() * 2 - 1;
-    this.nextTime = this.ctx.currentTime + 0.1;
-    setInterval(() => this.schedule(), 25);
+    this.nextTime = this.ctx.currentTime + 0.05;
+    this.setPhase('menu');
+    setInterval(() => this.schedule(), 20);
   },
   toggleMute() {
     this.muted = !this.muted;
+    try { localStorage.setItem('beanHuntMuted', this.muted ? '1' : '0'); } catch (_) {}
     if (this.master) this.master.gain.setTargetAtTime(this.muted ? 0 : 0.85, this.ctx.currentTime, 0.05);
-    $('muteIcon').textContent = this.muted ? '🔇' : '🔊';
+    const ic = $('muteIcon'); if (ic) ic.textContent = this.muted ? '🔇' : '🔊';
+  },
+  loadMutePref() {
+    try { this.muted = localStorage.getItem('beanHuntMuted') === '1'; } catch (_) {}
+    const ic = $('muteIcon'); if (ic) ic.textContent = this.muted ? '🔇' : '🔊';
   },
   ok() { return this.ctx && this.ctx.state === 'running'; },
   tone({ f = 440, f2 = 0, d = 0.2, type = 'sine', v = 0.3, delay = 0, attack = 0.005, pan = 0, dest = null, vib = 0, vibAmt = 0.04, filter = null }) {
@@ -332,11 +343,12 @@ const Snd = {
   ding() { [1046, 1318, 1568, 2093].forEach((f, i) => this.tone({ f, d: 0.7, v: 0.16, type: 'triangle', delay: i * 0.07 })); },
   beep(final = false) { this.tone({ f: final ? 1320 : 880, d: final ? 0.5 : 0.12, v: 0.18, type: 'square', filter: { f: 3000 } }); },
   pop(v = 1, pan = 0) {
+    this.duck(0.7, 0.02, 0.12, 0.5);
     this.tone({ f: 1300, f2: 140, d: 0.14, v: 0.35 * v, pan }); this.noise({ d: 0.06, v: 0.2 * v, f: 4000, type: 'highpass', pan });
     this.tone({ f: 1568, d: 0.3, v: 0.1 * v, type: 'triangle', delay: 0.06, pan }); this.tone({ f: 2093, d: 0.4, v: 0.1 * v, type: 'triangle', delay: 0.12, pan });
   },
   sad() { const fl = { f: 1400 }; this.tone({ f: 392, f2: 380, d: 0.3, type: 'sawtooth', v: 0.12, filter: fl }); this.tone({ f: 370, f2: 360, d: 0.3, type: 'sawtooth', v: 0.12, delay: 0.32, filter: fl }); this.tone({ f: 349, f2: 340, d: 0.3, type: 'sawtooth', v: 0.12, delay: 0.64, filter: fl }); this.tone({ f: 330, f2: 300, d: 0.9, type: 'sawtooth', v: 0.13, delay: 0.96, vib: 6, filter: fl }); },
-  heartbeat(v = 1) { this.tone({ f: 75, f2: 40, d: 0.14, v: 0.55 * v }); this.tone({ f: 70, f2: 40, d: 0.14, v: 0.38 * v, delay: 0.17 }); },
+  heartbeat(v = 1) { this.duck(0.35, 0.02, 0.08, 0.25); this.tone({ f: 75, f2: 40, d: 0.14, v: 0.55 * v }); this.tone({ f: 70, f2: 40, d: 0.14, v: 0.38 * v, delay: 0.17 }); },
   whoosh(v = 1) { this.noise({ d: 0.35, v: 0.25 * v, f: 300, f2: 3500, q: 1.5 }); },
   sniff() { for (let i = 0; i < 3; i++) this.noise({ d: 0.08, v: 0.15, f: 2500 + i * 400, q: 3, delay: i * 0.13 }); this.tone({ f: 1760, d: 0.6, v: 0.18, delay: 0.45 }); this.tone({ f: 1760, d: 0.6, v: 0.06, delay: 0.75 }); },
   poof(pan = 0, v = 1) { this.noise({ d: 0.35, v: 0.28 * v, f: 1500, f2: 150, type: 'lowpass', pan }); this.tone({ f: 700, f2: 180, d: 0.25, v: 0.1 * v, pan }); },
@@ -357,7 +369,7 @@ const Snd = {
     this.gasG.gain.setTargetAtTime(gas ? 0.11 : 0, t, 0.04);
   },
   whiff() { this.noise({ d: 0.16, v: 0.12, f: 1400, f2: 400, q: 2 }); },
-  alarm(pan = 0, v = 1) { this.tone({ f: 660, d: 0.1, v: 0.15 * v, type: 'square', pan, filter: { f: 2500 } }); this.tone({ f: 990, d: 0.18, v: 0.15 * v, type: 'square', delay: 0.1, pan, filter: { f: 2500 } }); },
+  alarm(pan = 0, v = 1) { this.duck(0.5, 0.02, 0.15, 0.4); this.tone({ f: 660, d: 0.1, v: 0.15 * v, type: 'square', pan, filter: { f: 2500 } }); this.tone({ f: 990, d: 0.18, v: 0.15 * v, type: 'square', delay: 0.1, pan, filter: { f: 2500 } }); },
   giggle(pan = 0, v = 1) { [950, 1100, 1000, 1150].forEach((f, i) => this.tone({ f, f2: f * 0.85, d: 0.09, v: 0.07 * v, delay: i * 0.1, vib: 30, vibAmt: 0.06, pan })); },
   drum() { for (let i = 0; i < 6; i++) this.noise({ d: 0.05, v: 0.08 + i * 0.02, f: 300, type: 'lowpass', delay: i * 0.04 }); },
   fanfare() { const n = [523, 659, 784, 1046]; n.forEach((f, i) => this.tone({ f, d: 0.25, v: 0.15, type: 'square', delay: i * 0.09, filter: { f: 2500 } })); [523, 659, 784].forEach(f => this.tone({ f: f * 2, d: 0.9, v: 0.08, type: 'triangle', delay: 0.4 })); },
@@ -377,29 +389,131 @@ const Snd = {
       for (let i = 0; i < 3; i++) this.tone({ f: 200, f2: 700, d: 0.16, v: 0.18 * v, delay: i * 0.18, vib: 20, pan });
     }
   },
-  // ---- music: cheerful little loop ----
+  // ---- original "walls & titans" score (NOT any copyrighted theme) ----
+  // Martial drums, aeolian ostinatos, brass stabs, choir pads. Procedural only.
+  setPhase(phase) {
+    this.phase = phase || 'menu';
+    const map = { menu: 0.18, hide: 0.42, seek: 0.92, titan: 1.35, end: 0.25 };
+    this.targetIntensity = map[this.phase] != null ? map[this.phase] : 0.4;
+  },
+  // briefly duck the music bus under important SFX
+  duck(amount = 0.55, attack = 0.04, hold = 0.18, release = 0.45) {
+    if (!this.ok() || !this.musicDuck) return;
+    const g = this.musicDuck.gain, t = this.ctx.currentTime;
+    const cur = Math.max(0.05, g.value);
+    g.cancelScheduledValues(t);
+    g.setValueAtTime(cur, t);
+    g.linearRampToValueAtTime(Math.max(0.12, 1 - amount), t + attack);
+    g.linearRampToValueAtTime(Math.max(0.12, 1 - amount), t + attack + hold);
+    g.linearRampToValueAtTime(1, t + attack + hold + release);
+  },
   schedule() {
     if (!this.ok()) return;
-    const spb = 60 / 116 / 4; // 16th note
-    while (this.nextTime < this.ctx.currentTime + 0.12) {
-      if (this.musicOn) this.playStep(this.mstep, this.nextTime - this.ctx.currentTime);
-      this.nextTime += spb; this.mstep = (this.mstep + 1) % 64;
+    // ease intensity toward phase target
+    this.intensity += (this.targetIntensity - this.intensity) * 0.08;
+    // ~138 BPM — driving martial pulse; 16th-note scheduler, 8-bar (128-step) loop
+    const spb = 60 / 138 / 4;
+    while (this.nextTime < this.ctx.currentTime + 0.14) {
+      if (this.musicOn) this.playStep(this.mstep, Math.max(0, this.nextTime - this.ctx.currentTime));
+      this.nextTime += spb; this.mstep = (this.mstep + 1) % 128;
     }
   },
   playStep(s, delay) {
     if (delay < 0) delay = 0;
-    const m = n => 440 * Math.pow(2, (n - 69) / 12);
-    const bar = Math.floor(s / 16), st = s % 16, M = this.music;
-    const chords = [[60, 64, 67], [57, 60, 64], [53, 57, 60], [55, 59, 62]];
+    const midi = n => 440 * Math.pow(2, (n - 69) / 12);
+    const bar = Math.floor(s / 16) % 8, st = s % 16, M = this.music;
+    const I = this.intensity, ph = this.phase;
+    // D aeolian chord cycle (original): Dm – Bb – Gm – A  |  Dm – C – Bb – A
+    const chords = [
+      [62, 65, 69], [58, 62, 65], [55, 58, 62], [57, 61, 64],
+      [62, 65, 69], [60, 64, 67], [58, 62, 65], [57, 61, 64],
+    ];
     const ch = chords[bar];
-    const tense = this.intensity;
-    if (st === 0 || st === 8 || (tense > 0.5 && st === 10)) this.tone({ f: 130, f2: 45, d: 0.16, v: 0.5, dest: M, delay });
-    if (st === 4 || st === 12) this.noise({ d: 0.1, v: 0.2, f: 1800, q: 0.8, dest: M, delay });
-    if (st % 4 === 2 || (tense > 0.5 && st % 2 === 1)) this.noise({ d: 0.03, v: 0.07, f: 8000, type: 'highpass', dest: M, delay });
-    if (st === 0 || st === 6 || st === 8 || st === 14) this.tone({ f: m(ch[0] - 24 + (st === 6 ? 7 : 0)), d: 0.25, v: 0.35, type: 'triangle', dest: M, delay });
-    if (st % 2 === 0) { const pat = [0, 1, 2, 1, 0, 2, 1, 2]; this.tone({ f: m(ch[pat[st / 2]] + 12), d: 0.12, v: 0.09, type: 'square', filter: { f: 1800 }, dest: M, delay }); }
-    const mel = [76, 0, 79, 0, 81, 79, 76, 0, 72, 0, 76, 0, 74, 72, 69, 0, 72, 0, 74, 0, 76, 77, 76, 74, 74, 0, 71, 0, 74, 0, 79, 0];
-    if (st % 2 === 0) { const n = mel[bar * 8 + st / 2]; if (n) this.tone({ f: m(n), d: 0.22, v: 0.12, type: 'triangle', dest: M, delay, vib: 5, vibAmt: 0.01 }); }
+    const root = ch[0];
+    // layer gains by phase
+    const drumV = ph === 'menu' ? 0.22 : ph === 'hide' ? 0.45 : ph === 'titan' ? 1.05 : ph === 'end' ? 0.15 : 0.85;
+    const bassV = ph === 'menu' ? 0.28 : ph === 'hide' ? 0.4 : 0.7;
+    const ostV = ph === 'menu' ? 0.08 : ph === 'hide' ? 0.18 : ph === 'titan' ? 0.38 : 0.28;
+    const brassV = ph === 'seek' || ph === 'titan' ? (ph === 'titan' ? 0.32 : 0.22) : (ph === 'hide' ? 0.06 : 0);
+    const choirV = ph === 'menu' ? 0.1 : ph === 'hide' ? 0.14 : ph === 'end' ? 0.18 : 0.2;
+    const melV = ph === 'menu' ? 0.07 : ph === 'hide' ? 0.1 : ph === 'titan' ? 0.22 : 0.16;
+
+    // ---- martial drums (taiko-ish kick + snare crack + rolling toms) ----
+    if (st === 0 || st === 8) {
+      this.tone({ f: 70, f2: 32, d: 0.22, v: 0.55 * drumV, dest: M, delay, attack: 0.002 });
+      this.noise({ d: 0.08, v: 0.18 * drumV, f: 180, type: 'lowpass', dest: M, delay, attack: 0.001 });
+    }
+    if (st === 4 || st === 12) {
+      this.noise({ d: 0.09, v: 0.28 * drumV, f: 2200, q: 0.7, dest: M, delay });
+      this.tone({ f: 220, f2: 90, d: 0.08, v: 0.12 * drumV, dest: M, delay });
+    }
+    // double-time flams when seeking/titans
+    if (I > 0.7 && (st === 2 || st === 6 || st === 10 || st === 14)) {
+      this.noise({ d: 0.035, v: 0.1 * drumV, f: 1400, q: 1.2, dest: M, delay });
+    }
+    if (ph === 'titan' && st % 2 === 0) {
+      this.tone({ f: 95, f2: 40, d: 0.1, v: 0.2, dest: M, delay, attack: 0.001 });
+    }
+    // ride / hiss
+    if (st % 4 === 2 && I > 0.35) this.noise({ d: 0.04, v: 0.05 * drumV, f: 7000, type: 'highpass', dest: M, delay });
+
+    // ---- low string / brass bass (root + fifth) ----
+    if (st === 0) {
+      this.tone({ f: midi(root - 24), d: 0.95, v: 0.38 * bassV, type: 'sawtooth', filter: { f: 420, q: 0.8 }, dest: M, delay, attack: 0.02 });
+      this.tone({ f: midi(root - 12), d: 0.9, v: 0.16 * bassV, type: 'triangle', dest: M, delay, attack: 0.03 });
+      this.tone({ f: midi(root - 24 + 7), d: 0.85, v: 0.12 * bassV, type: 'sawtooth', filter: { f: 380 }, dest: M, delay, attack: 0.03 });
+    }
+    // walking bass accents on seek+
+    if (I > 0.55 && (st === 8)) {
+      this.tone({ f: midi(root - 24 + 5), d: 0.35, v: 0.22 * bassV, type: 'sawtooth', filter: { f: 360 }, dest: M, delay, attack: 0.01 });
+    }
+
+    // ---- rising ostinato (original: D–F–A–C–Bb–A–G–A looped fragments) ----
+    // MIDI relative to D3=50 ... use scale degrees in D aeolian: 62,65,69,72,70,69,67,69
+    const ost = [62, 65, 69, 72, 70, 69, 67, 69, 62, 65, 67, 70, 69, 65, 62, 69];
+    if (st % 2 === 0 && ostV > 0.05) {
+      const n = ost[(bar * 8 + st / 2) % ost.length];
+      this.tone({ f: midi(n), d: 0.18, v: ostV, type: 'sawtooth', filter: { f: 1600 + I * 800, q: 1.2 }, dest: M, delay, attack: 0.008, vib: 4, vibAmt: 0.008 });
+      if (I > 0.8) this.tone({ f: midi(n + 12), d: 0.14, v: ostV * 0.35, type: 'triangle', dest: M, delay, attack: 0.01 });
+    }
+
+    // ---- choir-like pad on bar starts (detuned sines) ----
+    if (st === 0 && choirV > 0.05) {
+      for (const off of [0, 0.07, -0.06]) {
+        this.tone({ f: midi(ch[0]) * Math.pow(2, off / 12), d: 1.55, v: 0.07 * choirV, type: 'sine', dest: M, delay, attack: 0.25 });
+        this.tone({ f: midi(ch[1]) * Math.pow(2, off / 12), d: 1.55, v: 0.055 * choirV, type: 'sine', dest: M, delay, attack: 0.28 });
+        this.tone({ f: midi(ch[2]) * Math.pow(2, off / 12), d: 1.55, v: 0.05 * choirV, type: 'triangle', dest: M, delay, attack: 0.3 });
+      }
+    }
+
+    // ---- brass hits / fifths (seek & titan) ----
+    if (brassV > 0.05 && (st === 0 || (I > 1 && st === 8))) {
+      this.tone({ f: midi(root), d: 0.28, v: brassV, type: 'sawtooth', filter: { f: 1800, q: 2 }, dest: M, delay, attack: 0.01 });
+      this.tone({ f: midi(root + 7), d: 0.26, v: brassV * 0.75, type: 'sawtooth', filter: { f: 2000, q: 2 }, dest: M, delay, attack: 0.012 });
+      this.tone({ f: midi(root + 12), d: 0.2, v: brassV * 0.35, type: 'square', filter: { f: 2400 }, dest: M, delay, attack: 0.01 });
+    }
+    // frantic brass punches on titan offbeats
+    if (ph === 'titan' && (st === 4 || st === 12)) {
+      this.tone({ f: midi(root + 3), d: 0.12, v: 0.2, type: 'sawtooth', filter: { f: 2200, q: 3 }, dest: M, delay });
+    }
+
+    // ---- sparse heroic motif (original; not any known theme) ----
+    // bar 0/4 accents: A–D–F | bar 2/6: Bb–A–G–F
+    const motifs = {
+      0: { 0: 69, 4: 62, 8: 65, 12: 0 },
+      1: { 4: 70, 8: 69, 12: 67 },
+      2: { 0: 70, 4: 69, 8: 67, 12: 65 },
+      3: { 0: 64, 8: 62 },
+      4: { 0: 69, 4: 74, 8: 72, 12: 69 },
+      5: { 4: 67, 8: 65, 12: 62 },
+      6: { 0: 70, 4: 72, 8: 74, 12: 72 },
+      7: { 0: 69, 8: 64, 12: 62 },
+    };
+    const mn = motifs[bar] && motifs[bar][st];
+    if (mn && melV > 0.05) {
+      this.tone({ f: midi(mn), d: 0.35, v: melV, type: 'triangle', dest: M, delay, attack: 0.015, vib: 5, vibAmt: 0.012 });
+      this.tone({ f: midi(mn - 12), d: 0.3, v: melV * 0.35, type: 'sine', dest: M, delay, attack: 0.02 });
+    }
   },
 };
 
@@ -2041,7 +2155,7 @@ function giantStep(g, dt) {
       const d = Math.hypot(b.pos.x - g.pos.x, b.pos.z - g.pos.z);
       if (d < bd) { bd = d; best = b; }
     }
-    if (best) { g.target = best; g.state = 'chase'; g.seeT = 0.6; if (best.isPlayer && g.warnT <= 0) { g.warnT = 4; Snd.alarm(0, 0.9); Snd.intensity = Math.max(Snd.intensity, 1.4); if (typeof showGiantWarn === 'function') showGiantWarn(); } }
+    if (best) { g.target = best; g.state = 'chase'; g.seeT = 0.6; if (best.isPlayer && g.warnT <= 0) { g.warnT = 4; Snd.alarm(0, 0.9); Snd.setPhase('titan'); if (typeof showGiantWarn === 'function') showGiantWarn(); } }
     else if (g.state === 'chase') { g.state = 'roam'; pickGiantRoam(g); }
   }
   g.warnT = Math.max(0, g.warnT - dt);
@@ -2082,7 +2196,7 @@ function beginGrab(g, b) {
   if (isClient()) return;
   g.state = 'grab'; g.held = b; g.grabT = 4; g.grabProg = 0; b.grabbedBy = g; b.grabEscape = 0; b.releaseHooks(true); b.arc = null; b.flying = false;
   b.endDisguise && b.prop && b.endDisguise();
-  if (b.isPlayer) { bigText('GRABBED!', 'Mash <kbd>Space</kbd> to wriggle free!'); shake(0.45); Snd.alarm(0, 1); }
+  if (b.isPlayer) { bigText('GRABBED!', 'Mash <kbd>Space</kbd> to wriggle free!'); shake(0.45); Snd.alarm(0, 1); Snd.duck(0.75, 0.03, 0.25, 0.6); Snd.setPhase('titan'); }
   else b.say(pick(['AAAAH!', 'Put me down!!', 'Eek! Giant!']), 2);
   netEv({ e: 'grab', gid: g.id, id: b.id });
 }
@@ -2198,7 +2312,7 @@ function stunGiant(g, by) {
   if (near(g.pos, 50)) { Snd.pop(volAt(g.pos)); Snd.whoosh(volAt(g.pos)); }
   if (by) {
     addScore(by, 150, 'NAPE HIT!');
-    if (by.isPlayer) { shake(0.5); popup('+150 NAPE HIT!'); Snd.fanfare(); }
+    if (by.isPlayer) { shake(0.5); popup('+150 NAPE HIT!'); Snd.duck(0.8, 0.02, 0.35, 0.7); Snd.fanfare(); }
     else by.say(pick(['Titan down!', 'Nape sliced!', 'Got its nape!']), 2);
   }
   feed(`⚡ <b style="color:${by ? by.color : '#fff'}">${esc(by ? by.name : 'Someone')}</b> stunned a giant!`);
@@ -2749,7 +2863,7 @@ function updateVision(dt) {
 }
 
 function startGame() {
-  Snd.init();
+  Snd.init(); Snd.setPhase('menu');
   buildRoster(false);
   G.round = 0; G.lastSeeker = null; G.inGame = true;
   $('menu').classList.add('hidden');
@@ -2781,7 +2895,7 @@ function roundSetup(r, sel, start, hops) {
   CAM.mode = 'roulette'; CAM.orbitA = rand(0, 6.28);
   $('hud').classList.add('hidden');
   bigText(`ROUND ${G.round}`, 'Who will be the seeker...?');
-  Snd.intensity = 0;
+  Snd.setPhase('menu');
 }
 function updateRoulette(dt) {
   const R = G.rl; R.t += dt;
@@ -2820,7 +2934,7 @@ function reveal() {
 }
 function startHiding() {
   refreshTimers();
-  G.state = 'hiding'; G.timer = HIDE_T; G.lastBeep = 99;
+  G.state = 'hiding'; G.timer = HIDE_T; G.lastBeep = 99; Snd.setPhase('hide');
   if (!isClient()) { G.giantCount = G.giantsOn ? (G.giantCount || (MAPS[G.map] && MAPS[G.map].giants) || 3) : 0; spawnGiantsForMap(); }
   netEv({ e: 'hide' });
   const s = G.seeker;
@@ -2846,11 +2960,11 @@ function startSeeking() {
   $('blindfold').classList.add('hidden');
   s.jumpReq = true; s.say('READY OR NOT, HERE I COME!', 2.5);
   bigText('SEEK!', s.isPlayer ? 'Find them all! Q = Sniff · F = Dash · E = Tag · Click = grapple' : 'Ready or not... here they come! 😱');
-  Snd.fanfare(); Snd.intensity = 1;
+  Snd.fanfare(); Snd.setPhase('seek');
   if (!isClient()) G.beans.forEach(b => { if (b !== s && !b.human && b.ai.mode !== 'hidden') b.ai.mode = b.ai.path ? 'toSpot' : 'hidden'; });
 }
 function endRound(seekerWon) {
-  G.state = 'roundEnd'; G.endT = 0; Snd.intensity = 0;
+  G.state = 'roundEnd'; G.endT = 0; Snd.setPhase('end');
   const s = G.seeker, p = G.player;
   if (seekerWon) addScore(s, 50 + Math.round(G.timer * 2), 'CLEAN SWEEP!');
   else aliveHiders().forEach(h => addScore(h, 300, 'SURVIVED!'));
@@ -2887,7 +3001,7 @@ function onNext() {
   if (G.state === 'roundEnd') nextRound();
 }
 function toMenu() {
-  clearGiants(); G.state = 'menu'; G.seeker = null; G.inGame = false; buildRoster(true); setupMenuScene();
+  clearGiants(); G.state = 'menu'; G.seeker = null; G.inGame = false; Snd.setPhase('menu'); buildRoster(true); setupMenuScene();
   $('menu').classList.remove('hidden'); $('hud').classList.add('hidden'); $('blindfold').classList.add('hidden');
   CAM.mode = 'menu';
 }
@@ -3341,7 +3455,7 @@ addEventListener('keydown', e => {
   keys[e.code] = true;
   Snd.init();
   const p = G.player; if (!p) return;
-  if (e.code === 'KeyM') Snd.toggleMute();
+  if (e.code === 'KeyM') { Snd.init(); Snd.toggleMute(); }
   if (e.code === 'Enter' && !$('scoreboard').classList.contains('hidden')) onNext();
   if (G.state !== 'hiding' && G.state !== 'seeking') return;
   if (p.caught) return;
@@ -3788,6 +3902,13 @@ function update(dt) {
   }
   for (const b of G.beans) { commonBeanUpdate(b, dt); b.animate(dt, G.t); b.updateHooks(dt); }
   if (typeof updateGiants === "function") updateGiants(dt);
+  // music phase: titan while a giant chases/grabs the local player; otherwise match game state
+  if (G.inGame && typeof Snd.setPhase === 'function' && typeof giants !== 'undefined') {
+    const chased = giants.some(g => (g.state === 'chase' || g.state === 'grab') && (g.target === G.player || g.held === G.player));
+    if (chased) { if (Snd.phase !== 'titan') Snd.setPhase('titan'); }
+    else if (G.state === 'seeking' && Snd.phase === 'titan') Snd.setPhase('seek');
+    else if (G.state === 'hiding' && Snd.phase === 'titan') Snd.setPhase('hide');
+  }
   for (const bu of bushes) { bu.wigV += -bu.wig * 90 * dt; bu.wigV *= Math.exp(-5 * dt); bu.wig += bu.wigV * dt; const w = clamp(bu.wig, -1.5, 1.5); bu.group.scale.set(1 + w * 0.08, 1 - w * 0.06, 1 + w * 0.08); bu.group.rotation.z = w * 0.06; }
   for (const t of trampolines) { t.dipV += -t.dip * 120 * dt; t.dipV *= Math.exp(-6 * dt); t.dip += t.dipV * dt; t.mesh.position.y = 0.43 + clamp(t.dip, -0.3, 0.2) * 0.5; }
   for (const f of animated) f(G.t, dt);
@@ -3828,7 +3949,7 @@ function update(dt) {
 // ======================================================================
 setMap('city'); G.mapChoice = 'city';
 buildRoster(true); setupMenuScene();
-if (G.debug) G.api = { startGame, startSeeking, endRound, nextRound, CAM, aliveHiders, update, updateCamera, updateHUD, spots, zones, setMap, setupMenuScene, fireHook, releaseHook, updateAim, colliders, roofs, groundHeight, planLegs, setGoal, startArc, solidAt, segBlocked, MAPS, keys, giants, spawnGiantsForMap, clearGiants, tryNapeHit, updateGiants, renderer, scene };
+if (G.debug) G.api = { startGame, startSeeking, startHiding, endRound, nextRound, CAM, aliveHiders, update, updateCamera, updateHUD, spots, zones, setMap, setupMenuScene, fireHook, releaseHook, updateAim, colliders, roofs, groundHeight, planLegs, setGoal, startArc, solidAt, segBlocked, MAPS, keys, giants, spawnGiantsForMap, clearGiants, tryNapeHit, updateGiants, renderer, scene, Snd };
 let last = performance.now(), fpsAcc = 0, fpsN = 0;
 G.fps = 0;
 function frame(now) {

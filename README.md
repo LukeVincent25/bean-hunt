@@ -32,6 +32,9 @@ Online play is peer-to-peer over WebRTC. The free public PeerJS broker only does
 
 Controls: WASD to move, mouse to look, Space to jump, Shift to sprint, C to crouch. Left/right click (or G) for the hooks, Space while hooked to reel in with gas, Shift in mid-air for gas thrust. Mash Space if a giant grabs you; nape-hit giants while grappling fast to stun them. Hiders: Q to disguise, F to taunt. Seeker: **E** to tag (mouse clicks are now the hooks), Q to sniff, F to dash.
 
+## Soundtrack
+Original procedural music (Web Audio only — no sampled tracks). Martial drums, tense low strings/brass, aeolian ostinatos and choir-like pads that intensify from the menu → hiding → seeking, and surge when a giant chases you. Mute with **M**.
+
 ### Notes
 - If peer-to-peer is blocked by a very strict firewall or NAT (some office or school networks, some mobile carriers), joining can fail. You can add your own TURN server by setting `window.BEAN_HUNT_ICE = [{urls:'turn:your.server:3478', username:'…', credential:'…'}]` before the game script runs.
 - Add `?debug` to the URL to expose the debug hooks (`window.__bh`, `window.__dbg`).
