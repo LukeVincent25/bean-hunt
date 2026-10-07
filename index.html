@@ -201,23 +201,33 @@ kbd{display:inline-block;background:#fff;border:2px solid var(--ink);border-radi
 <div id="menu">
   <div id="menuPanel">
     <div id="title"></div>
-    <div id="tag">The squishiest game of hide-and-seek ever bean made.</div>
+    <div id="tag">Squishy hide-and-seek (infection tag!) — or race your friends on a new track every time.</div>
     <div class="row"><label class="h">Your name</label><input id="pname" type="text" maxlength="14" value="You"></div>
     <div class="row"><label class="h">Bean color</label><div id="swatches"></div></div>
     <div class="row"><label class="h">Hat</label><div class="seg" id="hats"></div></div>
+    <div class="row"><label class="h">Mode</label><div class="seg" id="modeSel"><button data-v="hide" class="sel">🔦 Hide &amp; Seek</button><button data-v="race">🏁 Race</button></div></div>
+    <div id="hideOpts">
     <div class="row"><label class="h">Map</label><div class="seg mapCard" id="mapSel"><button data-v="city" class="sel">🏰 Walled City<small>Huge city · Titans · ODM heaven</small></button><button data-v="yard">🌳 Backyard<small>Cosy garden &amp; house</small></button></div></div>
     <div class="row"><label class="h">Seeker difficulty</label><div class="seg" id="diff"><button data-v="easy">😴 Easy</button><button data-v="normal" class="sel">🙂 Normal</button><button data-v="hard">😈 Hard</button></div></div>
     <div class="row"><label class="h">Bean bots: <span id="botN">6</span></label><input id="bots" type="range" min="3" max="7" value="6"></div>
     <div class="row"><label class="h">Rounds</label><div class="seg" id="rounds"><button data-v="3">3</button><button data-v="5" class="sel">5</button><button data-v="7">7</button></div></div>
     <div class="row"><label class="h">Giant beans</label><div class="seg" id="giantsOn"><button data-v="1" class="sel">👹 On</button><button data-v="0">Off</button></div></div>
     <div class="row"><label class="h">Giant count: <span id="giantN">4</span></label><input id="giants" type="range" min="1" max="5" value="4"></div>
+    </div>
+    <div id="raceOpts" class="hidden">
+      <div class="row"><label class="h">Laps</label><div class="seg" id="raceLaps"><button data-v="1">1</button><button data-v="3" class="sel">3</button><button data-v="5">5</button></div></div>
+      <div class="row"><label class="h">Track seed</label><div class="jrow" style="gap:8px"><input id="raceSeed" type="text" maxlength="10" placeholder="random" style="flex:1"><button type="button" id="raceSeedRnd" class="mpb" style="flex:0">🎲</button></div></div>
+      <div class="row"><label class="h">Racers (bots fill): <span id="botN2">6</span></label><input id="bots2" type="range" min="1" max="7" value="6"></div>
+    </div>
     <details><summary>How to play</summary><ul>
       <li>Each round a spotlight roulette picks one <b>Seeker</b>. Everyone else <b>hides</b>!</li>
-      <li><b>Hiders:</b> hide while the seeker counts (longer on the big city map). Crouch (<kbd>C</kbd>) inside bushes &amp; boxes or under tables/beds to be nearly invisible. <kbd>Q</kbd> Disguise as a prop, <kbd>F</kbd> Taunt for bonus points (but it reveals you!). Earn points every second you survive.</li>
-      <li><b>Seeker:</b> find and tag everyone (<kbd>E</kbd> when close, or just bump them). <kbd>Q</kbd> Sniff points to the nearest hider, <kbd>F</kbd> Dash.</li>
-      <li><kbd>WASD</kbd> move · mouse look · <kbd>Space</kbd> jump · <kbd>Shift</kbd> sprint · <kbd>M</kbd> mute (epic procedural score — gets louder when seeking / giants chase) · <kbd>Esc</kbd> pause. Caught? Fly around as a ghost — hold <kbd>T</kbd> to fast-forward.</li>
+      <li><b>Infection tag:</b> when a hider is tagged they <b>become a seeker</b> and join the hunt (cops &amp; robbers / tag-chain). Round ends when everyone is converted or time runs out.</li>
+      <li><b>Hiders:</b> hide while the starting seeker counts (longer on the city map). Crouch (<kbd>C</kbd>) in bushes/boxes or under furniture. <kbd>Q</kbd> Disguise, <kbd>F</kbd> Taunt for bonus points (but it reveals you!). Survive for points — if tagged you switch sides!</li>
+      <li><b>Seekers:</b> tag hiders (<kbd>E</kbd> or bump them) to recruit them. <kbd>Q</kbd> Sniff · <kbd>F</kbd> Dash. Converted seekers get a red glow and can tag too.</li>
+      <li><kbd>WASD</kbd> move · mouse look · <kbd>Space</kbd> jump · <kbd>Shift</kbd> sprint · <kbd>M</kbd> mute · <kbd>Esc</kbd> pause. Starting seeker: hold <kbd>T</kbd> to count faster (solo).</li>
       <li><b>🪝 ODM grappling gear (every bean!):</b> aim with the reticle — it glows when a wall is in range (60 m). Hold <kbd>Left click</kbd> / <kbd>Right click</kbd> to fire &amp; hang on to the left / right hook (or hold <kbd>G</kbd>), let go to fly off with all your momentum. <kbd>Space</kbd> while hooked = gas-boost &amp; reel in, <kbd>Shift</kbd> in mid-air = gas thrust. Gas refills while you're on the ground.</li>
       <li><b>Walled City:</b> a huge AoT-style town (~2× bigger): 8–12 floor towers, a 46 m wall, bridges, a raised castle district and a taller clock tower. Hide high! (Bots grapple too.) <b>Backyard:</b> a bit roomier — trampoline, slide and pond. 🦆</li>
+      <li><b>🏁 Race mode:</b> pick Race on the menu/lobby. Each race builds a unique track from a <b>seed</b> (same seed = same track for everyone). Countdown, then boost with <kbd>Shift</kbd>, stay on the road, hit checkpoints, finish all laps. Grapple shortcuts are optional. Places and a finish scoreboard show who won.</li>
       <li><b>👹 Giant beans:</b> lumbering titans roam the map. If one grabs you, mash <kbd>Space</kbd> to wriggle free (~4s) or get yeeted across town (and briefly revealed if you were hiding). Slice a giant's <b>nape</b> (back of the neck) while zipping past on your hooks at high speed to stun it for ~10s and score big. Grapples stick to giants too. Toggle giants in the menu / lobby.</li>
     </ul></details>
     <div id="menuBtns"><button id="play">PLAY vs BOTS!</button>
@@ -238,12 +248,19 @@ kbd{display:inline-block;background:#fff;border:2px solid var(--ink);border-radi
   <div class="lbSec">Players <span id="lbCount"></span></div>
   <div id="lbPlayers"></div>
   <div id="lbHost">
+    <div class="row"><label class="h">Mode</label><div class="seg" id="lbMode"><button data-v="hide" class="sel">🔦 Hide &amp; Seek</button><button data-v="race">🏁 Race</button></div></div>
     <div class="row"><label class="h">Fill empty slots with bots: <span id="lbBotN">3</span></label><input id="lbBots" type="range" min="0" max="7" value="3"></div>
+    <div id="lbHideOpts">
     <div class="row"><label class="h">Map</label><div class="seg" id="lbMap"><button data-v="city" class="sel">🏰 Walled City</button><button data-v="yard">🌳 Backyard</button></div></div>
     <div class="row"><label class="h">Bot seeker difficulty</label><div class="seg" id="lbDiff"><button data-v="easy">😴 Easy</button><button data-v="normal" class="sel">🙂 Normal</button><button data-v="hard">😈 Hard</button></div></div>
     <div class="row"><label class="h">Rounds</label><div class="seg" id="lbRounds"><button data-v="3">3</button><button data-v="5" class="sel">5</button><button data-v="7">7</button></div></div>
     <div class="row"><label class="h">Giant beans</label><div class="seg" id="lbGiantsOn"><button data-v="1" class="sel">👹 On</button><button data-v="0">Off</button></div></div>
     <div class="row"><label class="h">Giant count: <span id="lbGiantN">4</span></label><input id="lbGiants" type="range" min="1" max="5" value="4"></div>
+    </div>
+    <div id="lbRaceOpts" class="hidden">
+      <div class="row"><label class="h">Laps</label><div class="seg" id="lbRaceLaps"><button data-v="1">1</button><button data-v="3" class="sel">3</button><button data-v="5">5</button></div></div>
+      <div class="row"><label class="h">Track seed</label><div class="jrow" style="gap:8px"><input id="lbRaceSeed" type="text" maxlength="10" placeholder="random" style="flex:1"><button type="button" id="lbRaceSeedRnd" class="mpb" style="flex:0">🎲</button></div></div>
+    </div>
   </div>
   <div id="lbInfo"></div>
   <div id="lbStatus"></div>
@@ -278,7 +295,7 @@ const v3 = (x = 0, y = 0, z = 0) => new THREE.Vector3(x, y, z);
 const Snd = {
   ctx: null, master: null, sfx: null, music: null, musicDuck: null, muted: false, noiseBuf: null,
   mstep: 0, nextTime: 0, intensity: 0, targetIntensity: 0, musicOn: true,
-  phase: 'menu', // menu | hide | seek | titan | end
+  phase: 'menu', // menu | hide | seek | titan | end | race
   init() {
     if (this.ctx) { if (this.ctx.state !== 'running') this.ctx.resume(); return; }
     this.loadMutePref();
@@ -393,7 +410,7 @@ const Snd = {
   // Martial drums, aeolian ostinatos, brass stabs, choir pads. Procedural only.
   setPhase(phase) {
     this.phase = phase || 'menu';
-    const map = { menu: 0.18, hide: 0.42, seek: 0.92, titan: 1.35, end: 0.25 };
+    const map = { menu: 0.18, hide: 0.42, seek: 0.92, titan: 1.35, end: 0.25, race: 1.0 };
     this.targetIntensity = map[this.phase] != null ? map[this.phase] : 0.4;
   },
   // briefly duck the music bus under important SFX
@@ -423,6 +440,25 @@ const Snd = {
     const midi = n => 440 * Math.pow(2, (n - 69) / 12);
     const bar = Math.floor(s / 16) % 8, st = s % 16, M = this.music;
     const I = this.intensity, ph = this.phase;
+    // ---- upbeat race groove (original; ~150 BPM feel via denser hats; NOT the hide theme) ----
+    if (ph === 'race') {
+      const kick = st === 0 || st === 8;
+      const sn = st === 4 || st === 12;
+      if (kick) { this.tone({ f: 90, f2: 40, d: 0.14, v: 0.45, dest: M, delay, attack: 0.001 }); this.noise({ d: 0.04, v: 0.1, f: 200, type: 'lowpass', dest: M, delay }); }
+      if (sn) this.noise({ d: 0.07, v: 0.22, f: 2500, q: 0.8, dest: M, delay });
+      if (st % 2 === 0) this.noise({ d: 0.025, v: 0.06, f: 9000, type: 'highpass', dest: M, delay });
+      // chippy major-ish ostinato (C mixolydian-ish — bright, different from aeolian hide score)
+      const raceOst = [60, 64, 67, 70, 67, 64, 62, 64, 60, 67, 72, 67, 64, 60, 55, 60];
+      if (st % 2 === 0) {
+        const n = raceOst[(bar * 8 + st / 2) % raceOst.length];
+        this.tone({ f: midi(n + 12), d: 0.12, v: 0.12, type: 'square', filter: { f: 2800, q: 1.5 }, dest: M, delay, attack: 0.005 });
+      }
+      if (st === 0) {
+        this.tone({ f: midi(36), d: 0.7, v: 0.22, type: 'sawtooth', filter: { f: 380 }, dest: M, delay, attack: 0.02 });
+        this.tone({ f: midi(48), d: 0.6, v: 0.1, type: 'triangle', dest: M, delay, attack: 0.02 });
+      }
+      return;
+    }
     // D aeolian chord cycle (original): Dm – Bb – Gm – A  |  Dm – C – Bb – A
     const chords = [
       [62, 65, 69], [58, 62, 65], [55, 58, 62], [57, 61, 64],
@@ -1810,7 +1846,7 @@ class Bean {
     // state
     this.onGround = true; this.coyote = 0; this.jumpReq = false; this.jumpHeld = false; this.crouch = false;
     this.sq = 1; this.sqv = 0; this.walkPh = 0; this.lastStepPh = 0; this.blinkT = rand(1, 4); this.spinT = 0; this.lookOff = 0;
-    this.role = 'hider'; this.caught = false; this.ghost = false; this.score = 0; this.roundScore = 0; this.timesSeeker = 0; this.catches = 0;
+    this.role = 'hider'; this.caught = false; this.ghost = false; this.seekerLook = false; this.score = 0; this.roundScore = 0; this.timesSeeker = 0; this.catches = 0;
     this.stamina = 1; this.tired = false; this.cdA = 0; this.cdB = 0; this.disguiseT = 0; this.dashT = 0; this.tauntT = 0; this.sniffT = 0; this.aware = 0; this.inWater = false;
     this.zone = null; this.prop = null; this.lastSeen = v3();
     this.ai = { mode: 'idle', path: null, pi: 0, goal: null, t: 0, think: 0, stuckT: 0, stuckN: 0, lastP: v3(), spot: null, lookT: 0, lookBase: 0, fleeT: 0, sayT: rand(3, 9), bravery: rand(0.2, 1) };
@@ -1825,17 +1861,34 @@ class Bean {
   dispose() { for (const h of this.hooks) { if (h.cable) scene.remove(h.cable); if (h.head) scene.remove(h.head); } scene.remove(this.root); this.lbl.remove(); this.bub.remove(); this.mark.remove(); }
   fwd() { return { x: Math.sin(this.yaw), z: Math.cos(this.yaw) }; }
   reset() {
-    this.caught = false; this.setGhost(false); this.vel.set(0, 0, 0); this.wish.set(0, 0, 0); this.crouch = false; this.height = BEAN_H;
+    this.caught = false; this.setGhost(false); this.setSeekerLook(false); this.vel.set(0, 0, 0); this.wish.set(0, 0, 0); this.crouch = false; this.height = BEAN_H;
     this.stamina = 1; this.tired = false; this.cdA = 0; this.cdB = 0; this.disguiseT = 0; this.dashT = 0; this.tauntT = 0; this.sniffT = 0; this.aware = 0;
     this.arc = null; this.flying = false; this.gas = 1; this.releaseHooks(true); this.grabbedBy = null; this.grabEscape = 0; this.tossT = 0;
     this.roundScore = 0; this.blindfold.visible = false; this.endDisguise(true); this.markT = 0; this.mark.style.display = 'none';
     Object.assign(this.ai, { mode: 'idle', path: null, goal: null, spot: null, t: 0, stuckT: 0, stuckN: 0, fleeT: 0 });
   }
   setGhost(on) {
-    this.ghost = on; this.halo.visible = on;
-    this.mat.transparent = on; this.mat.opacity = on ? 0.45 : 1; this.mat.depthWrite = !on; if (on) this.mat.emissive.set(0x8888aa); else this.mat.emissive.set(this.color).multiplyScalar(0.14); this.mat.needsUpdate = true;
+    this.ghost = on;
+    if (on) { this.halo.visible = true; this.halo.material.color.set(0xfff27a); }
+    else if (!this.seekerLook) this.halo.visible = false;
+    this.mat.transparent = on; this.mat.opacity = on ? 0.45 : 1; this.mat.depthWrite = !on;
+    if (on) this.mat.emissive.set(0x8888aa);
+    else if (this.seekerLook) this.mat.emissive.setHex(0xff2244).multiplyScalar(0.5);
+    else this.mat.emissive.set(this.color).multiplyScalar(0.14);
+    this.mat.needsUpdate = true;
     this.body.castShadow = !on; this.feet.forEach(f => f.visible = !on);
     if (this.hat) this.hat.visible = true;
+  }
+  // red glow ring for seekers (infection / starting seeker)
+  setSeekerLook(on) {
+    this.seekerLook = !!on;
+    if (on) {
+      this.halo.visible = true; this.halo.material.color.set(0xff3b5c);
+      this.mat.emissive.setHex(0xff2244).multiplyScalar(0.55); this.mat.needsUpdate = true;
+    } else if (!this.ghost) {
+      this.halo.visible = false; this.halo.material.color.set(0xfff27a);
+      this.mat.emissive.set(this.color).multiplyScalar(0.14); this.mat.needsUpdate = true;
+    }
   }
   startDisguise(kind) { if (!this.prop) { this.propKind = kind || pick(PROP_KINDS); this.prop = makeProp(this.propKind); this.root.add(this.prop); } this.prop.visible = true; this.wob.visible = false; }
   endDisguise(silent) { if (this.prop) { this.root.remove(this.prop); this.prop = null; } this.wob.visible = true; if (!silent && this.disguiseT > 0) { } this.disguiseT = 0; }
@@ -2077,7 +2130,7 @@ function ensureGiantSlots(n) {
 
 const _gp = v3(), _gp2 = v3(), _gp3 = v3();
 function giantCanSee(g, b) {
-  if (!b || b.caught || b.ghost || b.grabbedBy) return false;
+  if (!b || b.ghost || b.grabbedBy) return false;
   const dx = b.pos.x - g.pos.x, dz = b.pos.z - g.pos.z, d = Math.hypot(dx, dz);
   if (d > 42 || d < 0.5) return false;
   if (b.pos.y > g.height + 4) return false; // too high on a tower
@@ -2147,7 +2200,7 @@ function giantStep(g, dt) {
   }
 
   // acquire / keep target
-  if (!g.target || g.target.caught || g.target.ghost || g.target.grabbedBy || !giantCanSee(g, g.target)) {
+  if (!g.target || g.target.ghost || g.target.grabbedBy || !giantCanSee(g, g.target)) {
     g.target = null;
     let best = null, bd = 1e9;
     for (const b of G.beans) {
@@ -2167,7 +2220,7 @@ function giantStep(g, dt) {
     const speed = 4.6;
     g.vel.x = Math.sin(g.yaw) * speed; g.vel.z = Math.cos(g.yaw) * speed;
     // grab when close and roughly at ground
-    if (d < 6.5 && b.pos.y < g.height * 0.55 && !b.grabbedBy && !b.caught && !b.ghost) {
+    if (d < 6.5 && b.pos.y < g.height * 0.55 && !b.grabbedBy && !b.ghost) {
       beginGrab(g, b);
     }
   } else {
@@ -2211,7 +2264,7 @@ function giantToss(g) {
   if (b.isPlayer) { Snd.sad(); shake(0.6); bigText('YEETED!', 'The giant tossed you across town!'); }
   else b.say(pick(LINES.flee), 2);
   // reveal ping for hiders
-  if (b.role === 'hider' && !b.caught && G.seeker) {
+  if (b.role === 'hider' && G.seeker) {
     b.markT = 4; b.mark.textContent = '📍'; b.mark.style.display = 'block';
     b.tauntT = Math.max(b.tauntT, 3.5);
     if (G.seeker.isPlayer) feed(`📍 A giant tossed <b style="color:${b.color}">${esc(b.name)}</b> — revealed!`);
@@ -2259,7 +2312,7 @@ function updateGiants(dt) {
     for (const g of giants) giantStep(g, dt);
     // bots flee giants
     for (const b of G.beans) {
-      if (b.human || b.caught || b.ghost || b.grabbedBy || b.arc) continue;
+      if (b.human || b.ghost || b.grabbedBy || b.arc) continue;
       let nearG = null, bd = 18;
       for (const g of giants) {
         if (g.state === 'stun') continue;
@@ -2291,7 +2344,7 @@ function updateGiants(dt) {
 }
 
 function tryNapeHit(b) {
-  if (!b || b.grabbedBy || b.caught || b.ghost) return false;
+  if (!b || b.grabbedBy || b.ghost) return false;
   if (isClient()) { Net.send({ t: 'act', a: 'nape', cy: CAM.yaw }); return false; }
   const sp = Math.hypot(b.vel.x, b.vel.y, b.vel.z);
   if (sp < 14 && !b.hooked()) return false;
@@ -2383,15 +2436,16 @@ const LINES = {
   search: ["Is that a bean behind the couch?", "Come out, come out, wherever you are!", "I smell jelly...", "Bush, I'm watching you.", "Hmm... suspicious box.", "Here, beany beany!", "I know you're here somewhere..."],
   spot: ["THERE YOU ARE!", "I SEE YOU!", "Bean spotted!", "Gotcha... almost!", "Ah-HA!"],
   flee: ["AAAAH!", "Nope nope nope!", "Run, bean, run!", "Not today!", "Eek!"],
-  caught: ["Aww, beans!", "I was so close!", "Boo... I'm a ghost now.", "Rematch!", "Tell my jelly I love them.", "How?!"],
-  catch: ["Tag! You're out!", "Found one!", "Too easy!", "Beaned!"],
+  caught: ["Aww, beans!", "I was so close!", "Wait — I'm a seeker now?!", "Rematch!", "Tell my jelly I love them.", "How?!"],
+  catch: ["Tag! You're IT!", "Found one!", "Join the hunt!", "Beaned — now chase!"],
+  convert: ["You're with us now!", "Welcome to the hunt!", "New seeker!", "Infection complete!"],
   taunt: ["Nyah nyah!", "Over heeere!", "Can't catch me!", "Beep beep!", "Yoo-hoo!"],
   ghost: ["Wooo~ I'm a ghost", "Spooky bean hours.", "Go left! No, right!", "Being dead is chill."],
   lost: ["Where'd they go?!", "Hmph. Lost 'em.", "They were JUST here!"],
   fooled: ["Just a box... probably.", "Nice plant.", "Nothing to see here."],
 };
 const G = {
-  state: 'menu', round: 0, totalRounds: 5, difficulty: 'normal', botCount: 6, beans: [], player: null, seeker: null, lastSeeker: null,
+  state: 'menu', mode: 'hide', round: 0, totalRounds: 5, difficulty: 'normal', botCount: 6, raceLaps: 3, raceSeed: 0, beans: [], player: null, seeker: null, lastSeeker: null,
   timer: 0, t: 0, paused: false, settings: { name: 'You', color: '#ff69b4', hat: 'party' }, hidersVer: 0, rl: null, endT: 0, forceSeeker: null,
   trauma: 0, sniffTarget: null, feed: [], giantsOn: true, giantCount: 4,
 };
@@ -2402,8 +2456,9 @@ const isHost = () => !!(G.net && G.net.role === 'host');
 function netEv(ev) { if (isHost()) Net.broadcast({ t: 'ev', ...ev }); }
 function beanById(id) { for (const b of G.beans) if (b.id === id) return b; return null; }
 const esc = s => String(s).replace(/[&<>"'`]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;', '`': '&#96;' }[c]));
-const hiders = () => G.beans.filter(b => b !== G.seeker);
-const aliveHiders = () => G.beans.filter(b => b !== G.seeker && !b.caught);
+const seekers = () => G.beans.filter(b => b.role === 'seeker');
+const hiders = () => G.beans.filter(b => b.role === 'hider');
+const aliveHiders = () => G.beans.filter(b => b.role === 'hider'); // infection: tagged → seeker
 function near(p, r) { return camera.position.distanceTo(p) < r + 8; }
 function volAt(p) { const d = G.player ? G.player.pos.distanceTo(p) : 10; return clamp(1.2 - d / 30, 0.05, 1); }
 function panAt(p) { const dx = p.x - camera.position.x, dz = p.z - camera.position.z; const yaw = CAM.yaw; const rx = -Math.cos(yaw), rz = Math.sin(yaw); const d = Math.hypot(dx, dz) || 1; return clamp((dx * rx + dz * rz) / d, -1, 1) * 0.8; }
@@ -2440,7 +2495,7 @@ function doTaunt(b) {
   fxTaunt(b, k); netEv({ e: 'taunt', id: b.id, k });
   b.say(pick(LINES.taunt), 2); b.showMark('📣', 2.5);
   addScore(b, 50, 'TAUNT!');
-  if (G.seeker && !G.seeker.human) seekerHear(G.seeker, b.pos, 2.5, true);
+  for (const sk of seekers()) if (!sk.human) seekerHear(sk, b.pos, 2.5, true);
 }
 function fxTaunt(b, k) {
   if (!b) return;
@@ -2489,7 +2544,7 @@ function tagLunge(s) {
   s.yaw = CAM.yaw; s.vel.x += f.x * 6; s.vel.z += f.z * 6; s.sqv += 3;
 }
 function tryTag(s) {
-  if (s.role !== 'seeker' || G.state !== 'seeking' || s.tagCd > 0 || s.caught) return;
+  if (s.role !== 'seeker' || G.state !== 'seeking' || s.tagCd > 0 || s.ghost) return;
   s.tagCd = 0.55;
   const yaw = s.isPlayer ? CAM.yaw : s.remote ? s.camYaw : s.yaw;
   const f = { x: Math.sin(yaw), z: Math.cos(yaw) };
@@ -2506,27 +2561,39 @@ function tryTag(s) {
   if (best) catchBean(best, s); else if (s.isPlayer) { Snd.whiff(); s.mouthOpen = true; setTimeout(() => s.mouthOpen = false, 300); }
 }
 function catchBean(h, s) {
-  if (h.caught) return;
+  if (!h || !s || h.role === 'seeker' || h.ghost) return;
   if (G.debug) (G.catchLog = G.catchLog || []).push(`${G.timer.toFixed(0)}s ${h.name} by ${s.name} mode=${s.ai.mode} zone=${h.zone ? h.zone.type : 'open'} crouch=${h.crouch} hmode=${h.ai.mode}`);
   s.catches++;
   addScore(s, 100, 'GOTCHA!');
+  if (s !== G.seeker || seekers().length > 1) addScore(s, 25, 'CHAIN!');
   fxCatch(h, s); netEv({ e: 'catch', h: h.id, s: s.id });
-  h.say(pick(LINES.caught), 2.5); setTimeout(() => s.say(pick(LINES.catch), 2), 400);
-  h.showMark('👻', 1.5);
-  if (s.ai.target === h) s.ai.mode = 'look', s.ai.lookT = 1.2, s.ai.target = null, s.ai.path = null;
+  h.say(pick(LINES.caught), 2.5); setTimeout(() => s.say(pick(LINES.convert || LINES.catch), 2), 400);
+  h.showMark('🔦', 1.5);
+  if (s.ai && s.ai.target === h) s.ai.mode = 'look', s.ai.lookT = 1.2, s.ai.target = null, s.ai.path = null;
 }
 function fxCatch(h, s) {
-  if (!h || !s || (h.caught && isClient())) return;
+  if (!h || !s) return;
+  if (h.role === 'seeker') return;
   h.caught = true; h.endDisguise(); h.crouch = false; h.aware = 0;
-  h.setGhost(true); if (!h.remote) h.vel.set(0, 6, 0);
+  h.setGhost(false);
+  h.role = 'seeker';
+  h.setSeekerLook(true);
+  h.cdA = 0; h.cdB = 0; h.tagCd = 0.35; h.sniffT = 0; h.dashT = 0; h.tauntT = 0;
+  if (!h.human) {
+    Object.assign(h.ai, { mode: 'idle', path: null, sniffCd: 0.9, dashCd: 0, visited: new Map(), focus: null, sayT: 2, target: null, maxAware: 0, lookT: 0 });
+  }
   const p = v3(h.pos.x, h.pos.y + 0.9, h.pos.z);
-  confetti(p, 90, [h.color, s.color, 0xffffff, 0xffd60a], 8); puff(p, 14, 0xffffff, 0.45, 2, 1);
+  confetti(p, 90, [h.color, s.color, 0xff3b5c, 0xffffff], 8); puff(p, 14, 0xff3b5c, 0.45, 2, 1);
   const involved = h.isPlayer || s.isPlayer;
   Snd.pop(involved ? 1 : volAt(h.pos), involved ? 0 : panAt(h.pos));
   if (involved) shake(0.55);
-  feed(`<b style="color:${s.color}">${s.isPlayer ? 'You' : esc(s.name)}</b> found <b style="color:${h.color}">${h.isPlayer ? 'you' : esc(h.name)}</b>!`);
-  if (h.isPlayer) { Snd.sad(); bigText('CAUGHT!', G.net ? 'You\'re a ghost now 👻 Fly around (Space/C) and watch the hunt!' : 'You\'re a ghost now 👻 Fly around (Space/C) &middot; hold <b>T</b> to fast-forward'); }
-  if (s.isPlayer) { Snd.ding(); }
+  feed(`<b style="color:${s.color}">${s.isPlayer ? 'You' : esc(s.name)}</b> tagged <b style="color:${h.color}">${h.isPlayer ? 'you' : esc(h.name)}</b> — now a seeker!`);
+  if (h.isPlayer) {
+    Snd.fanfare();
+    bigText("YOU'RE A SEEKER NOW!", 'Tag the remaining hiders! Q sniff · F dash · E tag', true);
+    if (typeof buildAbilities === 'function') buildAbilities();
+  }
+  if (s.isPlayer) Snd.ding();
   G.hidersVer++;
 }
 
@@ -2658,7 +2725,7 @@ function startFlee(b) {
   if (!chooseHideSpot(b, S.pos)) { const dx = b.pos.x - S.pos.x, dz = b.pos.z - S.pos.z, d = Math.hypot(dx, dz) || 1; setGoal(b, clamp(b.pos.x + dx / d * 12, -31, 31), clamp(b.pos.z + dz / d * 12, -31, 31)); }
 }
 function visibility(s, h, D) {
-  if (h.caught) return 0;
+  if (h.role !== 'hider') return 0;
   const dx = h.pos.x - s.pos.x, dz = h.pos.z - s.pos.z, dh = Math.hypot(dx, dz), d = Math.hypot(dh, h.pos.y - s.pos.y);
   if (d > D.range) return 0;
   const f = s.fwd(); const dot = (dx * f.x + dz * f.z) / (dh || 1);
@@ -2723,7 +2790,7 @@ function seekerPoke(s, D) {
     if (h.disguiseT > 0 && Math.hypot(h.vel.x, h.vel.z) < 0.5 && Math.random() < 0.5) { s.say(pick(LINES.fooled), 2); continue; }
     // well-hidden beans might survive a poke!
     const c = concealment(h); const chance = c >= 0.7 ? 1 : clamp((0.45 + c) * D.find, 0.2, 1);
-    if (Math.random() > chance) { if (Math.random() < 0.6) s.say(pick(["Hmm... just leaves.", "Nope, nobody here.", "I could've sworn...", "Empty. Weird."]), 2); if (!h.human && Math.random() < 0.5) setTimeout(() => !h.caught && h.say(pick(["Phew...", "(holds breath)", "Hehehe"]), 1.6), 900); if (h.human) addScore(h, 25, 'PHEW!'); continue; }
+    if (Math.random() > chance) { if (Math.random() < 0.6) s.say(pick(["Hmm... just leaves.", "Nope, nobody here.", "I could've sworn...", "Empty. Weird."]), 2); if (!h.human && Math.random() < 0.5) setTimeout(() => h.role === 'hider' && h.say(pick(["Phew...", "(holds breath)", "Hehehe"]), 1.6), 900); if (h.human) addScore(h, 25, 'PHEW!'); continue; }
     h.aware = 1; startChase(s, h); return true;
   }
   return false;
@@ -2783,7 +2850,7 @@ function seekerAI(s, dt) {
     if (r !== 'moving') { if (!seekerPoke(s, D)) { ai.mode = 'look'; ai.lookT = rand(1, 1.8); ai.lookBase = s.yaw; } }
   } else if (ai.mode === 'chase') {
     const h = ai.target;
-    if (!h || h.caught) { ai.mode = 'look'; ai.lookT = 1; ai.path = null; }
+    if (!h || h.role !== 'hider') { ai.mode = 'look'; ai.lookT = 1; ai.path = null; }
     else {
       const d = dist2D(h.pos, s.pos);
       const sees = d < D.range * 1.15 && !segBlocked(s.pos.x, s.pos.y + 1, s.pos.z, h.pos.x, h.pos.y + h.height * 0.6, h.pos.z) && (h.disguiseT <= 0 || d < 4);
@@ -2855,7 +2922,7 @@ function attachVision(s) {
   for (const sgn of [-1, 1]) { const a = sgn * D.fov / 2, L = D.range * 0.6; const st = new THREE.Mesh(new THREE.PlaneGeometry(0.22, L).rotateX(-Math.PI / 2), visionEdgeMat); st.position.set(Math.sin(a) * L / 2, 0.005, Math.cos(a) * L / 2); st.rotation.y = a; st.renderOrder = 3; visionMesh.add(st); }
 }
 function updateVision(dt) {
-  const s = G.seeker, show = s && !s.isPlayer && G.state === 'seeking' && G.player.role === 'hider' && !s.caught;
+  const s = G.seeker, show = s && !s.isPlayer && G.state === 'seeking' && G.player.role === 'hider';
   visionMat.opacity = damp(visionMat.opacity, show ? (s.ai.mode === 'chase' ? 0.5 : 0.36) : 0, 5, dt);
   visionEdgeMat.opacity = Math.min(1, visionMat.opacity * 2.2); visionEdgeMat.color.copy(visionMat.color);
   visionMat.color.lerp(new THREE.Color(s && s.ai.mode === 'chase' ? 0xff2a2a : (s && s.ai.maxAware > 0.3 ? 0xff9a30 : 0xffe14d)), 1 - Math.exp(-6 * dt));
@@ -2867,6 +2934,11 @@ function startGame() {
   buildRoster(false);
   G.round = 0; G.lastSeeker = null; G.inGame = true;
   $('menu').classList.add('hidden');
+  if (G.mode === 'race') {
+    const seed = G.raceSeed || raceRandSeed();
+    startRaceGame({ seed, laps: G.raceLaps || 3 });
+    return;
+  }
   nextRound();
 }
 function nextRound() { // host / single-player: decide the round, then apply it everywhere
@@ -2927,7 +2999,7 @@ function reveal() {
   Snd.ding(); setTimeout(() => Snd.fanfare(), 200);
   confetti(v3(s.pos.x, s.pos.y + 1.5, s.pos.z), 140, CONFETTI_COLS, 9);
   s.spinT = 0.7; s.jumpReq = true; s.mouthOpen = true; setTimeout(() => s.mouthOpen = false, 1200);
-  if (s.isPlayer) bigText('YOU ARE THE SEEKER!', 'Count to 25... then find every bean! 🔦', true);
+  if (s.isPlayer) bigText('YOU ARE THE SEEKER!', 'Count, then tag everyone — tagged beans join your hunt! 🔦', true);
   else bigText(`<span style="color:${s.color}">${esc(s.name.toUpperCase())}</span><br>IS THE SEEKER!`, 'You\'re a hider — RUN AND HIDE! 🏃', true);
   if (!isClient()) setTimeout(() => G.beans.forEach(b => { if (b !== s && !b.human && Math.random() < 0.5) b.say(pick(['Run!!', 'Eep!', 'Scatter!', 'Bye!!'])), b.mouthOpen = true; }), 500);
   shake(0.3);
@@ -2938,8 +3010,8 @@ function startHiding() {
   if (!isClient()) { G.giantCount = G.giantsOn ? (G.giantCount || (MAPS[G.map] && MAPS[G.map].giants) || 3) : 0; spawnGiantsForMap(); }
   netEv({ e: 'hide' });
   const s = G.seeker;
-  s.role = 'seeker'; s.blindfold.visible = true; s.crouch = false;
-  G.beans.forEach(b => { b.mouthOpen = false; if (b !== s) { b.role = 'hider'; if (!b.human) { b.ai.mode = 'toSpot'; b.ai.spot = null; } } });
+  s.role = 'seeker'; s.blindfold.visible = true; s.crouch = false; s.setSeekerLook(true); s.caught = false;
+  G.beans.forEach(b => { b.mouthOpen = false; if (b !== s) { b.role = 'hider'; b.caught = false; b.setSeekerLook(false); if (!b.human) { b.ai.mode = 'toSpot'; b.ai.spot = null; } } });
   if (!isClient()) G.beans.filter(b => b !== s && !b.human).forEach(b => chooseHideSpot(b, null));
   if (!s.remote) s.yaw = Math.atan2(PLAZA.x - s.pos.x, PLAZA.z - s.pos.z) + Math.PI;
   CAM.mode = 'play'; CAM.yaw = G.player.yaw; CAM.pitch = 0.35;
@@ -2959,21 +3031,21 @@ function startSeeking() {
   const s = G.seeker; s.blindfold.visible = false; puff(v3(s.pos.x, s.pos.y + 1, s.pos.z), 10, 0x2b2250, 0.25, 1.2, 0.5);
   $('blindfold').classList.add('hidden');
   s.jumpReq = true; s.say('READY OR NOT, HERE I COME!', 2.5);
-  bigText('SEEK!', s.isPlayer ? 'Find them all! Q = Sniff · F = Dash · E = Tag · Click = grapple' : 'Ready or not... here they come! 😱');
+  bigText('SEEK!', s.isPlayer ? 'Tag them — they join you! Q sniff · F dash · E tag · Click grapple' : 'Ready or not... infection is coming! 😱');
   Snd.fanfare(); Snd.setPhase('seek');
   if (!isClient()) G.beans.forEach(b => { if (b !== s && !b.human && b.ai.mode !== 'hidden') b.ai.mode = b.ai.path ? 'toSpot' : 'hidden'; });
 }
 function endRound(seekerWon) {
   G.state = 'roundEnd'; G.endT = 0; Snd.setPhase('end');
   const s = G.seeker, p = G.player;
-  if (seekerWon) addScore(s, 50 + Math.round(G.timer * 2), 'CLEAN SWEEP!');
+  if (seekerWon) seekers().forEach(sk => addScore(sk, 40 + Math.round(G.timer * 1.5), 'SWEEP!'));
   else aliveHiders().forEach(h => addScore(h, 300, 'SURVIVED!'));
   netEv({ e: 'end', w: seekerWon ? 1 : 0, sc: G.beans.map(b => [b.id, b.score, b.roundScore]) });
-  const playerWon = seekerWon ? s.isPlayer : (p.role === 'hider');
-  if (seekerWon) bigText('ALL BEANS FOUND!', `${s.isPlayer ? 'You' : esc(s.name)} win${s.isPlayer ? '' : 's'} the round!`, true);
-  else bigText("TIME'S UP!", 'The hiders win the round! 🎉', true);
+  const playerWon = seekerWon ? (p && p.role === 'seeker') : (p && p.role === 'hider');
+  if (seekerWon) bigText('ALL HIDERS CONVERTED!', 'Seekers win the round! 🔦', true);
+  else bigText("TIME'S UP!", 'Surviving hiders win the round! 🎉', true);
   Snd.jingle(playerWon);
-  const winners = seekerWon ? [s] : aliveHiders();
+  const winners = seekerWon ? seekers() : aliveHiders();
   winners.forEach(w => { confetti(v3(w.pos.x, w.pos.y + 1.5, w.pos.z), 80, CONFETTI_COLS, 8); w.spinT = 0.7; w.jumpReq = true; w.blindfold.visible = false; w.endDisguise(); w.crouch = false; if (!w.human) w.say(pick(['Woohoo!', 'Yay!', 'Bean-tastic!', 'Victory jelly!']), 3); });
   if (p) confetti(v3(p.pos.x, p.pos.y + 3, p.pos.z), 120, CONFETTI_COLS, 6);
   $('blindfold').classList.add('hidden');
@@ -2984,9 +3056,9 @@ function showScoreboard() {
   const final = G.round >= G.totalRounds;
   const sorted = G.beans.slice().sort((a, b) => b.score - a.score);
   const seekerWon = aliveHiders().length === 0;
-  $('sbTitle').textContent = final ? '🏆 FINAL RESULTS 🏆' : (seekerWon ? 'SEEKER WINS!' : 'HIDERS WIN!');
+  $('sbTitle').textContent = final ? '🏆 FINAL RESULTS 🏆' : (seekerWon ? 'SEEKERS WIN!' : 'HIDERS SURVIVE!');
   $('sbSub').innerHTML = final ? `<b style="color:${sorted[0].color};-webkit-text-stroke:1px #4a2366">${sorted[0].isPlayer ? 'YOU' : esc(sorted[0].name)}</b> ${sorted[0].isPlayer ? 'are' : 'is'} the Supreme Bean! 👑` : `Round ${G.round} of ${G.totalRounds} complete`;
-  $('sbTable').innerHTML = sorted.map((b, i) => `<tr class="${b.isPlayer ? 'me' : ''}"><td>${['🥇', '🥈', '🥉'][i] || (i + 1)}</td><td><span class="dot" style="display:inline-block;vertical-align:middle;background:${b.color}"></span> ${esc(b.name)}${b.isPlayer && G.net ? ' (you)' : ''}${b === G.seeker ? ' 🔦' : ''}${b.caught ? ' 👻' : ''}</td><td class="n"><span class="plus">+${b.roundScore}</span></td><td class="n">${b.score}</td></tr>`).join('');
+  $('sbTable').innerHTML = sorted.map((b, i) => `<tr class="${b.isPlayer ? 'me' : ''}"><td>${['🥇', '🥈', '🥉'][i] || (i + 1)}</td><td><span class="dot" style="display:inline-block;vertical-align:middle;background:${b.color}"></span> ${esc(b.name)}${b.isPlayer && G.net ? ' (you)' : ''}${b.role === 'seeker' ? ' 🔦' : ''}${b.caught && b !== G.seeker ? ' ⚡' : ''}</td><td class="n"><span class="plus">+${b.roundScore}</span></td><td class="n">${b.score}</td></tr>`).join('');
   $('sbNext').textContent = final ? (isHost() ? 'Back to lobby ↩' : 'Play again ↺') : 'Next round ▶';
   $('sbNext').disabled = isClient(); if (isClient()) $('sbNext').textContent = final ? 'Waiting for host… ⏳' : 'Waiting for host… ⏳';
   $('scoreboard').classList.remove('hidden');
@@ -2996,18 +3068,553 @@ function showScoreboard() {
 function onNext() {
   if (isClient()) return;
   Snd.tick(200);
+  if (G.state === 'final' && G.mode === 'race') {
+    $('scoreboard').classList.add('hidden');
+    if (isHost()) { clearRaceWorld(); Net.backToLobby(); return; }
+    clearRaceWorld(); toMenu(); return;
+  }
   if (G.state === 'final' && isHost()) { $('scoreboard').classList.add('hidden'); Net.backToLobby(); return; }
   if (G.state === 'final') { $('scoreboard').classList.add('hidden'); toMenu(); return; }
+  if (G.state === 'roundEnd' && G.mode === 'race') { if (!G.sbShown) showRaceScoreboard(); return; }
   if (G.state === 'roundEnd') nextRound();
 }
 function toMenu() {
-  clearGiants(); G.state = 'menu'; G.seeker = null; G.inGame = false; Snd.setPhase('menu'); buildRoster(true); setupMenuScene();
+  clearGiants(); if (typeof clearRaceWorld === 'function') clearRaceWorld(); G.state = 'menu'; G.mode = G.mode || 'hide'; G.seeker = null; G.inGame = false; Snd.setPhase('menu'); buildRoster(true); setupMenuScene();
   $('menu').classList.remove('hidden'); $('hud').classList.add('hidden'); $('blindfold').classList.add('hidden');
   CAM.mode = 'menu';
 }
 function setupMenuScene() {
   const p = G.player; p.pos.set(PLAZA.x, 0.05, PLAZA.z); p.yaw = 0.5;
   G.beans.forEach((b, i) => { if (b.isPlayer) return; const q = randomFreePoint(); b.pos.set(q.x, 0.05, q.z); b.ai.mode = 'idle'; b.ai.t = rand(0, 2); });
+}
+// ======================================================================
+// RACE MODE — procedural bean-scale track (seeded, host-authoritative)
+// ======================================================================
+const Race = {
+  active: false, seed: 1, laps: 3, phase: 'idle', // idle|countdown|racing|done
+  countT: 0, group: null, pts: [], cps: [], boostPads: [],
+  finishOrder: [], placeFlash: 0, musicOn: false,
+  // per-bean race state is on bean.race = { i, lap, cp, progress, finished, finishT, boost, place }
+};
+
+function mulberry32(a) {
+  return function () {
+    let t = a += 0x6D2B79F5;
+    t = Math.imul(t ^ t >>> 15, t | 1);
+    t ^= t + Math.imul(t ^ t >>> 7, t | 61);
+    return ((t ^ t >>> 14) >>> 0) / 4294967296;
+  };
+}
+
+function raceRandSeed() { return (Math.random() * 0x7fffffff) | 1; }
+
+function clearRaceWorld() {
+  if (Race.group) { scene.remove(Race.group); Race.group.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (Array.isArray(o.material)) o.material.forEach(m => m.dispose()); else o.material.dispose(); } }); }
+  Race.group = null; Race.pts = []; Race.cps = []; Race.boostPads = []; Race.finishOrder = [];
+  Race.active = false; Race.phase = 'idle'; Race.musicOn = false;
+  if (typeof mapRoot !== 'undefined') { mapRoot.yard.visible = true; mapRoot.city.visible = true; }
+  if (Race._savedCols && typeof colliders !== 'undefined') { colliders.length = 0; Race._savedCols.forEach(c => colliders.push(c)); Race._savedCols = null; }
+}
+
+function disposeRaceMeshes() {
+  if (Race.group) { scene.remove(Race.group); Race.group.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) { if (Array.isArray(o.material)) o.material.forEach(m => m.dispose()); else o.material.dispose(); } }); }
+  Race.group = null; Race.pts = []; Race.cps = []; Race.boostPads = [];
+}
+
+function buildRaceTrack(seed) {
+  disposeRaceMeshes();
+  Race.seed = seed >>> 0 || 1;
+  const rnd = mulberry32(Race.seed);
+  const group = new THREE.Group(); Race.group = group; scene.add(group);
+
+  // ---- control points on a loop ----
+  const N = 14 + Math.floor(rnd() * 5); // 14–18
+  const R0 = 38 + rnd() * 18;
+  const ctrl = [];
+  for (let i = 0; i < N; i++) {
+    const a = (i / N) * Math.PI * 2 + rnd() * 0.25;
+    const r = R0 * (0.72 + rnd() * 0.45);
+    const x = Math.cos(a) * r + (rnd() - 0.5) * 8;
+    const z = Math.sin(a) * r + (rnd() - 0.5) * 8;
+    let y = (Math.sin(i * 1.7 + rnd()) * 0.5 + 0.5) * (2 + rnd() * 5);
+    // occasional jump: dip then ramp
+    if (rnd() < 0.18) y += 3 + rnd() * 4;
+    ctrl.push({ x, y, z });
+  }
+
+  // sample centerline densely
+  const samples = [];
+  const SEGS = N * 12;
+  for (let i = 0; i < SEGS; i++) {
+    const t = i / SEGS * N;
+    const i0 = Math.floor(t) % N, i1 = (i0 + 1) % N, i2 = (i0 + 2) % N, im = (i0 - 1 + N) % N;
+    const u = t - Math.floor(t);
+    const cat = (a, b, c, d, u) => {
+      const u2 = u * u, u3 = u2 * u;
+      return 0.5 * ((2 * b) + (-a + c) * u + (2 * a - 5 * b + 4 * c - d) * u2 + (-a + 3 * b - 3 * c + d) * u3);
+    };
+    const p0 = ctrl[im], p1 = ctrl[i0], p2 = ctrl[i1], p3 = ctrl[i2];
+    samples.push({
+      x: cat(p0.x, p1.x, p2.x, p3.x, u),
+      y: Math.max(0.05, cat(p0.y, p1.y, p2.y, p3.y, u)),
+      z: cat(p0.z, p1.z, p2.z, p3.z, u),
+    });
+  }
+  // tangents / normals
+  for (let i = 0; i < samples.length; i++) {
+    const a = samples[i], b = samples[(i + 1) % samples.length];
+    const dx = b.x - a.x, dz = b.z - a.z, len = Math.hypot(dx, dz) || 1;
+    a.tx = dx / len; a.tz = dz / len; a.nx = -a.tz; a.nz = a.tx;
+    a.dist = i === 0 ? 0 : samples[i - 1].dist + Math.hypot(a.x - samples[i - 1].x, a.y - samples[i - 1].y, a.z - samples[i - 1].z);
+  }
+  const totalLen = samples[samples.length - 1].dist + Math.hypot(samples[0].x - samples[samples.length - 1].x, samples[0].y - samples[samples.length - 1].y, samples[0].z - samples[samples.length - 1].z);
+  samples.forEach(s => { s.prog = s.dist / totalLen; });
+
+  Race.pts = samples;
+  Race.totalLen = totalLen;
+
+  // ---- road mesh (ribbon) ----
+  const halfW = 3.2;
+  const pos = [], nor = [], uv = [], idx = [];
+  for (let i = 0; i < samples.length; i++) {
+    const s = samples[i], s2 = samples[(i + 1) % samples.length];
+    const yOff = 0.02;
+    const l1 = [s.x + s.nx * halfW, s.y + yOff, s.z + s.nz * halfW];
+    const r1 = [s.x - s.nx * halfW, s.y + yOff, s.z - s.nz * halfW];
+    const l2 = [s2.x + s2.nx * halfW, s2.y + yOff, s2.z + s2.nz * halfW];
+    const r2 = [s2.x - s2.nx * halfW, s2.y + yOff, s2.z - s2.nz * halfW];
+    const b = pos.length / 3;
+    pos.push(...l1, ...r1, ...l2, ...r2);
+    for (let k = 0; k < 4; k++) nor.push(0, 1, 0);
+    uv.push(0, s.prog, 1, s.prog, 0, s2.prog, 1, s2.prog);
+    idx.push(b, b + 1, b + 2, b + 1, b + 3, b + 2);
+  }
+  const geo = new THREE.BufferGeometry();
+  geo.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3));
+  geo.setAttribute('normal', new THREE.Float32BufferAttribute(nor, 3));
+  geo.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2));
+  geo.setIndex(idx); geo.computeVertexNormals();
+  const roadMat = new THREE.MeshStandardMaterial({ color: 0x3a3f55, roughness: 0.85, metalness: 0.05 });
+  const road = new THREE.Mesh(geo, roadMat); road.receiveShadow = true; road.castShadow = false;
+  group.add(road);
+  Race.road = road;
+
+  // stripe center line
+  const stripeGeo = geo.clone();
+  const stripe = new THREE.Mesh(stripeGeo, new THREE.MeshBasicMaterial({ color: 0xffe066 }));
+  stripe.scale.set(0.12, 1, 1); // visual only — actually use dashed boxes
+  // better: dashed yellow boxes along path
+  for (let i = 0; i < samples.length; i += 4) {
+    const s = samples[i];
+    const box = new THREE.Mesh(new THREE.BoxGeometry(0.35, 0.04, 1.2), new THREE.MeshBasicMaterial({ color: 0xffe066 }));
+    box.position.set(s.x, s.y + 0.05, s.z);
+    box.rotation.y = Math.atan2(s.tx, s.tz);
+    group.add(box);
+  }
+
+  // barriers / rails
+  for (let side of [-1, 1]) {
+    for (let i = 0; i < samples.length; i += 2) {
+      const s = samples[i];
+      const post = new THREE.Mesh(new THREE.BoxGeometry(0.25, 0.7, 0.25), new THREE.MeshStandardMaterial({ color: 0xff6b6b }));
+      post.position.set(s.x + s.nx * (halfW + 0.2) * side, s.y + 0.35, s.z + s.nz * (halfW + 0.2) * side);
+      post.castShadow = true; group.add(post);
+    }
+  }
+
+  // ground plane under track
+  const ground = new THREE.Mesh(new THREE.CircleGeometry(R0 * 2.2, 48), new THREE.MeshStandardMaterial({ color: 0x7ec850, roughness: 1 }));
+  ground.rotation.x = -Math.PI / 2; ground.position.y = -0.05; ground.receiveShadow = true; group.add(ground);
+
+  // ---- checkpoints (every ~1/8 of loop, plus finish = 0) ----
+  const CP_N = 8;
+  Race.cps = [];
+  for (let c = 0; c < CP_N; c++) {
+    const si = Math.floor((c / CP_N) * samples.length) % samples.length;
+    const s = samples[si];
+    Race.cps.push({ i: si, prog: s.prog });
+    if (c === 0) {
+      // start/finish gate
+      const gateMat = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x2244ff, emissiveIntensity: 0.4 });
+      for (const sd of [-1, 1]) {
+        const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.2, 0.2, 5, 8), gateMat);
+        pole.position.set(s.x + s.nx * halfW * 1.1 * sd, s.y + 2.5, s.z + s.nz * halfW * 1.1 * sd);
+        group.add(pole);
+      }
+      const banner = new THREE.Mesh(new THREE.BoxGeometry(halfW * 2.4, 0.8, 0.15), new THREE.MeshStandardMaterial({ color: 0xff3b5c, emissive: 0xff3b5c, emissiveIntensity: 0.3 }));
+      banner.position.set(s.x, s.y + 4.6, s.z);
+      banner.rotation.y = Math.atan2(s.tx, s.tz);
+      group.add(banner);
+    } else {
+      const arch = new THREE.Mesh(new THREE.TorusGeometry(halfW * 1.05, 0.12, 8, 16, Math.PI), new THREE.MeshStandardMaterial({ color: 0x3fa7ff, emissive: 0x2266ff, emissiveIntensity: 0.35 }));
+      arch.position.set(s.x, s.y + 0.2, s.z);
+      arch.rotation.y = Math.atan2(s.tx, s.tz);
+      arch.rotation.z = Math.PI / 2;
+      group.add(arch);
+    }
+  }
+
+  // ---- boost pads ----
+  Race.boostPads = [];
+  for (let k = 0; k < 5 + Math.floor(rnd() * 4); k++) {
+    const si = Math.floor(rnd() * samples.length);
+    const s = samples[si];
+    const pad = new THREE.Mesh(new THREE.BoxGeometry(2.4, 0.08, 2.0), new THREE.MeshStandardMaterial({ color: 0x00e5ff, emissive: 0x00bcd4, emissiveIntensity: 0.6 }));
+    pad.position.set(s.x, s.y + 0.06, s.z);
+    pad.rotation.y = Math.atan2(s.tx, s.tz);
+    group.add(pad);
+    Race.boostPads.push({ i: si, mesh: pad });
+    samples[si].boost = true;
+  }
+
+  // ---- hills / tunnels / bridge decorations ----
+  for (let k = 0; k < 3; k++) {
+    const si = Math.floor(rnd() * samples.length);
+    const s = samples[si];
+    if (s.y > 3.5) {
+      // bridge pillars
+      for (const sd of [-1, 1]) {
+        const pil = new THREE.Mesh(new THREE.BoxGeometry(0.8, s.y + 0.5, 0.8), new THREE.MeshStandardMaterial({ color: 0x8d6e63 }));
+        pil.position.set(s.x + s.nx * 4 * sd, s.y / 2, s.z + s.nz * 4 * sd);
+        group.add(pil);
+      }
+    } else if (rnd() < 0.5) {
+      // tunnel arch
+      const tun = new THREE.Mesh(new THREE.TorusGeometry(halfW * 1.3, 0.5, 8, 20, Math.PI), new THREE.MeshStandardMaterial({ color: 0x5d4e37 }));
+      tun.position.set(s.x, s.y + 0.1, s.z);
+      tun.rotation.y = Math.atan2(s.tx, s.tz); tun.rotation.z = Math.PI / 2;
+      group.add(tun);
+    }
+  }
+
+  // sky-ish fog tweak for race
+  if (scene.fog) scene.fog.far = 220;
+
+  return Race.pts[0];
+}
+
+function nearestTrackIndex(x, z) {
+  let best = 0, bd = 1e12;
+  const pts = Race.pts;
+  for (let i = 0; i < pts.length; i++) {
+    const d = (pts[i].x - x) ** 2 + (pts[i].z - z) ** 2;
+    if (d < bd) { bd = d; best = i; }
+  }
+  return best;
+}
+
+function raceGroundHeight(x, z, fallback = 0) {
+  if (!Race.pts.length) return fallback;
+  const i = nearestTrackIndex(x, z);
+  const s = Race.pts[i];
+  const d = Math.hypot(s.x - x, s.z - z);
+  if (d > 5.5) return Math.max(0, fallback);
+  return s.y;
+}
+
+function initBeanRace(b, slot, total) {
+  const start = Race.pts[0];
+  const lane = (slot - (total - 1) / 2) * 1.1;
+  b.race = { i: 0, lap: 0, cp: 0, progress: 0, finished: false, finishT: 0, boost: 1, place: slot + 1, invuln: 0 };
+  b.pos.set(start.x + start.nx * lane - start.tx * (2 + slot * 0.4), start.y + 0.1, start.z + start.nz * lane - start.tz * (2 + slot * 0.4));
+  b.yaw = Math.atan2(start.tx, start.tz);
+  b.vel.set(0, 0, 0); b.wish.set(0, 0, 0);
+  b.role = 'racer'; b.caught = false; b.setGhost(false); b.setSeekerLook(false);
+  b.endDisguise(true); b.crouch = false; b.blindfold.visible = false;
+  b.roundScore = 0;
+}
+
+function startRaceGame({ seed, laps, roster }) {
+  // hide hide-and-seek world clutter: clear giants, use race track
+  if (typeof clearGiants === 'function') clearGiants();
+  if (typeof mapRoot !== 'undefined') { mapRoot.yard.visible = false; mapRoot.city.visible = false; }
+  // clear hide colliders so race physics aren't blocked by city AABBs
+  if (typeof colliders !== 'undefined') { Race._savedCols = colliders.slice(); colliders.length = 0; }
+  G.mode = 'race';
+  G.inGame = true;
+  G.state = 'race';
+  Race.laps = laps || 3;
+  Race.seed = seed || raceRandSeed();
+  Race.finishOrder = [];
+  Race.phase = 'countdown';
+  Race.countT = 3.2;
+  $('menu').classList.add('hidden');
+  $('lobby').classList.add('hidden');
+  $('hud').classList.remove('hidden');
+  $('scoreboard').classList.add('hidden');
+  $('blindfold').classList.add('hidden');
+
+  buildRaceTrack(Race.seed);
+  Race.active = true;
+  // place beans
+  const list = G.beans;
+  list.forEach((b, i) => initBeanRace(b, i, list.length));
+  CAM.mode = 'play'; CAM.yaw = G.player.yaw; CAM.pitch = 0.25; CAM.dist = 7;
+  Snd.setPhase('race');
+  Race.musicOn = true;
+  bigText('GET READY!', `Seed ${Race.seed} · ${Race.laps} lap${Race.laps > 1 ? 's' : ''}`);
+  if (typeof buildAbilities === 'function') {
+    // race abilities: just boost hint
+    $('abilities').innerHTML = `<div class="ab"><kbd>Shift</kbd> Boost</div><div class="ab"><kbd>WASD</kbd> Steer</div>`;
+  }
+  updateRaceHUD();
+  netEv({ e: 'raceStart', seed: Race.seed, laps: Race.laps });
+}
+
+function raceProgressOf(b) {
+  if (!b.race || !Race.pts.length) return 0;
+  const i = nearestTrackIndex(b.pos.x, b.pos.z);
+  b.race.i = i;
+  const base = b.race.lap + Race.pts[i].prog;
+  b.race.progress = base;
+  return base;
+}
+
+function updateRacePlaces() {
+  const living = G.beans.filter(b => b.race && !b.race.finished);
+  living.sort((a, b) => raceProgressOf(b) - raceProgressOf(a));
+  living.forEach((b, i) => { b.race.place = i + 1 + Race.finishOrder.length; });
+  Race.finishOrder.forEach((id, i) => {
+    const b = beanById(id); if (b && b.race) b.race.place = i + 1;
+  });
+}
+
+function checkRaceCheckpoint(b) {
+  if (!b.race || b.race.finished) return;
+  const r = b.race;
+  const next = Race.cps[r.cp % Race.cps.length];
+  const s = Race.pts[next.i];
+  const d = Math.hypot(b.pos.x - s.x, b.pos.z - s.z);
+  if (d > 5.5) return;
+  // facing roughly forward
+  const dot = (b.pos.x - s.x) * s.tx + (b.pos.z - s.z) * s.tz; // not critical
+  if (r.cp % Race.cps.length === 0 && r.cp > 0) {
+    // crossed finish
+    r.lap++;
+    if (r.lap >= Race.laps) {
+      r.finished = true; r.finishT = G.t;
+      Race.finishOrder.push(b.id);
+      addScore(b, Math.max(50, 400 - Race.finishOrder.length * 60), Race.finishOrder.length === 1 ? '1st!' : Race.finishOrder.length === 2 ? '2nd!' : Race.finishOrder.length === 3 ? '3rd!' : `#${Race.finishOrder.length}`);
+      if (b.isPlayer) { Snd.fanfare(); bigText(Race.finishOrder.length === 1 ? 'YOU WIN!' : `FINISHED #${Race.finishOrder.length}`, 'Nice racing!'); }
+      else if (!b.human) b.say(pick(['Zoom!', 'Beep beep!', 'I am SPEED', 'Wheee!']), 2);
+      feed(`<b style="color:${b.color}">${b.isPlayer ? 'You' : esc(b.name)}</b> finished #${Race.finishOrder.length}!`);
+      if (Race.finishOrder.length >= G.beans.length || (Race.finishOrder.length >= 1 && Race.finishOrder.length + G.beans.filter(x => x.race && !x.race.finished && !x.human).length === G.beans.length)) {
+        // all humans finished or everyone done
+      }
+      if (Race.finishOrder.length >= G.beans.length) endRace();
+      return;
+    } else if (b.isPlayer) {
+      Snd.ding(); popup(`LAP ${r.lap + 1}/${Race.laps}`);
+    }
+  }
+  r.cp++;
+}
+
+function endRace() {
+  if (Race.phase === 'done') return;
+  Race.phase = 'done';
+  G.state = 'roundEnd'; G.endT = 0; Snd.setPhase('end');
+  // finish any remaining
+  G.beans.filter(b => b.race && !b.race.finished).sort((a, b) => (b.race.progress || 0) - (a.race.progress || 0)).forEach(b => {
+    if (!Race.finishOrder.includes(b.id)) {
+      Race.finishOrder.push(b.id);
+      b.race.finished = true;
+      addScore(b, 40, 'DNF bonus');
+    }
+  });
+  updateRacePlaces();
+  netEv({ e: 'raceEnd', order: Race.finishOrder.slice(), sc: G.beans.map(b => [b.id, b.score, b.roundScore]) });
+  const winner = beanById(Race.finishOrder[0]);
+  bigText('RACE OVER!', winner ? `${winner.isPlayer ? 'You' : esc(winner.name)} took 1st! 🏁` : 'Finish!', true);
+  Snd.jingle(G.player && G.player.race && Race.finishOrder[0] === G.player.id);
+  G.sbShown = false;
+}
+
+function showRaceScoreboard() {
+  G.sbShown = true;
+  const order = Race.finishOrder.map(id => beanById(id)).filter(Boolean);
+  $('sbTitle').textContent = '🏁 RACE RESULTS';
+  $('sbSub').innerHTML = `Seed <b>${Race.seed}</b> · ${Race.laps} lap${Race.laps > 1 ? 's' : ''}`;
+  $('sbTable').innerHTML = order.map((b, i) => `<tr class="${b.isPlayer ? 'me' : ''}"><td>${['🥇', '🥈', '🥉'][i] || (i + 1)}</td><td><span class="dot" style="display:inline-block;vertical-align:middle;background:${b.color}"></span> ${esc(b.name)}${b.isPlayer && G.net ? ' (you)' : ''}</td><td class="n"><span class="plus">+${b.roundScore}</span></td><td class="n">${b.score}</td></tr>`).join('');
+  $('sbNext').textContent = isHost() || !G.net ? 'Back to menu ↩' : 'Waiting for host… ⏳';
+  $('sbNext').disabled = isClient();
+  $('scoreboard').classList.remove('hidden');
+  if (document.pointerLockElement) document.exitPointerLock();
+  G.state = 'final';
+}
+
+function updateRaceHUD() {
+  const p = G.player; if (!p || !p.race) return;
+  const r = p.race;
+  $('role').textContent = r.finished ? `🏁 Finished #${r.place}` : `🏁 Lap ${Math.min(r.lap + 1, Race.laps)}/${Race.laps}`;
+  const rows = G.beans.slice().sort((a, b) => (a.race?.place || 99) - (b.race?.place || 99));
+  $('hiders').innerHTML = `<h4>Place ${r.place}/${G.beans.length}</h4>` + rows.map(b => {
+    const br = b.race || {};
+    return `<div class="hrow ${b.isPlayer ? '' : ''}"><span class="dot" style="background:${b.color}"></span>#${br.place || '?'} ${b.isPlayer ? 'You' : esc(b.name)}${br.finished ? ' 🏁' : ''}</div>`;
+  }).join('');
+  $('status').textContent = Race.phase === 'countdown' ? 'Countdown...' : (r.finished ? 'Wait for others…' : `Boost ${Math.round((r.boost || 0) * 100)}% · Shift to boost`);
+  // hide seeker-specific
+  const em = $('eyeMeter'); if (em) em.style.opacity = 0;
+  $('hint').innerHTML = '<b>Shift</b> boost · <b>WASD</b> steer · stay on the track!';
+  const ab = $('abilities');
+  if (ab) ab.innerHTML = `<div class="ab ${r.boost > 0.15 ? '' : 'cd'}"><kbd>Shift</kbd> Boost<div class="bar"><i style="width:${(r.boost || 0) * 100}%"></i></div></div>`;
+}
+
+function updateRacePlayer(dt) {
+  const p = G.player; if (!p || !p.race) return;
+  if (Race.phase === 'countdown' || p.race.finished) {
+    p.wish.set(0, 0, 0); p.physics(dt, 0); return;
+  }
+  let ix = 0, iz = 0;
+  if (keys.KeyW || keys.ArrowUp) iz++; if (keys.KeyS || keys.ArrowDown) iz--; if (keys.KeyA) ix--; if (keys.KeyD) ix++;
+  const fx = Math.sin(CAM.yaw), fz = Math.cos(CAM.yaw), rx = -Math.cos(CAM.yaw), rz = Math.sin(CAM.yaw);
+  let wx = fx * iz + rx * ix, wz = fz * iz + rz * ix; const l = Math.hypot(wx, wz); if (l > 0) { wx /= l; wz /= l; }
+  const boosting = (keys.ShiftLeft || keys.ShiftRight) && p.race.boost > 0.02 && l > 0;
+  if (boosting) { p.race.boost = Math.max(0, p.race.boost - dt * 0.35); p.sqv += dt * 8; if (Math.random() < dt * 8) Snd.whoosh(0.35); }
+  else p.race.boost = Math.min(1, p.race.boost + dt * 0.12);
+  let speed = boosting ? 14 : 8.5;
+  // stick toward track height
+  const gh = raceGroundHeight(p.pos.x, p.pos.z, p.pos.y);
+  p.wish.set(wx, 0, wz);
+  p.jumpHeld = !!keys.Space;
+  if (keys.Space && p.onGround) p.jumpReq = true;
+  p.physics(dt, speed);
+  // soft attach to road height when near track
+  const ni = nearestTrackIndex(p.pos.x, p.pos.z);
+  const s = Race.pts[ni];
+  const lateral = Math.hypot(p.pos.x - s.x, p.pos.z - s.z);
+  if (lateral < 6) {
+    const targetY = s.y + 0.05;
+    if (p.pos.y < targetY + 0.5) { p.pos.y = damp(p.pos.y, Math.max(p.pos.y, targetY), 12, dt); if (p.pos.y <= targetY + 0.15) { p.onGround = true; p.vel.y = Math.max(0, p.vel.y); } }
+    // soft walls
+    if (lateral > 3.4) {
+      const push = (lateral - 3.4) * 0.5;
+      p.pos.x -= (p.pos.x - s.x) / lateral * push;
+      p.pos.z -= (p.pos.z - s.z) / lateral * push;
+      p.vel.x *= 0.85; p.vel.z *= 0.85;
+    }
+  }
+  if (l > 0) p.yaw += angDiff(p.yaw, Math.atan2(wx, wz)) * Math.min(1, 10 * dt);
+  // boost pads
+  if (s.boost && lateral < 2.5) { p.race.boost = Math.min(1, p.race.boost + dt * 1.5); p.vel.x += s.tx * 20 * dt; p.vel.z += s.tz * 20 * dt; }
+  checkRaceCheckpoint(p);
+}
+
+function raceBotAI(b, dt) {
+  if (!b.race || b.race.finished || Race.phase !== 'racing') { b.wish.set(0, 0, 0); b.physics(dt, 0); return; }
+  const look = 4 + Math.floor(Math.random() * 3);
+  const ti = (nearestTrackIndex(b.pos.x, b.pos.z) + look) % Race.pts.length;
+  const t = Race.pts[ti];
+  const dx = t.x - b.pos.x, dz = t.z - b.pos.z, d = Math.hypot(dx, dz) || 1;
+  b.wish.set(dx / d, 0, dz / d);
+  b.yaw += angDiff(b.yaw, Math.atan2(dx, dz)) * Math.min(1, 8 * dt);
+  const skill = G.difficulty === 'hard' ? 0.85 : G.difficulty === 'easy' ? 0.45 : 0.65;
+  const wantBoost = b.race.boost > 0.3 && Math.random() < skill * dt * 2;
+  if (wantBoost) { b.race.boost -= dt * 0.35; }
+  else b.race.boost = Math.min(1, b.race.boost + dt * 0.12);
+  let speed = (7.5 + skill * 2.5) * (wantBoost ? 1.55 : 1);
+  b.physics(dt, speed);
+  const ni = nearestTrackIndex(b.pos.x, b.pos.z);
+  const s = Race.pts[ni];
+  const lateral = Math.hypot(b.pos.x - s.x, b.pos.z - s.z);
+  if (lateral < 6) {
+    const targetY = s.y + 0.05;
+    if (b.pos.y < targetY + 0.4) { b.pos.y = damp(b.pos.y, Math.max(b.pos.y, targetY), 10, dt); b.onGround = true; }
+    if (lateral > 3.5) {
+      b.pos.x -= (b.pos.x - s.x) / lateral * (lateral - 3.5) * 0.6;
+      b.pos.z -= (b.pos.z - s.z) / lateral * (lateral - 3.5) * 0.6;
+    }
+  }
+  if (s.boost && lateral < 2.5) { b.race.boost = Math.min(1, b.race.boost + dt); b.vel.x += s.tx * 18 * dt; b.vel.z += s.tz * 18 * dt; }
+  checkRaceCheckpoint(b);
+}
+
+function updateRace(dt) {
+  if (!Race.active) return;
+  if (Race.phase === 'countdown') {
+    Race.countT -= dt;
+    const sec = Math.ceil(Race.countT);
+    if (sec >= 1 && sec <= 3) bigText(String(sec), 'Get set...');
+    if (Race.countT <= 0) {
+      Race.phase = 'racing'; G.state = 'race';
+      bigText('GO!', 'Shift = boost 🏁');
+      Snd.beep(true); Snd.setPhase('race');
+      netEv({ e: 'raceGo' });
+    }
+    G.beans.forEach(b => { b.wish.set(0, 0, 0); if (!b.remote) b.physics(dt, 0); });
+    if (!isClient()) updateRacePlayer(dt);
+    else updateRacePlayer(dt);
+    updateRaceHUD();
+    return;
+  }
+  if (Race.phase === 'racing') {
+    if (!isClient()) {
+      for (const b of G.beans) {
+        if (b.isPlayer) continue;
+        if (b.remote) continue;
+        raceBotAI(b, dt);
+      }
+    }
+    updateRacePlayer(dt);
+    for (const b of G.beans) if (b.remote) applyInterp(b, dt);
+    updateRacePlaces();
+    // end when all finished or only bots left after all humans done
+    if (!isClient()) {
+      const humansLeft = G.beans.filter(b => b.human && b.race && !b.race.finished);
+      if (humansLeft.length === 0 && Race.finishOrder.length > 0) {
+        // finish remaining bots quickly after a short grace
+        Race._endT = (Race._endT || 0) + dt;
+        if (Race._endT > 2.5) endRace();
+      } else Race._endT = 0;
+      if (Race.finishOrder.length >= G.beans.length) endRace();
+    }
+    updateRaceHUD();
+    return;
+  }
+  if (Race.phase === 'done') {
+    G.endT += dt;
+    if (!G.sbShown && G.endT > 2.5) showRaceScoreboard();
+    G.beans.forEach(b => { if (!b.isPlayer && !b.remote) { b.wish.set(0, 0, 0); b.physics(dt, 0); } });
+    updateRacePlayer(dt);
+  }
+}
+
+function raceSnapshotExtra() {
+  if (!Race.active) return null;
+  return {
+    seed: Race.seed, laps: Race.laps, phase: Race.phase, countT: r2(Race.countT),
+    order: Race.finishOrder.slice(),
+    rb: G.beans.map(b => b.race ? [b.id, b.race.lap, b.race.cp, r2(b.race.boost), b.race.finished ? 1 : 0, b.race.place | 0] : null).filter(Boolean),
+  };
+}
+
+function applyRaceSnapshot(rs) {
+  if (!rs) return;
+  if (!Race.active || Race.seed !== rs.seed) {
+    // rebuild if needed
+    if (G.mode === 'race') {
+      Race.laps = rs.laps; buildRaceTrack(rs.seed); Race.active = true;
+    }
+  }
+  Race.phase = rs.phase; Race.countT = rs.countT; Race.laps = rs.laps;
+  Race.finishOrder = rs.order || [];
+  for (const row of (rs.rb || [])) {
+    const b = beanById(row[0]); if (!b) continue;
+    if (!b.race) b.race = { i: 0, lap: 0, cp: 0, progress: 0, finished: false, finishT: 0, boost: 1, place: 1 };
+    b.race.lap = row[1]; b.race.cp = row[2]; b.race.boost = row[3]; b.race.finished = !!row[4]; b.race.place = row[5];
+  }
+}
+
+function onRaceEvent(e) {
+  if (e.e === 'raceStart') {
+    // clients already start via start message; this is backup
+  } else if (e.e === 'raceGo') {
+    Race.phase = 'racing'; Snd.beep(true);
+  } else if (e.e === 'raceEnd') {
+    Race.finishOrder = e.order || Race.finishOrder;
+    if (e.sc) e.sc.forEach(([id, sc, rs]) => { const b = beanById(id); if (b) { b.score = sc; b.roundScore = rs; } });
+    if (Race.phase !== 'done') { Race.phase = 'done'; G.state = 'roundEnd'; G.endT = 0; }
+  }
 }
 
 // ======================================================================
@@ -3047,7 +3654,7 @@ const Net = {
     if (!this.ok()) return netMsg('Online play unavailable', 'Could not load the networking library (PeerJS). Check your internet connection and reload.');
     Snd.init(); this.reset(); this.role = 'host'; G.net = this; this.myId = 0; this.nextId = 1;
     this.mpName();
-    this.bots = clamp(G.botCount, 0, MAX_BEANS - 1); this.diff = G.difficulty; this.rounds = G.totalRounds; this.map = MAPS[G.map] ? G.map : 'city'; this.giantsOn = G.giantsOn !== false ? 1 : 0; this.giantCount = G.giantCount | 0;
+    this.bots = clamp(G.botCount, 0, MAX_BEANS - 1); this.diff = G.difficulty; this.rounds = G.totalRounds; this.map = MAPS[G.map] ? G.map : 'city'; this.giantsOn = G.giantsOn !== false ? 1 : 0; this.giantCount = G.giantCount | 0; this.mode = G.mode || 'hide'; this.raceLaps = G.raceLaps || 3; this.raceSeed = G.raceSeed || 0;
     $('lbMap').querySelectorAll('button').forEach(e => e.classList.toggle('sel', e.dataset.v === this.map));
     $('hostBtn').disabled = true; $('joinMsg').textContent = '';
     showLobby(); $('lbStatus').textContent = 'Creating room…'; $('lbCode').textContent = '…'; $('lbLink').value = '';
@@ -3113,7 +3720,7 @@ const Net = {
       if (b && b.human) {
         b.human = false; b.remote = false; b.nb.length = 0; b.name = cleanName(b.name).slice(0, 11) + ' 🤖'; b.lbl.textContent = b.name;
         if (b.role === 'seeker') { Object.assign(b.ai, { mode: 'idle', path: null, sniffCd: undefined, dashCd: 0, visited: new Map(), focus: null, sayT: 3, target: null }); }
-        else if (!b.caught && (G.state === 'hiding' || G.state === 'seeking')) { b.ai.mode = 'toSpot'; b.ai.spot = null; if (!chooseHideSpot(b, G.state === 'seeking' && G.seeker ? G.seeker.pos : null)) b.ai.mode = 'hidden'; }
+        else if (b.role === 'hider' && (G.state === 'hiding' || G.state === 'seeking')) { b.ai.mode = 'toSpot'; b.ai.spot = null; if (!chooseHideSpot(b, G.state === 'seeking' && G.seeker ? G.seeker.pos : null)) b.ai.mode = 'hidden'; }
         b.vel.set(0, 0, 0); b.crouch = false;
         const msg = `<b style="color:${b.color}">${esc(c.name)}</b> left — a bot took over 🤖`;
         feed(msg); netEv({ e: 'left', id: b.id, nm: b.name }); G.hidersVer++;
@@ -3121,8 +3728,8 @@ const Net = {
     } else { this.renderLobby(); this.sendLobby(); $('lbStatus').textContent = `${c.name || 'A player'} left.`; }
   },
   lobbyPlayers() { return [{ id: 0, name: G.player.name, color: G.settings.color, hat: G.settings.hat, host: 1 }, ...[...this.conns.values()].map(c => ({ id: c.id, name: c.name, color: c.color, hat: c.hat }))]; },
-  sendLobby(extra) { if (this.role !== 'host') return; this.broadcast({ t: 'lobby', players: this.lobbyPlayers(), bots: this.bots, diff: this.diff, rounds: this.rounds, map: this.map, giantsOn: this.giantsOn, giantCount: this.giantCount, code: this.code, ...(extra || {}) }); },
-  renderLobby() { renderLobby({ players: this.role === 'host' ? this.lobbyPlayers() : (this.lobbyInfo ? this.lobbyInfo.players : []), bots: this.role === 'host' ? this.bots : (this.lobbyInfo ? this.lobbyInfo.bots : 0), diff: this.role === 'host' ? this.diff : this.lobbyInfo && this.lobbyInfo.diff, rounds: this.role === 'host' ? this.rounds : this.lobbyInfo && this.lobbyInfo.rounds, map: this.role === 'host' ? this.map : this.lobbyInfo && this.lobbyInfo.map, giantsOn: this.role === 'host' ? this.giantsOn : this.lobbyInfo && this.lobbyInfo.giantsOn, giantCount: this.role === 'host' ? this.giantCount : this.lobbyInfo && this.lobbyInfo.giantCount, code: this.code }); },
+  sendLobby(extra) { if (this.role !== 'host') return; this.broadcast({ t: 'lobby', players: this.lobbyPlayers(), bots: this.bots, diff: this.diff, rounds: this.rounds, map: this.map, giantsOn: this.giantsOn, giantCount: this.giantCount, mode: this.mode || 'hide', raceLaps: this.raceLaps || 3, raceSeed: this.raceSeed || 0, code: this.code, ...(extra || {}) }); },
+  renderLobby() { renderLobby({ players: this.role === 'host' ? this.lobbyPlayers() : (this.lobbyInfo ? this.lobbyInfo.players : []), bots: this.role === 'host' ? this.bots : (this.lobbyInfo ? this.lobbyInfo.bots : 0), diff: this.role === 'host' ? this.diff : this.lobbyInfo && this.lobbyInfo.diff, rounds: this.role === 'host' ? this.rounds : this.lobbyInfo && this.lobbyInfo.rounds, map: this.role === 'host' ? this.map : this.lobbyInfo && this.lobbyInfo.map, giantsOn: this.role === 'host' ? this.giantsOn : this.lobbyInfo && this.lobbyInfo.giantsOn, giantCount: this.role === 'host' ? this.giantCount : this.lobbyInfo && this.lobbyInfo.giantCount, mode: this.role === 'host' ? this.mode : this.lobbyInfo && this.lobbyInfo.mode, raceLaps: this.role === 'host' ? this.raceLaps : this.lobbyInfo && this.lobbyInfo.raceLaps, raceSeed: this.role === 'host' ? this.raceSeed : this.lobbyInfo && this.lobbyInfo.raceSeed, code: this.code }); },
   start() {
     if (this.role !== 'host' || G.inGame) return;
     const humans = [{ id: 0, name: G.player.name, color: G.settings.color, hat: G.settings.hat, human: true }, ...[...this.conns.values()].map(c => ({ id: c.id, name: c.name, color: c.color, hat: c.hat, human: true }))];
@@ -3132,23 +3739,30 @@ const Net = {
     let defs = shuffle(BOT_DEFS.slice()); defs = defs.filter(d => !used.has(d.color.toLowerCase())).concat(defs.filter(d => used.has(d.color.toLowerCase())));
     const roster = humans.concat(defs.slice(0, nb).map((d, i) => ({ id: 100 + i, name: d.name, color: d.color, hat: d.hat, human: false })));
     G.difficulty = this.diff; G.totalRounds = this.rounds; G.giantsOn = !!this.giantsOn; G.giantCount = this.giantCount | 0;
-    if (G.map !== this.map) setMap(this.map);
+    G.mode = this.mode || 'hide'; G.raceLaps = this.raceLaps || 3;
+    const seed = (this.raceSeed | 0) > 0 ? (this.raceSeed | 0) : raceRandSeed();
+    this.raceSeed = seed; G.raceSeed = seed;
+    if (G.mode !== 'race' && G.map !== this.map) setMap(this.map);
     netRoster(roster, 0);
-    this.broadcast({ t: 'start', roster, diff: this.diff, rounds: this.rounds, map: this.map, giantsOn: this.giantsOn, giantCount: this.giantCount });
+    this.broadcast({ t: 'start', roster, diff: this.diff, rounds: this.rounds, map: this.map, giantsOn: this.giantsOn, giantCount: this.giantCount, mode: G.mode, raceLaps: G.raceLaps, raceSeed: seed });
     beginNetGame();
-    nextRound();
+    if (G.mode === 'race') startRaceGame({ seed, laps: G.raceLaps, roster });
+    else nextRound();
   },
   backToLobby() {
     if (this.role !== 'host') return;
+    if (typeof clearRaceWorld === 'function') clearRaceWorld(); G.mode = this.mode || 'hide';
     lobbyScene(); this.renderLobby(); this.sendLobby({ back: 1 }); $('lbStatus').textContent = 'Back in the lobby. Press START for another game!';
   },
   snapshot() {
     const S = G.seeker;
-    return {
+    const snap = {
       t: 's', st: G.state, tm: r2(G.timer), sk: S ? S.id : -1, sm: S && S.ai.mode === 'chase' ? 1 : 0, ma: S ? r2(S.ai.maxAware || 0) : 0, stg: S && S.ai.target ? S.ai.target.id : -1,
       b: G.beans.map(b => [b.id, r2(b.pos.x), r2(b.pos.y), r2(b.pos.z), r2(b.yaw), (b.crouch ? 1 : 0) | (b.caught ? 2 : 0) | (b.prop ? 4 : 0) | (b.blindfold.visible ? 8 : 0) | (b.tauntT > 0 ? 16 : 0) | (b.dashT > 0 ? 64 : 0) | (b.flying && !b.onGround ? 128 : 0) | (b.grabbedBy ? 256 : 0), b.score, r2(b.cdA), r2(b.cdB), r2(b.aware), b.tp, hookWire(b)]),
       g: typeof giantWire === 'function' ? giantWire() : []
     };
+    if (G.mode === 'race' && typeof raceSnapshotExtra === 'function') snap.rs = raceSnapshotExtra();
+    return snap;
   },
 
   // ------------------------------------------------------------ CLIENT
@@ -3191,8 +3805,11 @@ const Net = {
         this.renderLobby(); break;
       case 'start':
         G.difficulty = d.diff; G.totalRounds = d.rounds; G.giantsOn = !!d.giantsOn; G.giantCount = d.giantCount | 0;
-        if (MAPS[d.map] && G.map !== d.map) setMap(d.map);
-        netRoster(d.roster, this.myId); beginNetGame(); break;
+        G.mode = d.mode || 'hide'; G.raceLaps = d.raceLaps || 3; G.raceSeed = d.raceSeed || 0;
+        if (G.mode !== 'race' && MAPS[d.map] && G.map !== d.map) setMap(d.map);
+        netRoster(d.roster, this.myId); beginNetGame();
+        if (G.mode === 'race') startRaceGame({ seed: G.raceSeed, laps: G.raceLaps, roster: d.roster });
+        break;
       case 'ev': if (G.inGame) clientEv(d); break;
       case 's': if (G.inGame) applySnap(d); break;
       case 'ping': this.send({ t: 'pong' }); break;
@@ -3288,9 +3905,19 @@ function renderLobby(info) {
   const dn = { easy: '😴 Easy', normal: '🙂 Normal', hard: '😈 Hard' };
   if (host) {
     $('lbBots').max = Math.max(0, MAX_BEANS - ps.length); $('lbBots').value = bots; $('lbBotN').textContent = bots;
-    $('lbStart').disabled = ps.length + bots < 2 || !(Net.peer && Net.peer.open);
+      // mode UI
+  const mode = info.mode || (host ? Net.mode : 'hide') || 'hide';
+  if ($('lbMode')) $('lbMode').querySelectorAll('button').forEach(b => b.classList.toggle('sel', b.dataset.v === mode));
+  if ($('lbHideOpts')) $('lbHideOpts').classList.toggle('hidden', mode === 'race');
+  if ($('lbRaceOpts')) $('lbRaceOpts').classList.toggle('hidden', mode !== 'race');
+  if ($('lbRaceLaps') && info.raceLaps) $('lbRaceLaps').querySelectorAll('button').forEach(b => b.classList.toggle('sel', +b.dataset.v === +info.raceLaps));
+  if ($('lbRaceSeed') && host) { /* keep host input */ } else if ($('lbRaceSeed') && info.raceSeed) $('lbRaceSeed').value = info.raceSeed || '';
+  if ($('lbStart')) $('lbStart').textContent = mode === 'race' ? 'START RACE ▶' : 'START ▶';
+  $('lbStart').disabled = ps.length + bots < 2 || !(Net.peer && Net.peer.open);
     $('lbInfo').textContent = ps.length + bots < 2 ? 'Add at least one bot or wait for a friend to start.' : '';
-  } else $('lbInfo').textContent = `Map: ${info.map === 'yard' ? '🌳 Backyard' : '🏰 Walled City'} · Giants: ${info.giantsOn ? (info.giantCount || '?') : 'off'} · Bots: ${bots} · Bot seeker: ${dn[info.diff] || info.diff} · Rounds: ${info.rounds} — the host will start the game.`;
+  } else $('lbInfo').textContent = (info.mode === 'race')
+    ? `🏁 Race · ${info.raceLaps || 3} laps · seed ${info.raceSeed || 'host picks'}`
+    : `Map: ${info.map === 'yard' ? '🌳 Backyard' : '🏰 Walled City'} · Giants: ${info.giantsOn ? (info.giantCount || '?') : 'off'} · Diff: ${info.diff || 'normal'} · Rounds: ${info.rounds || '?'}`;
   if (host && $('lbGiantsOn')) {
     $('lbGiantsOn').querySelectorAll('button').forEach(b => b.classList.toggle('sel', (b.dataset.v === '1') === !!info.giantsOn));
     if ($('lbGiantN')) $('lbGiantN').textContent = info.giantCount || 0;
@@ -3311,6 +3938,7 @@ function clientEv(e) {
     case 'sniff': fxSniff(b, beanById(e.tg)); break;
     case 'dash': fxDash(b); break;
     case 'catch': fxCatch(beanById(e.h), beanById(e.s)); break;
+    case 'raceStart': case 'raceGo': case 'raceEnd': if (typeof onRaceEvent === 'function') onRaceEvent(e); break;
     case 'spot': fxSpot(beanById(e.s), beanById(e.h)); break;
     case 'say': if (b) b.say(String(e.tx), e.d, true); break;
     case 'mk': if (b) b.showMark(String(e.tx), e.d, true); break;
@@ -3342,11 +3970,12 @@ function applySnap(d) {
       b.flying = !!(f & 128); netHooks(b, hk);
     }
     if (!roul) b.blindfold.visible = !!(f & 8);
-    if ((f & 2) && !b.caught && !roul) fxCatch(b, G.seeker || b);
-    if ((f & 4) && !b.prop && !b.caught && !roul) { b.disguiseT = 7; b.startDisguise(); }
+    if ((f & 2) && b.role !== 'seeker' && !roul) fxCatch(b, G.seeker || b);
+    if ((f & 4) && !b.prop && b.role === 'hider' && !roul) { b.disguiseT = 7; b.startDisguise(); }
     if (!(f & 4) && b.prop) { b.endDisguise(); puff(v3(b.pos.x, b.pos.y + 0.3, b.pos.z), 12, 0xffffff, 0.4, 1.4, 0.7); if (near(b.pos, 15)) Snd.poof(b.isPlayer ? 0 : panAt(b.pos), volAt(b.pos)); }
   }
   if (d.g) applyGiantWire(d.g);
+  if (d.rs && typeof applyRaceSnapshot === 'function') applyRaceSnapshot(d.rs);
 }
 
 // ------------------------------------------------------------ UI wiring
@@ -3363,6 +3992,20 @@ function applySnap(d) {
   const seg = (id, key, conv) => $(id).querySelectorAll('button').forEach(b => b.onclick = () => { $(id).querySelectorAll('button').forEach(e => e.classList.remove('sel')); b.classList.add('sel'); Net[key] = conv(b.dataset.v); Snd.tick(100); Net.renderLobby(); Net.sendLobby(); });
   seg('lbDiff', 'diff', v => v); seg('lbRounds', 'rounds', v => +v);
   if ($('lbGiantsOn')) $('lbGiantsOn').querySelectorAll('button').forEach(b => b.onclick = () => { Net.giantsOn = b.dataset.v === '1' ? 1 : 0; Snd.tick(100); Net.renderLobby(); Net.sendLobby(); });
+  if ($('lbMode')) $('lbMode').querySelectorAll('button').forEach(b => b.onclick = () => {
+    Net.mode = b.dataset.v; Snd.tick(100); Net.renderLobby(); Net.sendLobby();
+  });
+  if ($('lbRaceLaps')) $('lbRaceLaps').querySelectorAll('button').forEach(b => b.onclick = () => {
+    Net.raceLaps = +b.dataset.v; Snd.tick(100); Net.renderLobby(); Net.sendLobby();
+  });
+  if ($('lbRaceSeedRnd')) $('lbRaceSeedRnd').onclick = () => {
+    Net.raceSeed = raceRandSeed(); if ($('lbRaceSeed')) $('lbRaceSeed').value = String(Net.raceSeed);
+    Snd.tick(200); Net.sendLobby();
+  };
+  if ($('lbRaceSeed')) $('lbRaceSeed').onchange = () => {
+    const v = parseInt($('lbRaceSeed').value, 10); Net.raceSeed = v > 0 ? v : 0; Net.sendLobby();
+  };
+
   if ($('lbGiants')) $('lbGiants').oninput = e => { Net.giantCount = +e.target.value; Net.renderLobby(); Net.sendLobby(); };
   $('lbMap').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { Net.map = b.dataset.v; if (G.map !== Net.map && !G.inGame) { setMap(Net.map); setupMenuScene(); } $('lbMap').querySelectorAll('button').forEach(e => e.classList.toggle('sel', e === b)); Snd.tick(100); Net.renderLobby(); Net.sendLobby(); }));
   $('lbCopy').onclick = () => {
@@ -3457,8 +4100,9 @@ addEventListener('keydown', e => {
   const p = G.player; if (!p) return;
   if (e.code === 'KeyM') { Snd.init(); Snd.toggleMute(); }
   if (e.code === 'Enter' && !$('scoreboard').classList.contains('hidden')) onNext();
-  if (G.state !== 'hiding' && G.state !== 'seeking') return;
-  if (p.caught) return;
+  if (G.state !== 'hiding' && G.state !== 'seeking' && G.state !== 'race') return;
+  if (p.ghost) return;
+  if (G.state === 'race') return; // steering handled in updateRacePlayer
   const frozen = G.state === 'hiding' && p === G.seeker;
   if (frozen) return;
   if (e.code === 'Space' && !p.grabbedBy && !p.hooked()) p.jumpReq = true;
@@ -3505,7 +4149,7 @@ addEventListener('pointerdown', () => Snd.init(), { once: false });
 // ======================================================================
 const GR = { range: 60, reel: 15, pull: 26, thrust: 20, hookDrain: 0.26, airDrain: 0.34, regen: 0.45 };
 G.aim = { ok: false, p: v3(), d: 0, miss: v3() };
-function canGrapple(p) { return p && !p.caught && !p.grabbedBy && (G.state === 'hiding' || G.state === 'seeking') && !(G.state === 'hiding' && p === G.seeker) && p.disguiseT <= 0 && !p.arc; }
+function canGrapple(p) { return p && !p.ghost && !p.grabbedBy && (G.state === 'hiding' || G.state === 'seeking') && !(G.state === 'hiding' && p === G.seeker) && p.disguiseT <= 0 && !p.arc; }
 // ray from the camera through the screen centre, against solid boxes
 function updateAim() {
   const p = G.player, A = G.aim; A.ok = false; A.giant = null;
@@ -3586,7 +4230,7 @@ function updatePlayer(dt) {
     if (p.grabEscape > 0) { const el = $('status'); if (el) el.textContent = '🤼 Wriggle! Mash Space  ' + Math.round(p.grabEscape * 100) + '%'; }
     return;
   }
-  if (p.caught) { // ghost flight
+  if (p.ghost) { // ghost flight (rare / disconnect)
     let ix = 0, iz = 0, iy = 0;
     if (keys.KeyW) iz++; if (keys.KeyS) iz--; if (keys.KeyA) ix--; if (keys.KeyD) ix++; if (keys.Space) iy++; if (keys.KeyC || keys.ShiftLeft) iy--;
     const fx = Math.sin(CAM.yaw), fz = Math.cos(CAM.yaw), rx = -Math.cos(CAM.yaw), rz = Math.sin(CAM.yaw);
@@ -3628,7 +4272,7 @@ function updatePlayer(dt) {
   const n = Math.floor(p.walkPh / Math.PI);
   if (n !== p.lastStepN && p.onGround && Math.hypot(p.vel.x, p.vel.z) > 1) { p.lastStepN = n; Snd.step(p.sprinting ? 1.3 : p.crouch ? 0.4 : 0.9, p.inWater); if (p.inWater && Math.random() < 0.5) puff(p.pos, 3, 0xbfefff, 0.15, 0.8, 1.5); }
   // seeker bump-tag
-  if (p.role === 'seeker' && G.state === 'seeking' && !p.caught && !isClient()) for (const h of aliveHiders()) if (dist2D(h.pos, p.pos) < 1.0 && Math.abs(h.pos.y - p.pos.y) < 1.2) catchBean(h, p);
+  if (p.role === 'seeker' && G.state === 'seeking' && !isClient()) for (const h of aliveHiders()) if (dist2D(h.pos, p.pos) < 1.0 && Math.abs(h.pos.y - p.pos.y) < 1.2) catchBean(h, p);
 }
 
 // ======================================================================
@@ -3682,16 +4326,23 @@ function drawMinimap() {
   mm.save(); mm.clearRect(0, 0, 180, 180); mm.beginPath(); mm.arc(90, 90, 88, 0, 7); mm.clip();
   mm.drawImage(mmStatic, 0, 0);
   const dot = (b, r, col, stroke = '#4a2366') => { mm.fillStyle = col; mm.strokeStyle = stroke; mm.lineWidth = 2; mm.beginPath(); mm.arc(X(b.x), Z(b.z), r, 0, 7); mm.fill(); mm.stroke(); };
-  const S2 = G.seeker, playing = G.state === 'seeking' || G.state === 'hiding';
+  const playing = G.state === 'seeking' || G.state === 'hiding';
   for (const b of G.beans) {
     if (b === p) continue;
-    if (b.caught) { mm.globalAlpha = 0.5; dot(b.pos, 3, '#fff'); mm.globalAlpha = 1; continue; }
+    if (b.ghost) { mm.globalAlpha = 0.5; dot(b.pos, 3, '#fff'); mm.globalAlpha = 1; continue; }
     if (b.tauntT > 0) { dot(b.pos, 5 + Math.sin(G.t * 20) * 2, '#ffd23f'); continue; }
     if (!playing) { dot(b.pos, 4, b.color); continue; }
-    if (b === S2) { if (p.role === 'hider' && (p.caught || dist2D(b.pos, p.pos) < 16 || (S2.ai.mode === 'chase' && S2.ai.target === p))) dot(b.pos, 5, '#ff3b5c', '#fff'); continue; }
-    if (p.role === 'hider' || p.caught) dot(b.pos, 3.5, b.color);
+    if (b.role === 'seeker') {
+      if (p.role === 'hider' && (dist2D(b.pos, p.pos) < 16 || (b.ai && b.ai.mode === 'chase' && b.ai.target === p)))
+        dot(b.pos, 5, '#ff3b5c', '#fff');
+      else if (p.role === 'seeker')
+        dot(b.pos, 4, '#ff3b5c');
+      continue;
+    }
+    if (p.role === 'hider') dot(b.pos, 3.5, b.color);
+    else if (b.disguiseT <= 0 || dist2D(b.pos, p.pos) < 3.5) dot(b.pos, 3.5, b.color);
   }
-  if (p.role === 'seeker' && p.sniffT > 0 && G.sniffTarget && !G.sniffTarget.caught) { const t = G.sniffTarget.pos; mm.strokeStyle = '#ffd23f'; mm.lineWidth = 3; mm.beginPath(); mm.arc(X(t.x), Z(t.z), 6 + (G.t * 20 % 10), 0, 7); mm.stroke(); }
+  if (p.role === 'seeker' && p.sniffT > 0 && G.sniffTarget && G.sniffTarget.role === 'hider') { const t = G.sniffTarget.pos; mm.strokeStyle = '#ffd23f'; mm.lineWidth = 3; mm.beginPath(); mm.arc(X(t.x), Z(t.z), 6 + (G.t * 20 % 10), 0, 7); mm.stroke(); }
   // player arrow + view cone
   mm.translate(X(p.pos.x), Z(p.pos.z));
   mm.fillStyle = 'rgba(255,255,255,.25)'; mm.beginPath(); mm.moveTo(0, 0); const a = Math.atan2(Math.cos(CAM.yaw), Math.sin(CAM.yaw)); mm.arc(0, 0, 26, a - 0.55, a + 0.55); mm.fill();
@@ -3709,21 +4360,22 @@ function updateLabels(dt) {
     let showL = false;
     if (G.state === 'roulette') showL = true;
     else if (playing && b !== p && camD < 32) {
-      if (b === G.seeker || b.caught) showL = true;
-      else if (p.role === 'hider' || p.caught) showL = G.net ? true : b.disguiseT <= 0 && !(b.zone && b.crouch);
+      if (b.role === 'seeker' || b.ghost) showL = true;
+      else if (p.role === 'hider') showL = G.net ? true : b.disguiseT <= 0 && !(b.zone && b.crouch);
+      else if (p.role === 'seeker') showL = true;
       else { // the seeker only sees name tags of hiders who aren't hidden and are actually in view (fair play)
         b.lblT = (b.lblT || 0) - dt;
         if (b.lblT <= 0) { b.lblT = 0.2; b.lblLos = camD < 6 || !segBlocked(camera.position.x, camera.position.y, camera.position.z, b.pos.x, b.pos.y + 1, b.pos.z); }
         showL = !b.prop && b.disguiseT <= 0 && !(b.zone && b.crouch) && b.lblLos;
       }
     }
-    if (sc && showL) { b.lbl.style.display = 'block'; b.lbl.style.transform = `translate(${sc.x}px,${sc.y}px) translate(-50%,-100%)`; b.lbl.className = 'lbl' + (b === G.seeker && G.state !== 'roulette' ? ' seeker' : ''); b.lbl.textContent = (b === G.seeker && G.state !== 'roulette' ? '🔦 ' : '') + (b.caught ? '👻 ' : '') + b.name; b.lbl.style.borderColor = G.net && b.human ? b.color : ''; }
+    if (sc && showL) { b.lbl.style.display = 'block'; b.lbl.style.transform = `translate(${sc.x}px,${sc.y}px) translate(-50%,-100%)`; b.lbl.className = 'lbl' + (b.role === 'seeker' && G.state !== 'roulette' ? ' seeker' : ''); b.lbl.textContent = (b.role === 'seeker' && G.state !== 'roulette' ? '🔦 ' : '') + (b.ghost ? '👻 ' : '') + b.name; b.lbl.style.borderColor = G.net && b.human ? b.color : ''; }
     else b.lbl.style.display = 'none';
     // bubbles
     if (b.bubT > 0) {
       b.bubT -= dt;
       let vis = sc && camD < 38 && G.state !== 'menu' && G.state !== 'lobby';
-      if (vis && p.role === 'seeker' && b !== p && !b.caught && playing && b.tauntT <= 0) vis = camD < 9 || !segBlocked(camera.position.x, camera.position.y, camera.position.z, b.pos.x, b.pos.y + 1, b.pos.z);
+      if (vis && p.role === 'seeker' && b !== p && b.role === 'hider' && playing && b.tauntT <= 0) vis = camD < 9 || !segBlocked(camera.position.x, camera.position.y, camera.position.z, b.pos.x, b.pos.y + 1, b.pos.z);
       if (b.disguiseT > 0) vis = false;
       if (vis) { b.bub.style.display = 'block'; b.bub.style.left = sc.x + 'px'; b.bub.style.top = (sc.y - (showL ? 26 : 4)) + 'px'; } else b.bub.style.display = 'none';
       if (b.bubT <= 0) b.bub.style.display = 'none';
@@ -3731,7 +4383,7 @@ function updateLabels(dt) {
     // marks
     let mk = null;
     if (b.markT > 0) { b.markT -= dt; mk = b.mark.textContent; }
-    if (!b.human && b === G.seeker && G.state === 'seeking' && b.markT <= 0) { if (b.ai.mode === 'chase') mk = '❗'; else if (b.ai.maxAware > 0.3) mk = '❓'; if (mk) b.mark.textContent = mk; }
+    if (!b.human && b.role === 'seeker' && G.state === 'seeking' && b.markT <= 0) { if (b.ai.mode === 'chase') mk = '❗'; else if (b.ai.maxAware > 0.3) mk = '❓'; if (mk) b.mark.textContent = mk; }
     const msc = b.tauntT > 0 ? project(b.pos, top + 0.9) : sc;
     if (mk && msc && (camD < 40 || b.tauntT > 0)) { b.mark.style.display = 'block'; b.mark.style.left = msc.x + 'px'; b.mark.style.top = (msc.y - (showL ? 28 : 0) - (b.bubT > 0 ? 40 : 0)) + 'px'; } else b.mark.style.display = 'none';
   }
@@ -3740,6 +4392,17 @@ function updateHUD(dt) {
   const p = G.player;
   if (G.state === 'menu' || G.state === 'lobby') { G.beans.forEach(b => { b.lbl.style.display = 'none'; }); $('vignette').style.opacity = 0; return; }
   updateLabels(dt);
+  if (G.mode === 'race' && Race.active) {
+    $('phase').textContent = Race.phase === 'countdown' ? 'READY' : Race.phase === 'done' ? 'FINISH' : 'RACE!';
+    $('phase').style.background = '#3fa7ff';
+    $('timer').textContent = p.race ? String(p.race.place) : '-';
+    $('roundLbl').textContent = 'Seed ' + Race.seed;
+    $('score').textContent = p.score;
+    updateRaceHUD();
+    $('vignette').style.opacity = 0;
+    $('reticle').style.display = 'none';
+    return;
+  }
   const playing = G.state === 'hiding' || G.state === 'seeking';
   if (!playing && G.state !== 'roundEnd') { $('vignette').style.opacity = 0; $('speedLines').style.opacity = 0; return; }
   if (lastRole !== p.role) buildAbilities();
@@ -3749,27 +4412,29 @@ function updateHUD(dt) {
   $('timer').classList.toggle('low', G.state === 'seeking' && G.timer <= 10);
   $('phase').textContent = G.state === 'hiding' ? 'HIDE!' : G.state === 'seeking' ? 'SEEK!' : 'ROUND OVER';
   $('phase').style.background = G.state === 'hiding' ? '#5ed36a' : '#ff5fa2';
-  $('role').textContent = p.caught ? '👻 You were caught — spectating' : p.role === 'seeker' ? '🔦 You are the SEEKER' : '🫣 You are HIDING from ' + G.seeker.name;
+  $('role').textContent = p.ghost ? '👻 Spectating' : p.role === 'seeker' ? (p.caught && p !== G.seeker ? '🔦 You are a SEEKER now!' : '🔦 You are the SEEKER') : '🫣 You are HIDING — tagged beans become seekers!';
   $('score').textContent = p.score; $('roundLbl').textContent = `Round ${G.round} / ${G.totalRounds}`;
   if (playing) $('bfCount').textContent = tt;
   // hiders list
   if (hidersVerShown !== G.hidersVer) {
     hidersVerShown = G.hidersVer;
-    const hs = hiders(), al = hs.filter(h => !h.caught).length;
-    $('hiders').innerHTML = `<h4>🔦 ${G.seeker.isPlayer ? 'You' : esc(G.seeker.name)}</h4><h4>Hiders left: ${al} / ${hs.length}</h4>` + hs.map(h => `<div class="hrow ${h.caught ? 'caught' : ''}"><span class="dot" style="background:${h.color}"></span>${h.caught ? '👻 ' : ''}${h.isPlayer ? (h.name === 'You' ? 'You' : esc(h.name) + ' (you)') : esc(h.name)}${h.human && !h.isPlayer && G.net ? ' 🧑' : ''}</div>`).join('');
+    const sk = seekers(), hs = hiders();
+    const nm = b => b.isPlayer ? (b.name === 'You' ? 'You' : esc(b.name) + ' (you)') : esc(b.name);
+    $('hiders').innerHTML = `<h4>🔦 Seekers (${sk.length})</h4>` + sk.map(b => `<div class="hrow"><span class="dot" style="background:${b.color}"></span>🔦 ${nm(b)}${b.human && !b.isPlayer && G.net ? ' 🧑' : ''}${b.caught && b !== G.seeker ? ' ⚡' : ''}</div>`).join('')
+      + `<h4>Hiders left: ${hs.length}</h4>` + hs.map(h => `<div class="hrow"><span class="dot" style="background:${h.color}"></span>${nm(h)}${h.human && !h.isPlayer && G.net ? ' 🧑' : ''}</div>`).join('');
   }
   // abilities
   for (const a of abilityEls) { const c = a.cd(); a.cdEl.style.setProperty('--p', c > 0 ? c / a.max : 0); a.cdEl.textContent = c > 0.6 ? Math.ceil(c) : ''; if (a.was > 0 && c <= 0) { a.d.classList.remove('ready'); void a.d.offsetWidth; a.d.classList.add('ready'); } a.was = c; a.d.classList.toggle('active', a.act()); }
   // stamina
   $('staminaFill').style.width = (p.stamina * 100).toFixed(1) + '%'; $('staminaFill').classList.toggle('tired', p.tired);
   $('gasFill').style.width = (p.gas * 100).toFixed(1) + '%'; $('gasFill').classList.toggle('low', p.gas < 0.2);
-  const ret = $('reticle'), showRet = playing && !p.caught && !(G.state === 'hiding' && p === G.seeker);
+  const ret = $('reticle'), showRet = playing && !p.ghost && !(G.state === 'hiding' && p === G.seeker);
   ret.style.display = showRet ? 'block' : 'none';
   if (showRet) { ret.classList.toggle('on', G.aim.ok); const tx = G.aim.ok ? Math.round(G.aim.d) + 'm' : (G.aim.d ? 'too far' : ''); if (ret.firstChild.textContent !== tx) ret.firstChild.textContent = tx; }
   // status
   let st = '';
-  if (p.caught) st = G.net ? '👻 Ghost mode — Space/C to float' : '👻 Ghost mode — Space/C to float · hold T to fast-forward';
-  else if (p.role === 'seeker') st = G.state === 'hiding' ? '🙈 Counting... no peeking!' : (p.sniffT > 0 ? '👃 Sniffing... follow the arrow!' : `🔎 Find them! ${aliveHiders().length} left`);
+  if (p.ghost) st = G.net ? '👻 Ghost mode — Space/C to float' : '👻 Ghost mode — Space/C to float · hold T to fast-forward';
+  else if (p.role === 'seeker') st = G.state === 'hiding' ? '🙈 Counting... no peeking!' : (p.sniffT > 0 ? '👃 Sniffing... follow the arrow!' : `🔎 Tag them — they join you! ${aliveHiders().length} hiders left`);
   else if (p.flying && !p.onGround && p.vel.length() > 8) st = `🪝 ${Math.round(p.vel.length() * 3.6)} km/h${p.gas <= 0 ? ' — out of gas!' : ''}`;
   else if (p.disguiseT > 0) st = `🎭 Disguised! (${Math.ceil(p.disguiseT)}s) — stay still!`;
   else if (p.zone) { const n = { bush: '🌿 bush', box: '📦 box', under: '🛋️ cover' }[p.zone.type] || '🛋️ cover'; st = p.crouch ? `✨ Hidden in ${n}` : `${n.split(' ')[0]} In a ${n.split(' ')[1]} — press C to crouch!`; }
@@ -3777,12 +4442,14 @@ function updateHUD(dt) {
   $('status').textContent = st;
   // eye meter (AI seeker awareness of you)
   const em = $('eyeMeter');
-  if (G.state === 'seeking' && p.role === 'hider' && !p.caught) { em.style.opacity = p.aware > 0.02 ? 1 : 0.0; $('eyeFill').style.width = Math.min(100, p.aware * 100) + '%'; } else em.style.opacity = 0;
+  if (G.state === 'seeking' && p.role === 'hider') { em.style.opacity = p.aware > 0.02 ? 1 : 0.0; $('eyeFill').style.width = Math.min(100, p.aware * 100) + '%'; } else em.style.opacity = 0;
   // proximity danger
   let inten = 0;
-  if (G.state === 'seeking' && p.role === 'hider' && !p.caught && G.seeker) {
-    const d = dist2D(G.seeker.pos, p.pos); inten = clamp(1 - (d - 2) / 12, 0, 1);
-    if (G.seeker.ai.mode === 'chase' && G.seeker.ai.target === p) inten = Math.max(inten, 0.7);
+  if (G.state === 'seeking' && p.role === 'hider') {
+    let nearest = null, nd = 1e9;
+    for (const sk of seekers()) { const d = dist2D(sk.pos, p.pos); if (d < nd) { nd = d; nearest = sk; } }
+    const d = nd; inten = nearest ? clamp(1 - (d - 2) / 12, 0, 1) : 0;
+    if (nearest && nearest.ai.mode === 'chase' && nearest.ai.target === p) inten = Math.max(inten, 0.7);
     hbT -= dt; if (inten > 0.08 && hbT <= 0) { Snd.heartbeat(0.4 + inten * 0.6); hbT = lerp(1.1, 0.36, inten); }
   }
   $('vignette').style.opacity = (inten * (0.75 + Math.sin(G.t * (4 + inten * 8)) * 0.25)).toFixed(3);
@@ -3790,7 +4457,7 @@ function updateHUD(dt) {
   $('speedLines').style.opacity = p.dashT > 0 ? 0.9 : Math.max(p.sprinting ? 0.3 : 0, clamp((fsp - 11) / 18, 0, 0.95)).toFixed(3);
   // sniff arrow
   const sa = $('sniffArrow');
-  if (p.role === 'seeker' && p.sniffT > 0 && G.sniffTarget && !G.sniffTarget.caught) {
+  if (p.role === 'seeker' && p.sniffT > 0 && G.sniffTarget && G.sniffTarget.role === 'hider') {
     const t = G.sniffTarget.pos, ang = Math.atan2(t.x - p.pos.x, t.z - p.pos.z), rel = angDiff(CAM.yaw, ang);
     sa.style.opacity = 1; sa.firstChild.style.transform = `rotate(${-rel}rad)`; sa.lastChild.textContent = `👃 ~${Math.round(dist2D(t, p.pos))}m`; sa.lastChild.style.transform = `translate(${Math.sin(-rel) * 215}px, ${235 - Math.cos(-rel) * 215 - 12}px)`;
     // scent trail particles drifting toward the target
@@ -3856,6 +4523,9 @@ function update(dt) {
       if (Math.random() < dt * 0.25) p.jumpReq = true;
       G.beans.forEach(b => { if (!b.isPlayer) menuBot(b, dt); });
       break;
+    case 'race':
+      updateRace(dt);
+      break;
     case 'roulette': updateRoulette(dt); break;
     case 'hiding': case 'seeking': {
       G.timer -= dt;
@@ -3867,18 +4537,23 @@ function update(dt) {
         if (G.timer <= 0 && !C) { Snd.beep(true); startSeeking(); }
       } else {
         if (!C) for (const h of aliveHiders()) { h.ptAcc = (h.ptAcc || 0) + dt * 2; if (h.ptAcc >= 1) { const n = Math.floor(h.ptAcc); h.ptAcc -= n; h.score += n; h.roundScore += n; } }
-        if (!s.human && !C) seekerAI(s, dt);
+        if (!C) for (const sk of seekers()) { if (!sk.human && !sk.grabbedBy) seekerAI(sk, dt); }
         if (G.timer <= 10 && Math.ceil(G.timer) !== G.lastBeep) { G.lastBeep = Math.ceil(G.timer); Snd.tick(400); }
         seekerSteps(s);
       }
-      if (!C) for (const b of G.beans) { if (b.human || b === s || b.grabbedBy) continue; if (b.caught) ghostBot(b, dt); else botHider(b, dt); }
+      if (!C) for (const b of G.beans) { if (b.human || b.role === 'seeker' || b.grabbedBy) continue; if (b.ghost) ghostBot(b, dt); else botHider(b, dt); }
       for (const b of G.beans) if (b.remote) applyInterp(b, dt);
       updatePlayer(dt);
-      // host checks bump-tags for a remote human seeker
-      if (!C && s.remote && G.state === 'seeking' && !s.caught) for (const h of aliveHiders()) if (dist2D(h.pos, s.pos) < 1.0 && Math.abs(h.pos.y - s.pos.y) < 1.2) catchBean(h, s);
-      if (s.isPlayer && G.state === 'seeking' && !s.caught) {
+      // host bump-tags for every remote human seeker
+      if (!C && G.state === 'seeking') {
+        for (const sk of seekers()) {
+          if (!sk.remote) continue;
+          for (const h of aliveHiders()) if (dist2D(h.pos, sk.pos) < 1.0 && Math.abs(h.pos.y - sk.pos.y) < 1.2) catchBean(h, sk);
+        }
+      }
+      if (p.role === 'seeker' && G.state === 'seeking') {
         giggleT -= dt;
-        if (giggleT < 0) { giggleT = rand(3, 6); for (const h of aliveHiders()) { const d = dist2D(h.pos, s.pos); if (d < 4.5 && h.zone && Math.random() < 0.6) { Snd.giggle(panAt(h.pos), 0.8); if (h.zone.bush) h.zone.bush.wigV += 4; break; } } }
+        if (giggleT < 0) { giggleT = rand(3, 6); for (const h of aliveHiders()) { const d = dist2D(h.pos, p.pos); if (d < 4.5 && h.zone && Math.random() < 0.6) { Snd.giggle(panAt(h.pos), 0.8); if (h.zone.bush) h.zone.bush.wigV += 4; break; } } }
       }
       if (G.state === 'seeking' && !C) { if (aliveHiders().length === 0) endRound(true); else if (G.timer <= 0) endRound(false); }
       break;
@@ -3886,7 +4561,7 @@ function update(dt) {
     case 'roundEnd': case 'final':
       G.endT += dt;
       if (G.state === 'roundEnd' && !G.sbShown && G.endT > 3) showScoreboard();
-      for (const b of G.beans) { if (b.isPlayer) continue; if (b.remote) applyInterp(b, dt); else if (b.caught) ghostBot(b, dt); else { b.wish.set(0, 0, 0); b.physics(dt, 0); } }
+      for (const b of G.beans) { if (b.isPlayer) continue; if (b.remote) applyInterp(b, dt); else if (b.ghost) ghostBot(b, dt); else { b.wish.set(0, 0, 0); b.physics(dt, 0); } }
       updatePlayer(dt);
       break;
   }
@@ -3941,7 +4616,35 @@ function update(dt) {
   if ($('giantsOn')) $('giantsOn').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { G.giantsOn = b.dataset.v === '1'; syncGiantUI(); Snd.tick(100); }));
   if ($('giants')) $('giants').oninput = e => { G.giantCount = +e.target.value; syncGiantUI(); };
   syncGiantUI();
-  $('play').onclick = () => { Snd.init(); Snd.tick(300); if (G.giantsOn && MAPS[G.map]) G.giantCount = clamp(G.giantCount, 0, MAPS[G.map].giants || 4); startGame(); };
+  function syncModeUI() {
+    const race = G.mode === 'race';
+    const ho = $('hideOpts'), ro = $('raceOpts');
+    if (ho) ho.classList.toggle('hidden', race);
+    if (ro) ro.classList.toggle('hidden', !race);
+    $('play').textContent = race ? 'RACE vs BOTS! 🏁' : 'PLAY vs BOTS!';
+    if ($('bots2') && $('bots')) { /* mirror bot count */ }
+  }
+  if ($('modeSel')) $('modeSel').querySelectorAll('button').forEach(b => b.onclick = () => {
+    $('modeSel').querySelectorAll('button').forEach(e => e.classList.remove('sel')); b.classList.add('sel');
+    G.mode = b.dataset.v; Snd.tick(100); syncModeUI();
+  });
+  if ($('raceLaps')) $('raceLaps').querySelectorAll('button').forEach(b => b.onclick = () => {
+    $('raceLaps').querySelectorAll('button').forEach(e => e.classList.remove('sel')); b.classList.add('sel');
+    G.raceLaps = +b.dataset.v; Snd.tick(100);
+  });
+  if ($('raceSeedRnd')) $('raceSeedRnd').onclick = () => { G.raceSeed = raceRandSeed(); $('raceSeed').value = String(G.raceSeed); Snd.tick(200); };
+  if ($('raceSeed')) $('raceSeed').onchange = () => { const v = parseInt($('raceSeed').value, 10); G.raceSeed = v > 0 ? v : 0; };
+  if ($('bots2')) $('bots2').oninput = () => { G.botCount = +$('bots2').value; $('botN2').textContent = G.botCount; $('bots').value = G.botCount; $('botN').textContent = G.botCount; };
+  syncModeUI();
+  $('play').onclick = () => {
+    Snd.init(); Snd.tick(300);
+    if (G.mode === 'race') {
+      const v = parseInt(($('raceSeed') && $('raceSeed').value) || '0', 10);
+      G.raceSeed = v > 0 ? v : 0;
+      G.botCount = +($('bots2') ? $('bots2').value : G.botCount);
+    } else if (G.giantsOn && MAPS[G.map]) G.giantCount = clamp(G.giantCount, 0, MAPS[G.map].giants || 4);
+    startGame();
+  };
 }
 
 // ======================================================================
@@ -3949,14 +4652,14 @@ function update(dt) {
 // ======================================================================
 setMap('city'); G.mapChoice = 'city';
 buildRoster(true); setupMenuScene();
-if (G.debug) G.api = { startGame, startSeeking, startHiding, endRound, nextRound, CAM, aliveHiders, update, updateCamera, updateHUD, spots, zones, setMap, setupMenuScene, fireHook, releaseHook, updateAim, colliders, roofs, groundHeight, planLegs, setGoal, startArc, solidAt, segBlocked, MAPS, keys, giants, spawnGiantsForMap, clearGiants, tryNapeHit, updateGiants, renderer, scene, Snd };
+if (G.debug) G.api = { startGame, startSeeking, startHiding, endRound, nextRound, CAM, aliveHiders, update, updateCamera, updateHUD, spots, zones, setMap, setupMenuScene, fireHook, releaseHook, updateAim, colliders, roofs, groundHeight, planLegs, setGoal, startArc, solidAt, segBlocked, MAPS, keys, giants, spawnGiantsForMap, clearGiants, tryNapeHit, updateGiants, renderer, scene, Snd, seekers, catchBean, fxCatch, Race, startRaceGame, buildRaceTrack, updateRace, endRace, showRaceScoreboard, clearRaceWorld };
 let last = performance.now(), fpsAcc = 0, fpsN = 0;
 G.fps = 0;
 function frame(now) {
   requestAnimationFrame(frame);
   const dt = Math.min(0.05, (now - last) / 1000); last = now;
   fpsAcc += dt; fpsN++; if (fpsAcc > 1) { G.fps = fpsN / fpsAcc; fpsAcc = 0; fpsN = 0; }
-  const fast = !G.net && keys.KeyT && G.player && ((G.player.caught && G.state === 'seeking') || (G.state === 'hiding' && G.seeker === G.player));
+  const fast = !G.net && keys.KeyT && G.player && ((G.player.ghost && G.state === 'seeking') || (G.state === 'hiding' && G.seeker === G.player));
   const t0 = performance.now();
   if (!G.paused) { const n = fast ? 4 : 1; for (let i = 0; i < n; i++) update(dt); }
   Net.tick(dt);
