@@ -9,8 +9,15 @@ A squishy 3D hide-and-seek party game that runs in your browser. It's a single `
 - In the lobby the host picks the **map**, the number of bots, the bot difficulty and the rounds, then presses **Start**. Up to 8 beans per room.
 
 ## Maps
-- **Walled City** (default): a dense, tall Attack-on-Titan-style town inside a 22 m stone wall. It has timber and stone houses 3–7 floors tall, a clock tower, narrow alleys, bridges between rooftops, balconies, chimneys, water towers, rooftop gardens and crates, and arcades around a fountain plaza. Many of the best hiding spots are up high.
-- **Backyard**: the original cosy garden and house.
+- **Walled City** (default): a huge Attack-on-Titan-style town (~2× the original footprint, ~4× the area) inside a **46 m** stone wall. Timber and stone houses rise **5–12 floors**, with a taller clock tower, a raised castle district, multi-level bridges, balconies, chimneys, water towers and rooftop gardens. ~700 hiding spots, most of them up high. Hide time 40s / seek 150s.
+- **Backyard**: the cosy garden and house, moderately bigger fence (~±48 m). Hide 28s / seek 110s.
+
+## Giant beans (Titans)
+Toggle **Giant beans** on/off and set the count in the menu or lobby (default on: 4 in the city, 2 in the backyard).
+- Huge lumbering beans (~14–18 m) roam, notice nearby players, and try to **grab** them.
+- If grabbed: mash **Space** to wriggle free within ~4 seconds. Fail and you get **yeeted** across the map (hiders are briefly revealed to the seeker).
+- Zip into a giant's **nape** (back of the neck) at high speed on your hooks to **stun** it for ~10s and score +150. Grapples can attach to giants too.
+- Host simulates giants in multiplayer; grab / nape / wriggle go through the host.
 
 ## ODM gear (grappling hooks)
 Every bean wears ODM gear with two hooks.
@@ -23,7 +30,7 @@ Every bean wears ODM gear with two hooks.
 
 Online play is peer-to-peer over WebRTC. The free public PeerJS broker only does matchmaking. The host's browser runs the game, so the host has to keep their tab open.
 
-Controls: WASD to move, mouse to look, Space to jump, Shift to sprint, C to crouch. Left/right click (or G) for the hooks, Space while hooked to reel in with gas, Shift in mid-air for gas thrust. Hiders: Q to disguise, F to taunt. Seeker: **E** to tag (mouse clicks are now the hooks), Q to sniff, F to dash.
+Controls: WASD to move, mouse to look, Space to jump, Shift to sprint, C to crouch. Left/right click (or G) for the hooks, Space while hooked to reel in with gas, Shift in mid-air for gas thrust. Mash Space if a giant grabs you; nape-hit giants while grappling fast to stun them. Hiders: Q to disguise, F to taunt. Seeker: **E** to tag (mouse clicks are now the hooks), Q to sniff, F to dash.
 
 ### Notes
 - If peer-to-peer is blocked by a very strict firewall or NAT (some office or school networks, some mobile carriers), joining can fail. You can add your own TURN server by setting `window.BEAN_HUNT_ICE = [{urls:'turn:your.server:3478', username:'…', credential:'…'}]` before the game script runs.

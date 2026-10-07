@@ -54,6 +54,8 @@ canvas#c{display:block;position:fixed;inset:0;width:100vw;height:100vh}
 #sniffArrow span{position:absolute;left:-60px;top:-235px;width:120px;text-align:center;font-weight:700;font-size:20px;-webkit-text-stroke:1px var(--ink);paint-order:stroke fill;text-shadow:0 2px 0 var(--ink)}
 #crosshair{position:absolute;left:50%;top:50%;width:8px;height:8px;margin:-4px 0 0 -4px;border-radius:50%;background:#fff;border:2px solid var(--ink);opacity:.7}
 #vignette{position:fixed;inset:0;pointer-events:none;z-index:4;opacity:0;background:radial-gradient(ellipse at center,transparent 45%,rgba(255,0,60,.55) 100%)}
+#giantWarn{position:fixed;top:18%;left:50%;transform:translateX(-50%);z-index:9;font-size:28px;font-weight:900;color:#ff3b5c;-webkit-text-stroke:2px #2a1030;paint-order:stroke fill;opacity:0;pointer-events:none;transition:opacity .2s;text-shadow:0 4px 0 #2a1030}
+#giantWarn.on{opacity:1;animation:popUp 0.4s ease-out}
 #speedLines{position:fixed;inset:0;pointer-events:none;z-index:4;opacity:0;background:repeating-conic-gradient(from 0deg at 50% 50%,rgba(255,255,255,.0) 0deg 4deg,rgba(255,255,255,.35) 4deg 5deg);-webkit-mask:radial-gradient(circle,transparent 35%,#000 75%);mask:radial-gradient(circle,transparent 35%,#000 75%)}
 #labels{position:fixed;inset:0;pointer-events:none;z-index:5;overflow:hidden}
 .lbl{position:absolute;left:0;top:0;transform:translate(-50%,-100%);white-space:nowrap;font-weight:700;font-size:14px;padding:1px 8px;border-radius:10px;background:rgba(74,35,102,.7);border:2px solid #fff}
@@ -177,7 +179,7 @@ kbd{display:inline-block;background:#fff;border:2px solid var(--ink);border-radi
 <body>
 <canvas id="c"></canvas>
 <div id="vignette"></div>
-<div id="speedLines"></div>
+<div id="speedLines"></div><div id="giantWarn">👹 GIANT SPOTTED YOU!</div>
 <div id="labels"></div>
 <div id="hud" class="hidden">
   <div id="topCenter"><div id="phase">HIDE!</div><div id="timer">25</div><div id="role">You are hiding</div></div>
@@ -203,17 +205,20 @@ kbd{display:inline-block;background:#fff;border:2px solid var(--ink);border-radi
     <div class="row"><label class="h">Your name</label><input id="pname" type="text" maxlength="14" value="You"></div>
     <div class="row"><label class="h">Bean color</label><div id="swatches"></div></div>
     <div class="row"><label class="h">Hat</label><div class="seg" id="hats"></div></div>
-    <div class="row"><label class="h">Map</label><div class="seg mapCard" id="mapSel"><button data-v="city" class="sel">🏰 Walled City<small>Tall rooftops · ODM gear heaven</small></button><button data-v="yard">🌳 Backyard<small>Cosy garden &amp; house</small></button></div></div>
+    <div class="row"><label class="h">Map</label><div class="seg mapCard" id="mapSel"><button data-v="city" class="sel">🏰 Walled City<small>Huge city · Titans · ODM heaven</small></button><button data-v="yard">🌳 Backyard<small>Cosy garden &amp; house</small></button></div></div>
     <div class="row"><label class="h">Seeker difficulty</label><div class="seg" id="diff"><button data-v="easy">😴 Easy</button><button data-v="normal" class="sel">🙂 Normal</button><button data-v="hard">😈 Hard</button></div></div>
     <div class="row"><label class="h">Bean bots: <span id="botN">6</span></label><input id="bots" type="range" min="3" max="7" value="6"></div>
     <div class="row"><label class="h">Rounds</label><div class="seg" id="rounds"><button data-v="3">3</button><button data-v="5" class="sel">5</button><button data-v="7">7</button></div></div>
+    <div class="row"><label class="h">Giant beans</label><div class="seg" id="giantsOn"><button data-v="1" class="sel">👹 On</button><button data-v="0">Off</button></div></div>
+    <div class="row"><label class="h">Giant count: <span id="giantN">4</span></label><input id="giants" type="range" min="1" max="5" value="4"></div>
     <details><summary>How to play</summary><ul>
       <li>Each round a spotlight roulette picks one <b>Seeker</b>. Everyone else <b>hides</b>!</li>
-      <li><b>Hiders:</b> 25s to hide while the seeker counts. Crouch (<kbd>C</kbd>) inside bushes &amp; boxes or under tables/beds to be nearly invisible. <kbd>Q</kbd> Disguise as a prop, <kbd>F</kbd> Taunt for bonus points (but it reveals you!). Earn points every second you survive.</li>
+      <li><b>Hiders:</b> hide while the seeker counts (longer on the big city map). Crouch (<kbd>C</kbd>) inside bushes &amp; boxes or under tables/beds to be nearly invisible. <kbd>Q</kbd> Disguise as a prop, <kbd>F</kbd> Taunt for bonus points (but it reveals you!). Earn points every second you survive.</li>
       <li><b>Seeker:</b> find and tag everyone (<kbd>E</kbd> when close, or just bump them). <kbd>Q</kbd> Sniff points to the nearest hider, <kbd>F</kbd> Dash.</li>
       <li><kbd>WASD</kbd> move · mouse look · <kbd>Space</kbd> jump · <kbd>Shift</kbd> sprint · <kbd>M</kbd> mute · <kbd>Esc</kbd> pause. Caught? Fly around as a ghost — hold <kbd>T</kbd> to fast-forward.</li>
       <li><b>🪝 ODM grappling gear (every bean!):</b> aim with the reticle — it glows when a wall is in range (60 m). Hold <kbd>Left click</kbd> / <kbd>Right click</kbd> to fire &amp; hang on to the left / right hook (or hold <kbd>G</kbd>), let go to fly off with all your momentum. <kbd>Space</kbd> while hooked = gas-boost &amp; reel in, <kbd>Shift</kbd> in mid-air = gas thrust. Gas refills while you're on the ground.</li>
-      <li><b>Walled City:</b> rooftops, chimneys, balconies, bridges, water towers, a clock tower… hide high! (Bots grapple too.) <b>Backyard:</b> try the trampoline, the slide and the pond. 🦆</li>
+      <li><b>Walled City:</b> a huge AoT-style town (~2× bigger): 8–12 floor towers, a 46 m wall, bridges, a raised castle district and a taller clock tower. Hide high! (Bots grapple too.) <b>Backyard:</b> a bit roomier — trampoline, slide and pond. 🦆</li>
+      <li><b>👹 Giant beans:</b> lumbering titans roam the map. If one grabs you, mash <kbd>Space</kbd> to wriggle free (~4s) or get yeeted across town (and briefly revealed if you were hiding). Slice a giant's <b>nape</b> (back of the neck) while zipping past on your hooks at high speed to stun it for ~10s and score big. Grapples stick to giants too. Toggle giants in the menu / lobby.</li>
     </ul></details>
     <div id="menuBtns"><button id="play">PLAY vs BOTS!</button>
     <div id="mpRow"><button id="hostBtn" class="mpb">🌐 Host game</button><button id="joinBtn" class="mpb">🔗 Join game</button></div>
@@ -237,6 +242,8 @@ kbd{display:inline-block;background:#fff;border:2px solid var(--ink);border-radi
     <div class="row"><label class="h">Map</label><div class="seg" id="lbMap"><button data-v="city" class="sel">🏰 Walled City</button><button data-v="yard">🌳 Backyard</button></div></div>
     <div class="row"><label class="h">Bot seeker difficulty</label><div class="seg" id="lbDiff"><button data-v="easy">😴 Easy</button><button data-v="normal" class="sel">🙂 Normal</button><button data-v="hard">😈 Hard</button></div></div>
     <div class="row"><label class="h">Rounds</label><div class="seg" id="lbRounds"><button data-v="3">3</button><button data-v="5" class="sel">5</button><button data-v="7">7</button></div></div>
+    <div class="row"><label class="h">Giant beans</label><div class="seg" id="lbGiantsOn"><button data-v="1" class="sel">👹 On</button><button data-v="0">Off</button></div></div>
+    <div class="row"><label class="h">Giant count: <span id="lbGiantN">4</span></label><input id="lbGiants" type="range" min="1" max="5" value="4"></div>
   </div>
   <div id="lbInfo"></div>
   <div id="lbStatus"></div>
@@ -407,7 +414,7 @@ renderer.outputColorSpace = THREE.SRGBColorSpace;
 renderer.toneMapping = THREE.ACESFilmicToneMapping; renderer.toneMappingExposure = 1.15;
 const scene = new THREE.Scene();
 scene.fog = new THREE.Fog(0xcfeeff, 70, 170);
-const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.1, 500);
+const camera = new THREE.PerspectiveCamera(62, innerWidth / innerHeight, 0.1, 700);
 addEventListener('resize', () => { renderer.setSize(innerWidth, innerHeight); camera.aspect = innerWidth / innerHeight; camera.updateProjectionMatrix(); });
 
 const hemi = new THREE.HemisphereLight(0xd6ecff, 0x7aa35a, 1.1); scene.add(hemi);
@@ -421,7 +428,7 @@ const BASE_LIGHT = { hemi: 1.1, sun: 2.4 };
 
 // sky dome
 {
-  const g = new THREE.SphereGeometry(300, 32, 16);
+  const g = new THREE.SphereGeometry(450, 32, 16);
   const m = new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
     uniforms: { top: { value: new THREE.Color(0x3d9bff) }, mid: { value: new THREE.Color(0x9fd8ff) }, bot: { value: new THREE.Color(0xfff2d6) } },
@@ -474,7 +481,7 @@ function canvasTex(w, h, draw, rep) { const c = document.createElement('canvas')
 const POND = { x: 16, z: 18, rx: 7, rz: 5, depth: 0.5 };
 const PLAZA = { x: 6, z: 4 };
 const YARD_POND = { ...POND }, YARD_PLAZA = { ...PLAZA };
-const BOUND = 35.3;
+let BOUND = 35.3;
 
 // ---------- ground ----------
 {
@@ -682,25 +689,25 @@ function lintelZ(z1, z2, x) { box(x, 2.25, (z1 + z2) / 2, WT, WALL_H - 2.25, z2 
 
   // fence
   const picketG = new THREE.BoxGeometry(0.16, 1.3, 0.08);
-  const pts = []; const L = 36;
+  const pts = []; const L = 48;
   for (let p = -L; p <= L; p += 0.55) { pts.push([p, -L, 0], [p, L, 0], [-L, p, 1], [L, p, 1]); }
   const fence = new THREE.InstancedMesh(picketG, mat(0xffffff), pts.length); fence.castShadow = true; fence.receiveShadow = true;
   const dm = new THREE.Object3D();
   pts.forEach(([a, b, r], i) => { if (r) dm.position.set(a < 0 ? -L : L, 0.65, b); else dm.position.set(a, 0.65, b); dm.rotation.set(0, r ? Math.PI / 2 : 0, 0); dm.updateMatrix(); fence.setMatrixAt(i, dm.matrix); });
   WORLD.add(fence);
-  for (const y of [0.35, 0.95]) { box(0, y, -L, 72, 0.1, 0.05, 0xf4f4f4, { collide: false }); box(0, y, L, 72, 0.1, 0.05, 0xf4f4f4, { collide: false }); box(-L, y, 0, 0.05, 0.1, 72, 0xf4f4f4, { collide: false }); box(L, y, 0, 0.05, 0.1, 72, 0xf4f4f4, { collide: false }); }
+  for (const y of [0.35, 0.95]) { box(0, y, -L, L * 2, 0.1, 0.05, 0xf4f4f4, { collide: false }); box(0, y, L, L * 2, 0.1, 0.05, 0xf4f4f4, { collide: false }); box(-L, y, 0, 0.05, 0.1, L * 2, 0xf4f4f4, { collide: false }); box(L, y, 0, 0.05, 0.1, L * 2, 0xf4f4f4, { collide: false }); }
   addCol(-L - 1, L + 1, 0, 3, -L - 1, -L + 0.1, { occ: false }); addCol(-L - 1, L + 1, 0, 3, L - 0.1, L + 1, { occ: false });
   addCol(-L - 1, -L + 0.1, 0, 3, -L, L, { occ: false }); addCol(L - 0.1, L + 1, 0, 3, -L, L, { occ: false });
 
   // hills + far trees
-  for (let i = 0; i < 16; i++) { const a = i / 16 * Math.PI * 2, r = rand(75, 95); const h = mesh(SPHG, i % 2 ? 0x8fd16f : 0x7cc35f, Math.cos(a) * r, -8, Math.sin(a) * r, { cast: false }); h.scale.set(rand(22, 34), rand(14, 22), rand(22, 34)); }
-  for (let i = 0; i < 26; i++) { const a = rand(0, 6.28), r = rand(42, 60); makeTree(Math.cos(a) * r, Math.sin(a) * r, i % 3 === 0 ? 1 : 0, rand(1.1, 1.6), false); }
+  for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2, r = rand(95, 120); const h = mesh(SPHG, i % 2 ? 0x8fd16f : 0x7cc35f, Math.cos(a) * r, -8, Math.sin(a) * r, { cast: false }); h.scale.set(rand(22, 34), rand(14, 22), rand(22, 34)); }
+  for (let i = 0; i < 32; i++) { const a = rand(0, 6.28), r = rand(52, 78); makeTree(Math.cos(a) * r, Math.sin(a) * r, i % 3 === 0 ? 1 : 0, rand(1.1, 1.6), false); }
 
   // trees inside
-  [[-30, 30, 0], [-31, -30, 1], [31, -31, 0], [33.2, 33.2, 1], [-22, 32, 0], [32, 9, 0], [-7, 32, 1], [13, -31, 0], [-18, -29, 0], [-32, -6, 1], [25, 6, 0], [-2, -32, 1], [33, -14, 1], [-32, 16, 0]].forEach(([x, z, k]) => makeTree(x, z, k));
+  [[-30, 30, 0], [-31, -30, 1], [31, -31, 0], [33.2, 33.2, 1], [-22, 32, 0], [32, 9, 0], [-7, 32, 1], [13, -31, 0], [-18, -29, 0], [-32, -6, 1], [25, 6, 0], [-2, -32, 1], [33, -14, 1], [-32, 16, 0], [42, 42, 0], [-42, 40, 1], [40, -42, 0], [-44, -20, 1], [0, 44, 0], [44, 10, 1]].forEach(([x, z, k]) => makeTree(x, z, k));
 
   // bushes
-  [[-7, 3], [-1, 11], [-25.5, 12], [-19.5, 17.5], [-12, 20], [-25, 22.5], [7, 24], [26, 21.5], [9.5, -12], [27.5, -19], [34, -2], [-34, -12], [1, 33], [-10, -25], [21, 0], [-30, -22], [-14, 30], [33, 20], [-3, -27], [18, 32], [-28, 4], [14, 9.5], [-6, -20.5]].forEach(([x, z]) => makeBush(x, z, rand(0.95, 1.12)));
+  [[-7, 3], [-1, 11], [-25.5, 12], [-19.5, 17.5], [-12, 20], [-25, 22.5], [7, 24], [26, 21.5], [9.5, -12], [27.5, -19], [34, -2], [-34, -12], [1, 33], [-10, -25], [21, 0], [-30, -22], [-14, 30], [33, 20], [-3, -27], [18, 32], [-28, 4], [14, 9.5], [-6, -20.5], [40, -8], [-40, 12], [15, 40], [-20, -40], [38, 28]].forEach(([x, z]) => makeBush(x, z, rand(0.95, 1.12)));
 
   // hedge garden
   hedge(-27, 8, -19, 8); hedge(-15, 8, -10, 8); hedge(-23, 8.45, -23, 16); hedge(-19, 13, -13, 13); hedge(-16, 13.45, -16, 22); hedge(-27, 19, -20, 19);
@@ -711,7 +718,7 @@ function lintelZ(z1, z2, x) { box(x, 2.25, (z1 + z2) / 2, WT, WALL_H - 2.25, z2 
   fl.forEach(([x, z], i) => { dm.position.set(x, rand(0.1, 0.25), z); dm.rotation.set(0, 0, 0); dm.scale.setScalar(rand(0.8, 1.4)); dm.updateMatrix(); flower.setMatrixAt(i, dm.matrix); flower.setColorAt(i, col.set(pick([0xff4d6d, 0xffd60a, 0xffffff, 0xc77dff, 0xff9f1c, 0x4cc9f0]))); });
   WORLD.add(flower);
   // grass tufts
-  const tufts = []; while (tufts.length < 900) { const x = rand(-35, 35), z = rand(-35, 35); if (x > -25 && x < -3 && z > -19 && z < -1) continue; if (((x - POND.x) / (POND.rx + 0.6)) ** 2 + ((z - POND.z) / (POND.rz + 0.6)) ** 2 < 1) continue; if (Math.hypot(x - PLAZA.x, z - PLAZA.z) < 5.6) continue; tufts.push([x, z]); }
+  const tufts = []; while (tufts.length < 1100) { const x = rand(-46, 46), z = rand(-46, 46); if (x > -25 && x < -3 && z > -19 && z < -1) continue; if (((x - POND.x) / (POND.rx + 0.6)) ** 2 + ((z - POND.z) / (POND.rz + 0.6)) ** 2 < 1) continue; if (Math.hypot(x - PLAZA.x, z - PLAZA.z) < 5.6) continue; tufts.push([x, z]); }
   const tuft = new THREE.InstancedMesh(new THREE.ConeGeometry(0.07, 0.38, 4), mat(0xffffff), tufts.length);
   tufts.forEach(([x, z], i) => { dm.position.set(x, 0.15, z); dm.rotation.set(rand(-0.3, 0.3), rand(0, 3), rand(-0.3, 0.3)); dm.scale.setScalar(rand(0.7, 1.4)); dm.updateMatrix(); tuft.setMatrixAt(i, dm.matrix); tuft.setColorAt(i, col.setHSL(rand(0.25, 0.33), 0.55, rand(0.32, 0.45))); });
   WORLD.add(tuft);
@@ -794,7 +801,7 @@ function lintelZ(z1, z2, x) { box(x, 2.25, (z1 + z2) / 2, WT, WALL_H - 2.25, z2 
     animated.push((t, dt) => { c.position.x += sp * dt; if (c.position.x > 170) c.position.x = -170; });
   }
 }
-snapshotMap('yard', { plaza: YARD_PLAZA, pond: YARD_POND, deck: true, label: 'Backyard' });
+snapshotMap('yard', { plaza: YARD_PLAZA, pond: YARD_POND, deck: true, label: 'Backyard', bound: 48, hideT: 28, seekT: 110, giants: 2, navMin: -50, navCs: 0.55, navN: 182 });
 const occluders = [], camOccluders = [];
 
 // ======================================================================
@@ -901,21 +908,20 @@ const CITY_PLAZA = { x: 0, z: 2.5 };
   {
     const tex = canvasTex(256, 256, (g, w, h) => { g.fillStyle = '#8e877b'; g.fillRect(0, 0, w, h); for (let r = 0; r < 16; r++) for (let c = 0; c < 16; c++) { const x = c * 16 + (r % 2) * 8, y = r * 16; g.fillStyle = `hsl(${rand(25, 45)},${rand(5, 14)}%,${rand(48, 66)}%)`; g.beginPath(); g.roundRect ? g.roundRect(x + 1, y + 1, 14, 14, 4) : g.rect(x + 1, y + 1, 14, 14); g.fill(); } }, true);
     tex.repeat.set(36, 36);
-    tex.repeat.set(18, 18);
-    const gm = new THREE.Mesh(new THREE.PlaneGeometry(80, 80).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ map: tex, roughness: 1 }));
+    const gm = new THREE.Mesh(new THREE.PlaneGeometry(160, 160).rotateX(-Math.PI / 2), new THREE.MeshStandardMaterial({ map: tex, roughness: 1 }));
     gm.receiveShadow = true; WORLD.add(gm);
-    const grass = new THREE.Mesh(new THREE.PlaneGeometry(400, 400).rotateX(-Math.PI / 2), mat(0x86c26a, { roughness: 1 })); grass.position.y = -0.03; grass.receiveShadow = true; WORLD.add(grass);
+    const grass = new THREE.Mesh(new THREE.PlaneGeometry(700, 700).rotateX(-Math.PI / 2), mat(0x86c26a, { roughness: 1 })); grass.position.y = -0.03; grass.receiveShadow = true; WORLD.add(grass);
     // plaza paving rings
     mesh(new THREE.CylinderGeometry(8.6, 8.6, 0.04, 48), 0xcfc4ae, CITY_PLAZA.x, 0.02, CITY_PLAZA.z, { cast: false });
     mesh(new THREE.CylinderGeometry(7.6, 7.6, 0.045, 48), 0xbcae94, CITY_PLAZA.x, 0.025, CITY_PLAZA.z, { cast: false });
     mesh(new THREE.CylinderGeometry(1.3, 1.3, 0.05, 32), 0xd98a5f, CITY_PLAZA.x, 0.03, CITY_PLAZA.z, { cast: false });
     // hills beyond the wall
-    for (let i = 0; i < 18; i++) { const a = i / 18 * Math.PI * 2, r = rand(85, 110); const hh = mesh(SPHG, i % 2 ? 0x7fae63 : 0x6f9f58, Math.cos(a) * r, -10, Math.sin(a) * r, { cast: false }); hh.scale.set(rand(25, 38), rand(22, 34), rand(25, 38)); }
-    for (let i = 0; i < 12; i++) { const c = new THREE.Group(); const n = randi(4, 7); for (let j = 0; j < n; j++) { const s = mesh(SPHG, mat(0xffffff, { emissive: 0xffffff, emissiveIntensity: 0.35, roughness: 1 }), j * 2.5 - n * 1.2, rand(-0.5, 1), rand(-1.5, 1.5), { parent: c, cast: false, receive: false }); s.scale.setScalar(rand(2.2, 3.8)); } c.position.set(rand(-150, 150), rand(55, 80), rand(-130, 100)); WORLD.add(c); const sp = rand(0.6, 1.4); animated.push((t, dt) => { c.position.x += sp * dt; if (c.position.x > 170) c.position.x = -170; }); }
+    for (let i = 0; i < 24; i++) { const a = i / 24 * Math.PI * 2, r = rand(160, 210); const hh = mesh(SPHG, i % 2 ? 0x7fae63 : 0x6f9f58, Math.cos(a) * r, -14, Math.sin(a) * r, { cast: false }); hh.scale.set(rand(35, 55), rand(28, 48), rand(35, 55)); }
+    for (let i = 0; i < 16; i++) { const c = new THREE.Group(); const n = randi(4, 7); for (let j = 0; j < n; j++) { const s = mesh(SPHG, mat(0xffffff, { emissive: 0xffffff, emissiveIntensity: 0.35, roughness: 1 }), j * 2.5 - n * 1.2, rand(-0.5, 1), rand(-1.5, 1.5), { parent: c, cast: false, receive: false }); s.scale.setScalar(rand(2.6, 4.2)); } c.position.set(rand(-280, 280), rand(70, 110), rand(-240, 200)); WORLD.add(c); const sp = rand(0.6, 1.4); animated.push((t, dt) => { c.position.x += sp * dt; if (c.position.x > 300) c.position.x = -300; }); }
   }
 
   // ---------- the great wall ----------
-  const WI = 33, WO = 39, WH = 22;
+  const WI = 66, WO = 74, WH = 46;
   for (const [x, z, w, d] of [[0, -(WI + WO) / 2, WO * 2, WO - WI], [0, (WI + WO) / 2, WO * 2, WO - WI], [-(WI + WO) / 2, 0, WO - WI, WI * 2], [(WI + WO) / 2, 0, WO - WI, WI * 2]]) {
     bBox('wall', wallMatC, x, 0, z, w, WH, d, 6);
     addCol(x - w / 2, x + w / 2, 0, WH, z - d / 2, z + d / 2);
@@ -1092,8 +1098,8 @@ const CITY_PLAZA = { x: 0, z: 2.5 };
     addSpot(x, z, y, 'balcony', 0.5);
   }
 
-  // ---------- city layout ----------
-  const XB = [[-30.5, -20.6], [-15.4, -9.4], [-6.4, 6.4], [9.4, 15.4], [20.6, 30.5]], ZB = XB;
+  // ---------- city layout (≈2× footprint vs original) ----------
+  const XB = [[-63, -50.2], [-45.8, -32.2], [-27.8, -14.2], [-9.8, 9.8], [14.2, 27.8], [32.2, 45.8], [50.2, 63]], ZB = XB;
   const ALLEY = 1.9;
   function split(x0, x1, z0, z1, out, depth = 0) {
     const w = x1 - x0, d = z1 - z0;
@@ -1103,13 +1109,13 @@ const CITY_PLAZA = { x: 0, z: 2.5 };
     else { const m = z0 + d * srr(0.42, 0.58); split(x0, x1, z0, m - ALLEY / 2, out, depth + 1); split(x0, x1, m + ALLEY / 2, z1, out, depth + 1); }
   }
   const lots = [];
-  for (let i = 0; i < 5; i++) for (let j = 0; j < 5; j++) {
+  for (let i = 0; i < 7; i++) for (let j = 0; j < 7; j++) {
     const [x0, x1] = XB[i], [z0, z1] = ZB[j];
-    if (i === 2 && j === 2) continue; // town square
-    if (i === 2 && j === 1) { // clock tower block: tower + two slim houses
+    if (i === 3 && j === 3) continue; // town square
+    if (i === 3 && j === 2) { // clock tower block: tower + two slim houses
       lots.push({ r: [x0, -3.6, z0, z1], tall: 1 }); lots.push({ r: [3.6, x1, z0, z1], tall: 1 }); continue;
     }
-    // narrow lots along a band get split further along the long axis
+    if (i === 5 && j === 0) { lots.push({ r: [x0, x1, z0, z1], castle: 1 }); continue; } // raised castle district
     const out = []; split(x0, x1, z0, z1, out);
     for (const r of out) {
       const w = r[1] - r[0], d = r[3] - r[2];
@@ -1122,25 +1128,63 @@ const CITY_PLAZA = { x: 0, z: 2.5 };
   for (const L of lots) {
     const [x0, x1, z0, z1] = L.r, w = x1 - x0, d = z1 - z0;
     if (w < 2.2 || d < 2.2) continue;
+    if (L.castle) {
+      // raised stone plateau with keep + battlements (multi-level district)
+      const pad = 1.2, elev = 8.5, cx = (x0 + x1) / 2, cz = (z0 + z1) / 2;
+      bBox('stone', stoneMat, cx, 0, cz, w + pad * 2, elev, d + pad * 2, 4);
+      addCol(x0 - pad, x1 + pad, 0, elev, z0 - pad, z1 + pad);
+      // ramp up from the south street
+      const rx0 = cx - 2.4, rx1 = cx + 2.4, rz0 = z1 + pad, rz1 = z1 + pad + 11;
+      for (let k = 0; k < 9; k++) { const t0 = k / 9, t1 = (k + 1) / 9, y0 = elev * t0, y1 = elev * t1, zz0 = rz0 + (rz1 - rz0) * t0, zz1 = rz0 + (rz1 - rz0) * t1; bBox('stone', stoneMat, cx, y0, (zz0 + zz1) / 2, rx1 - rx0, Math.max(0.4, y1 - y0 + 0.06), zz1 - zz0 + 0.06, 4); addCol(rx0, rx1, y0, y1 + 0.06, Math.min(zz0, zz1), Math.max(zz0, zz1)); }
+      ramps.push({ minX: rx0, maxX: rx1, minZ: rz0, maxZ: rz1, slide: false, h: (x, z) => elev * clamp((z - rz0) / (rz1 - rz0), 0, 1) });
+      // keep walls sitting ON the plateau
+      const kx0 = x0 + 2.8, kx1 = x1 - 2.8, kz0 = z0 + 2.8, kz1 = z1 - 2.8, kh = 18;
+      bBox('stone', stoneMat, (kx0 + kx1) / 2, elev, (kz0 + kz1) / 2, kx1 - kx0, kh, kz1 - kz0, 4);
+      addCol(kx0, kx1, elev, elev + kh, kz0, kz1);
+      bBox('trim', trimMatC, (kx0 + kx1) / 2, elev + 6, (kz0 + kz1) / 2, kx1 - kx0 + 0.3, 0.3, kz1 - kz0 + 0.3, 3);
+      bBox('trim', trimMatC, (kx0 + kx1) / 2, elev + 12, (kz0 + kz1) / 2, kx1 - kx0 + 0.3, 0.3, kz1 - kz0 + 0.3, 3);
+      // keep roof + parapet
+      const kry = elev + kh;
+      bBox('flat', flatRoofMat, (kx0 + kx1) / 2, kry, (kz0 + kz1) / 2, kx1 - kx0 + 0.4, 0.35, kz1 - kz0 + 0.4, 3);
+      addCol(kx0 - 0.2, kx1 + 0.2, kry, kry + 0.35, kz0 - 0.2, kz1 + 0.2);
+      for (const [px, pz, pw, pd] of [[(kx0 + kx1) / 2, kz0 - 0.05, kx1 - kx0 + 0.6, 0.35], [(kx0 + kx1) / 2, kz1 + 0.05, kx1 - kx0 + 0.6, 0.35], [kx0 - 0.05, (kz0 + kz1) / 2, 0.35, kz1 - kz0 + 0.6], [kx1 + 0.05, (kz0 + kz1) / 2, 0.35, kz1 - kz0 + 0.6]]) {
+        bBox('stone', stoneMat, px, kry + 0.35, pz, pw, 1.1, pd, 4); addCol(px - pw / 2, px + pw / 2, kry + 0.35, kry + 1.45, pz - pd / 2, pz + pd / 2);
+      }
+      // corner turrets
+      for (const [tx, tz] of [[kx0 - 0.8, kz0 - 0.8], [kx1 + 0.8, kz0 - 0.8], [kx0 - 0.8, kz1 + 0.8], [kx1 + 0.8, kz1 + 0.8]]) {
+        bBox('stone', stoneMat, tx, elev, tz, 2.4, kh + 3, 2.4, 4); addCol(tx - 1.2, tx + 1.2, elev, elev + kh + 3, tz - 1.2, tz + 1.2);
+        bGeo('wtop', ROOFMATS[1], new THREE.ConeGeometry(1.6, 2.4, 8), tx, elev + kh + 4.2, tz);
+      }
+      // courtyard battlements
+      for (const [wx, wz, ww, wd] of [[cx, z0 + 0.45, w - 1.2, 0.9], [cx, z1 - 0.45, w - 1.2, 0.9], [x0 + 0.45, cz, 0.9, d - 1.2], [x1 - 0.45, cz, 0.9, d - 1.2]]) {
+        bBox('stone', stoneMat, wx, elev, wz, ww, 3.4, wd, 4); addCol(wx - ww / 2, wx + ww / 2, elev, elev + 3.4, wz - wd / 2, wz + wd / 2);
+      }
+      chimney(cx - 1.5, kry + 0.35, cz - 1.2, kry + 2.8);
+      addSpot(cx, cz, kry + 0.35, 'shed', 0.72); addSpot(x0 + 3.5, z0 + 3.5, elev, 'behind', 0.58); addSpot(x1 - 3.5, z1 - 3.5, elev, 'behind', 0.58);
+      addSpot(kx0 - 0.8, kz0 - 0.8, elev + kh + 3, 'balcony', 0.55);
+      roofs.push({ minX: x0 - pad, maxX: x1 + pad, minZ: z0 - pad, maxZ: z1 + pad, y: elev, pitched: false });
+      roofs.push({ minX: kx0 - 0.2, maxX: kx1 + 0.2, minZ: kz0 - 0.2, maxZ: kz1 + 0.2, y: kry + 0.35, pitched: false });
+      buildings.push({ x0: kx0, x1: kx1, z0: kz0, z1: kz1, h: elev + kh, floors: 6, style: STYLES[4], top: kry + 0.35, roofType: 'flat' });
+      continue;
+    }
     const dc = Math.hypot((x0 + x1) / 2 - CITY_PLAZA.x, (z0 + z1) / 2 - CITY_PLAZA.z);
-    let floors = sri(3, 5) + (dc < 20 ? sri(0, 1) : 0) + (Math.min(w, d) < 4.6 && sr() < 0.5 ? 2 : 0); floors = Math.min(7, floors); if (L.tall) floors = sri(5, 6);
-    // arcade (covered walkway) on houses facing the town square
+    let floors = sri(5, 8) + (dc < 28 ? sri(0, 2) : sri(0, 1)) + (Math.min(w, d) < 4.8 && sr() < 0.55 ? 2 : 0);
+    floors = Math.min(12, floors); if (L.tall) floors = sri(8, 10);
+    // arcade on houses facing the town square
     let arcSide = null;
-    if (x1 > -6.6 && x0 < 6.6 && Math.abs(z1 - -9.4) < 0.2 && floors >= 2) arcSide = 's';
-    else if (x1 > -6.6 && x0 < 6.6 && Math.abs(z0 - 9.4) < 0.2 && floors >= 2) arcSide = 'n';
-    else if (z1 > -6.6 && z0 < 6.6 && Math.abs(x1 - -9.4) < 0.2 && floors >= 2) arcSide = 'e';
-    else if (z1 > -6.6 && z0 < 6.6 && Math.abs(x0 - 9.4) < 0.2 && floors >= 2) arcSide = 'w';
+    if (x1 > -9.8 && x0 < 9.8 && Math.abs(z1 - -14.2) < 0.2 && floors >= 2) arcSide = 's';
+    else if (x1 > -9.8 && x0 < 9.8 && Math.abs(z0 - 14.2) < 0.2 && floors >= 2) arcSide = 'n';
+    else if (z1 > -9.8 && z0 < 9.8 && Math.abs(x1 - -14.2) < 0.2 && floors >= 2) arcSide = 'e';
+    else if (z1 > -9.8 && z0 < 9.8 && Math.abs(x0 - 14.2) < 0.2 && floors >= 2) arcSide = 'w';
     const B = building(x0, x1, z0, z1, floors, { arcSide });
-    // balconies on street-facing sides
-    if (floors >= 3) for (const [side] of facing(B)) if (sr() < 0.28) balcony(B, side, sri(2, floors - 1));
-    // ladders on some buildings (from the street) for those who'd rather climb
-    if (sr() < 0.16) { const side = spick(['n', 's', 'w', 'e']), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, top = (B.roofType === 'flat' ? B.top + 0.85 : B.h + 0.4);
+    if (floors >= 3) for (const [side] of facing(B)) if (sr() < 0.32) balcony(B, side, sri(2, floors - 1));
+    if (sr() < 0.14) { const side = spick(['n', 's', 'w', 'e']), cx = (x0 + x1) / 2, cz = (z0 + z1) / 2, top = (B.roofType === 'flat' ? B.top + 0.85 : B.h + 0.4);
       if (side === 'n') ladder(cx, z0 - 0.3, top, 'z'); else if (side === 's') ladder(cx, z1 + 0.3, top, 'z'); else if (side === 'w') ladder(x0 - 0.3, cz, top, 'x'); else ladder(x1 + 0.3, cz, top, 'x'); }
   }
 
   // ---------- clock tower ----------
   {
-    const tx = 0, tz = -12.4, tw = 6.2, H1 = 22;
+    const tx = 0, tz = -18.5, tw = 7.2, H1 = 40;
     bBox('stone', stoneMat, tx, 0, tz, tw, H1, tw, 3); addCol(tx - tw / 2, tx + tw / 2, 0, H1, tz - tw / 2, tz + tw / 2);
     bBox('trim', trimMatC, tx, 3, tz, tw + 0.2, 0.25, tw + 0.2, 3); bBox('trim', trimMatC, tx, 12, tz, tw + 0.2, 0.25, tw + 0.2, 3);
     // clock faces
@@ -1148,7 +1192,7 @@ const CITY_PLAZA = { x: 0, z: 2.5 };
     const clockMat = new THREE.MeshStandardMaterial({ map: clockTex, roughness: 0.6 });
     const hands = [];
     for (const [ox, oz, ry] of [[0, -tw / 2 - 0.03, Math.PI], [0, tw / 2 + 0.03, 0], [-tw / 2 - 0.03, 0, -Math.PI / 2], [tw / 2 + 0.03, 0, Math.PI / 2]]) {
-      const f = mesh(new THREE.CircleGeometry(2.1, 32), clockMat, tx + ox, 17.5, tz + oz, { cast: false }); f.rotation.y = ry;
+      const f = mesh(new THREE.CircleGeometry(2.4, 32), clockMat, tx + ox, 32, tz + oz, { cast: false }); f.rotation.y = ry;
       const hg = new THREE.Group(); hg.position.copy(f.position); hg.rotation.y = ry; WORLD.add(hg);
       const hh = new THREE.Group(), mh = new THREE.Group(); hg.add(hh); hg.add(mh);
       box(0, 0, 0.05, 0.14, 1.1, 0.04, 0x1b1b22, { parent: hh, collide: false, cast: false }); box(0, 0, 0.08, 0.09, 1.65, 0.04, 0x1b1b22, { parent: mh, collide: false, cast: false });
@@ -1156,7 +1200,7 @@ const CITY_PLAZA = { x: 0, z: 2.5 };
     }
     animated.push(t => { for (const [hh, mh] of hands) { hh.rotation.z = -t * 0.02 - 1.1; mh.rotation.z = -t * 0.24; } });
     // belfry balcony + open arches + spire
-    const bw = 8.4;
+    const bw = 9.6;
     bBox('flat', stoneMat, tx, H1, tz, bw, 0.4, bw, 3); addCol(tx - bw / 2, tx + bw / 2, H1, H1 + 0.4, tz - bw / 2, tz + bw / 2);
     const by = H1 + 0.4;
     railing(tx, by, tz - bw / 2 + 0.05, bw, 0.08); railing(tx, by, tz + bw / 2 - 0.05, bw, 0.08); railing(tx - bw / 2 + 0.05, by, tz, 0.08, bw); railing(tx + bw / 2 - 0.05, by, tz, 0.08, bw);
@@ -1176,19 +1220,19 @@ const CITY_PLAZA = { x: 0, z: 2.5 };
   {
     let made = 0;
     const flats = buildings.filter(b => b.roofType === 'flat');
-    for (let i = 0; i < flats.length && made < 9; i++) for (let j = i + 1; j < flats.length && made < 9; j++) {
+    for (let i = 0; i < flats.length && made < 22; i++) for (let j = i + 1; j < flats.length && made < 22; j++) {
       const A = flats[i], Bq = flats[j]; if (Math.abs(A.top - Bq.top) > 0.01) continue;
       const y = A.top;
       // gap along x?
       const ox0 = Math.max(A.z0, Bq.z0), ox1 = Math.min(A.z1, Bq.z1);
       if (ox1 - ox0 > 2.2) {
         const [L, R] = A.x1 < Bq.x0 ? [A, Bq] : Bq.x1 < A.x0 ? [Bq, A] : [null, null];
-        if (L && R.x0 - L.x1 > 1.2 && R.x0 - L.x1 < 6.5) { const z = (ox0 + ox1) / 2, x0 = L.x1, x1 = R.x0; bridge(x0, x1, z, z, y, 'x'); made++; continue; }
+        if (L && R.x0 - L.x1 > 1.2 && R.x0 - L.x1 < 8.5) { const z = (ox0 + ox1) / 2, x0 = L.x1, x1 = R.x0; bridge(x0, x1, z, z, y, 'x'); made++; continue; }
       }
       const oz0 = Math.max(A.x0, Bq.x0), oz1 = Math.min(A.x1, Bq.x1);
       if (oz1 - oz0 > 2.2) {
         const [N, S] = A.z1 < Bq.z0 ? [A, Bq] : Bq.z1 < A.z0 ? [Bq, A] : [null, null];
-        if (N && S.z0 - N.z1 > 1.2 && S.z0 - N.z1 < 6.5) { const x = (oz0 + oz1) / 2; bridge(x, x, N.z1, S.z0, y, 'z'); made++; }
+        if (N && S.z0 - N.z1 > 1.2 && S.z0 - N.z1 < 8.5) { const x = (oz0 + oz1) / 2; bridge(x, x, N.z1, S.z0, y, 'z'); made++; }
       }
     }
     function bridge(x0, x1, z0, z1, y, axis) {
@@ -1209,7 +1253,7 @@ const CITY_PLAZA = { x: 0, z: 2.5 };
   // ---------- low covered passages over some alleys ("under the bridge" spots) ----------
   {
     let made = 0;
-    for (let i = 0; i < buildings.length && made < 7; i++) for (let j = 0; j < buildings.length && made < 7; j++) {
+    for (let i = 0; i < buildings.length && made < 14; i++) for (let j = 0; j < buildings.length && made < 14; j++) {
       const A = buildings[i], Bq = buildings[j]; if (i === j) continue;
       const gap = Bq.x0 - A.x1, oz0 = Math.max(A.z0, Bq.z0), oz1 = Math.min(A.z1, Bq.z1);
       if (gap > 1.5 && gap < 2.3 && oz1 - oz0 > 3 && sr() < 0.35) {
@@ -1241,10 +1285,10 @@ const CITY_PLAZA = { x: 0, z: 2.5 };
       const c = box(x, 2.45, z, 3.0, 0.08, 1.9, canopy[k], { collide: false }); c.rotation.x = 0.15;
       for (let i = 0; i < 4; i++) mesh(SPHG, pick([0xff6b35, 0xffd23f, 0x7bd142, 0xe63946]), x + rand(-1, 1), 1.12, z + rand(-0.4, 0.4), { cast: false }).scale.setScalar(0.13);
     });
-    for (const [x, z] of [[-7.6, 8.1], [7.6, 8.1], [-8.2, -7.4], [8.2, -7.4]]) makeTree(x, z, 0, 0.9);
+    for (const [x, z] of [[-8.2, 10.5], [8.2, 10.5], [-9.0, -9.5], [9.0, -9.5]]) makeTree(x, z, 0, 1.0);
     crateStack(5.5, 0, 3.0); addSpot(6.0, 4.3, 0, 'behind', 0.4);
     barrel(-5.5, 0, 3.0); barrel(-6.2, 0, 3.6);
-    for (const [x, z] of [[-4.6, 9.0], [4.6, 9.0], [-17.6, -7.8], [17.6, 7.8], [-7.8, -17.6], [7.8, 17.6], [-17.6, 17.6], [17.6, -17.6]]) {
+    for (const [x, z] of [[-5.5, 11.5], [5.5, 11.5], [-22, -12], [22, 12], [-12, -22], [12, 22], [-35, 35], [35, -35], [-48, 8], [48, -8], [-8, 48], [8, -48]]) {
       bBox('iron', ironMat, x, 0, z, 0.14, 3.6, 0.14, 3); mesh(new THREE.SphereGeometry(0.22, 8, 6), mat(0xffd27a, { emissive: 0xffb340, emissiveIntensity: 1.0 }), x, 3.75, z, { cast: false });
       addCol(x - 0.12, x + 0.12, 0, 3.6, z - 0.12, z + 0.12, { occ: false });
     }
@@ -1252,8 +1296,8 @@ const CITY_PLAZA = { x: 0, z: 2.5 };
   // ---------- alley clutter: crates, barrels, open boxes (deterministic) ----------
   {
     const items = [];
-    for (const sx of [-18, 18]) for (const bz of [-25.5, 25.5, -12.4, 12.4]) items.push([sx + (sx < 0 ? -1.15 : 1.15), bz, 'x']);
-    for (const sz of [-18, 18]) for (const bx of [-25.5, 25.5, -12.4, 12.4]) items.push([bx, sz + (sz < 0 ? -1.15 : 1.15), 'z']);
+    for (const sx of [-18, 18, -38, 38]) for (const bz of [-25.5, 25.5, -12.4, 12.4, -52, 52]) items.push([sx + (sx < 0 ? -1.15 : 1.15), bz, 'x']);
+    for (const sz of [-18, 18, -38, 38]) for (const bx of [-25.5, 25.5, -12.4, 12.4, -52, 52]) items.push([bx, sz + (sz < 0 ? -1.15 : 1.15), 'z']);
     items.forEach(([x, z, ax], i) => {
       const k = i % 3;
       if (k === 0) { crate(x, 0, z); crate(x, 1, z); if (ax === 'x') crate(x, 0, z + 1.02); else crate(x + 1.02, 0, z); addSpot(ax === 'x' ? x : x + 0.5, ax === 'x' ? z - 1.1 : z + (z > 0 ? 1.1 : -1.1), 0, 'behind', 0.42); }
@@ -1270,7 +1314,7 @@ const CITY_PLAZA = { x: 0, z: 2.5 };
     const m = new THREE.Mesh(g, B.mat); m.castShadow = true; m.receiveShadow = true; WORLD.add(m);
   }
 }
-snapshotMap('city', { plaza: CITY_PLAZA, pond: { x: 9999, z: 9999, rx: 1, rz: 1, depth: 0.5 }, deck: false, label: 'City' });
+snapshotMap('city', { plaza: CITY_PLAZA, pond: { x: 9999, z: 9999, rx: 1, rz: 1, depth: 0.5 }, deck: false, label: 'City', bound: 72, hideT: 40, seekT: 150, giants: 4, navMin: -74, navCs: 0.75, navN: 198 });
 WORLD = scene;
 
 // ======================================================================
@@ -1361,8 +1405,17 @@ function zoneAt(p, y) {
 // ======================================================================
 // NAVIGATION GRID + A*
 // ======================================================================
-const NAV = { cs: 0.5, min: -36, n: 144 };
+const NAV = { cs: 0.5, min: -36, n: 144, edge: 35.2 };
 NAV.grid = new Uint8Array(NAV.n * NAV.n);
+const AS = { g: new Float32Array(NAV.n * NAV.n), came: new Int32Array(NAV.n * NAV.n), stamp: new Uint32Array(NAV.n * NAV.n), closed: new Uint32Array(NAV.n * NAV.n), gen: 0 };
+function resizeNav(min, cs, n) {
+  NAV.min = min; NAV.cs = cs; NAV.n = n; NAV.edge = -min - cs * 0.5;
+  const N = n * n;
+  if (!NAV.grid || NAV.grid.length !== N) {
+    NAV.grid = new Uint8Array(N);
+    AS.g = new Float32Array(N); AS.came = new Int32Array(N); AS.stamp = new Uint32Array(N); AS.closed = new Uint32Array(N);
+  }
+}
 function buildNav() {
   const inf = 0.42, n = NAV.n; NAV.grid.fill(0);
   for (const c of colliders) {
@@ -1375,7 +1428,8 @@ function buildNav() {
     }
   }
   for (const t of trampolines) for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const cx = NAV.min + (i + 0.5) * NAV.cs, cz = NAV.min + (j + 0.5) * NAV.cs; if (Math.hypot(cx - t.x, cz - t.z) < t.r + 0.6) NAV.grid[j * n + i] = 1; }
-  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const cx = NAV.min + (i + 0.5) * NAV.cs, cz = NAV.min + (j + 0.5) * NAV.cs; if (Math.abs(cx) > 35.2 || Math.abs(cz) > 35.2) NAV.grid[j * n + i] = 1; }
+  const edge = BOUND - 0.2;
+  for (let i = 0; i < n; i++) for (let j = 0; j < n; j++) { const cx = NAV.min + (i + 0.5) * NAV.cs, cz = NAV.min + (j + 0.5) * NAV.cs; if (Math.abs(cx) > edge || Math.abs(cz) > edge) NAV.grid[j * n + i] = 1; }
 }
 const navCell = (x, z) => { const i = Math.floor((x - NAV.min) / NAV.cs), j = Math.floor((z - NAV.min) / NAV.cs); if (i < 0 || j < 0 || i >= NAV.n || j >= NAV.n) return -1; return j * NAV.n + i; };
 const navFree = c => c >= 0 && NAV.grid[c] === 0;
@@ -1390,7 +1444,6 @@ function lineWalkable(ax, az, bx, bz) {
   for (let s = 0; s <= st; s++) { const t = s / st; if (!navFree(navCell(ax + (bx - ax) * t, az + (bz - az) * t))) return false; }
   return true;
 }
-const AS = { g: new Float32Array(NAV.n * NAV.n), came: new Int32Array(NAV.n * NAV.n), stamp: new Uint32Array(NAV.n * NAV.n), closed: new Uint32Array(NAV.n * NAV.n), gen: 0 };
 function findPath(sx, sz, tx, tz) {
   const n = NAV.n;
   const s = nearestFree(navCell(sx, sz)), t = nearestFree(navCell(tx, tz));
@@ -1433,13 +1486,17 @@ function setMap(name) {
   for (const k in mapRoot) mapRoot[k].visible = k === M.name;
   MAP.name = M.name; MAP.deck = !!M.deck; G.map = M.name;
   Object.assign(PLAZA, M.plaza); Object.assign(POND, M.pond);
+  BOUND = M.bound || 35.3;
+  resizeNav(M.navMin != null ? M.navMin : -36, M.navCs || 0.5, M.navN || 144);
   occluders.length = 0; camOccluders.length = 0;
   for (const c of colliders) { if (c.occ) occluders.push(c); if (c.cam && c.occ && c.maxY - c.minY > 0.9) camOccluders.push(c); }
   buildColGrid(); buildNav();
   if (typeof drawMinimapStatic === 'function') drawMinimapStatic();
   if (typeof spotLight !== 'undefined') { spotLight.position.set(PLAZA.x, 13, PLAZA.z); beam.position.set(PLAZA.x, 6.5, PLAZA.z); }
   hemi.groundColor.set(M.name === 'city' ? 0x9a8f80 : 0x7aa35a);
-  scene.fog.near = M.name === 'city' ? 75 : 70; scene.fog.far = M.name === 'city' ? 190 : 170;
+  scene.fog.near = M.name === 'city' ? 90 : 70; scene.fog.far = M.name === 'city' ? 280 : 180;
+  if (typeof sun !== 'undefined') Object.assign(sun.shadow.camera, M.name === 'city' ? { left: -90, right: 90, top: 90, bottom: -90, far: 220 } : { left: -55, right: 55, top: 55, bottom: -55, far: 150 });
+  if (typeof camera !== 'undefined') { camera.far = M.name === 'city' ? 700 : 500; camera.updateProjectionMatrix(); }
 }
 // ---------------------------------------------------------------- scripted grapple arcs (bots)
 // cubic bezier with both control points straight above/below the ends: near-vertical take-off and landing
@@ -1485,7 +1542,7 @@ function sameSurface(a, b) {
   for (let i = 1; i <= n; i++) { const t = i / n, x = a.x + (b.x - a.x) * t, z = a.z + (b.z - a.z) * t, ey = a.y + (b.y - a.y) * t; const g = groundHeight(x, z, ey + 0.45); if (Math.abs(g - ey) > 0.45 || solidAt(x, ey + 0.8, z, 0.4)) return false; }
   return true;
 }
-function randomFreePoint() { for (let k = 0; k < 200; k++) { const x = rand(-33, 33), z = rand(-33, 33); if (navFree(navCell(x, z)) && inPond(x, z) > 1.1) return { x, z }; } return { x: PLAZA.x, z: PLAZA.z }; }
+function randomFreePoint() { const R = BOUND - 3; for (let k = 0; k < 200; k++) { const x = rand(-R, R), z = rand(-R, R); if (navFree(navCell(x, z)) && inPond(x, z) > 1.1) return { x, z }; } return { x: PLAZA.x, z: PLAZA.z }; }
 
 // ======================================================================
 // PARTICLES
@@ -1656,7 +1713,7 @@ class Bean {
   reset() {
     this.caught = false; this.setGhost(false); this.vel.set(0, 0, 0); this.wish.set(0, 0, 0); this.crouch = false; this.height = BEAN_H;
     this.stamina = 1; this.tired = false; this.cdA = 0; this.cdB = 0; this.disguiseT = 0; this.dashT = 0; this.tauntT = 0; this.sniffT = 0; this.aware = 0;
-    this.arc = null; this.flying = false; this.gas = 1; this.releaseHooks(true);
+    this.arc = null; this.flying = false; this.gas = 1; this.releaseHooks(true); this.grabbedBy = null; this.grabEscape = 0; this.tossT = 0;
     this.roundScore = 0; this.blindfold.visible = false; this.endDisguise(true); this.markT = 0; this.mark.style.display = 'none';
     Object.assign(this.ai, { mode: 'idle', path: null, goal: null, spot: null, t: 0, stuckT: 0, stuckN: 0, fleeT: 0 });
   }
@@ -1721,6 +1778,7 @@ class Bean {
     }
   }
   physics(dt, speed) {
+    if (this.grabbedBy) { this.vel.set(0, 0, 0); return; }
     if (this.arc) { this.stepArc(dt); return; }
     const sp = Math.hypot(this.vel.x, this.vel.y, this.vel.z) + speed;
     const n = Math.min(10, Math.max(1, Math.ceil(sp * dt / 0.28)));
@@ -1760,7 +1818,7 @@ class Bean {
     }
     if (this.vel.y > 0) { const CL = colsAt(this.pos.x, this.pos.z); for (const c of CL) { if (c.minY >= prevY + this.height - 0.05 && this.pos.y + this.height > c.minY && this.pos.x > c.minX - 0.3 && this.pos.x < c.maxX + 0.3 && this.pos.z > c.minZ - 0.3 && this.pos.z < c.maxZ + 0.3) { this.pos.y = c.minY - this.height; this.vel.y = 0; } } }
     resolveXZ(this);
-    this.pos.x = clamp(this.pos.x, -BOUND, BOUND); this.pos.z = clamp(this.pos.z, -BOUND, BOUND);
+    this.pos.x = clamp(this.pos.x, -BOUND, BOUND); this.pos.z = clamp(this.pos.z, -BOUND, BOUND); if (this.pos.y > 80) this.pos.y = 80;
     const wasGround = this.onGround;
     const g = groundHeight(this.pos.x, this.pos.z, this.pos.y);
     const gt = gType, tr = gTramp, grp = gRamp;
@@ -1806,9 +1864,391 @@ class Bean {
 }
 
 // ======================================================================
+// GIANT BEANS (Titan-style) — host-simulated roamers that grab playable beans
+// ======================================================================
+const giants = [];
+const GIANT_COLS = [0xc9a27a, 0xb8896a, 0xd4b08c, 0xa87858, 0xc4a070];
+
+function giantNapeWorld(g, o) {
+  const f = g.fwd();
+  return o.set(g.pos.x - f.x * 1.15, g.pos.y + g.height * 0.78, g.pos.z - f.z * 1.15);
+}
+function giantHandWorld(g, side, o) {
+  const f = g.fwd(), r = { x: f.z, z: -f.x };
+  const reach = g.state === 'grab' || g.state === 'toss' ? 5.5 : (g.state === 'chase' ? 3.8 : 2.6);
+  return o.set(g.pos.x + r.x * side * 2.4 + f.x * reach, g.pos.y + g.height * 0.55 + Math.sin(G.t * 3 + side) * 0.3, g.pos.z + r.z * side * 2.4 + f.z * reach);
+}
+
+class Giant {
+  constructor(id, x, z, scale) {
+    this.id = id; this.scale = scale; this.height = 14 * scale;
+    this.root = new THREE.Group(); scene.add(this.root);
+    this.pos = this.root.position; this.pos.set(x, 0, z);
+    this.yaw = rand(0, Math.PI * 2); this.vel = v3(); this.wish = v3();
+    this.state = 'roam'; this.target = null; this.t = rand(0, 4); this.stunT = 0; this.grabT = 0; this.grabProg = 0; this.held = null;
+    this.seeT = 0; this.stepPh = rand(0, 10); this.warnT = 0; this.napeFlash = 0;
+    const col = GIANT_COLS[id % GIANT_COLS.length];
+    this.mat = new THREE.MeshPhysicalMaterial({ color: col, roughness: 0.45, clearcoat: 0.6, clearcoatRoughness: 0.25, emissive: new THREE.Color(col).multiplyScalar(0.08) });
+    this.wob = new THREE.Group(); this.root.add(this.wob);
+    // body
+    this.body = new THREE.Mesh(beanGeo, this.mat); this.body.scale.set(7.5 * scale, 9.2 * scale, 7.5 * scale); this.body.position.y = 4.6 * scale; this.body.castShadow = true; this.wob.add(this.body);
+    // creepy-goofy face (huge eyes + maniac grin)
+    this.face = new THREE.Group(); this.face.position.set(0, 8.0 * scale, 3.55 * scale); this.wob.add(this.face);
+    for (const s of [-1, 1]) {
+      const e = new THREE.Mesh(SPHG, eyeWhiteM); e.scale.set(1.15 * scale, 1.35 * scale, 0.55 * scale); e.position.set(s * 1.55 * scale, 0.55 * scale, 0.15); this.face.add(e);
+      const p = new THREE.Mesh(SPHG, pupilM); p.scale.set(0.55 * scale, 0.65 * scale, 0.28 * scale); p.position.set(s * 1.55 * scale, 0.4 * scale, 0.55 * scale); this.face.add(p);
+      const sh = new THREE.Mesh(SPHG, shineM); sh.scale.setScalar(0.18 * scale); sh.position.set(s * 1.35 * scale, 0.75 * scale, 0.7 * scale); this.face.add(sh);
+    }
+    // brow ridges
+    for (const s of [-1, 1]) { const b = new THREE.Mesh(BOXG, this.mat); b.scale.set(1.2 * scale, 0.25 * scale, 0.4 * scale); b.position.set(s * 1.5 * scale, 1.35 * scale, 0.2 * scale); b.rotation.z = s * -0.25; this.face.add(b); }
+    // huge grin with teeth
+    const grin = new THREE.Mesh(new THREE.TorusGeometry(1.85 * scale, 0.28 * scale, 6, 22, Math.PI), mouthM);
+    grin.position.set(0, -0.85 * scale, 0.55 * scale); grin.rotation.z = Math.PI; this.face.add(grin);
+    const toothM = mat(0xfff8e7); for (let i = -3; i <= 3; i++) { const t = new THREE.Mesh(BOXG, toothM); t.scale.set(0.32 * scale, 0.7 * scale, 0.22 * scale); t.position.set(i * 0.48 * scale, -0.45 * scale, 0.85 * scale); this.face.add(t); }
+    // rosy cheeks
+    for (const s of [-1, 1]) { const c = new THREE.Mesh(SPHG, blushM); c.scale.set(0.7 * scale, 0.45 * scale, 0.2 * scale); c.position.set(s * 2.3 * scale, -0.2 * scale, 0.5 * scale); this.face.add(c); }
+    // arms
+    this.arms = [-1, 1].map(side => {
+      const a = new THREE.Group(); a.position.set(side * 4.2 * scale, 6.5 * scale, 0); this.wob.add(a);
+      const upper = new THREE.Mesh(new THREE.CapsuleGeometry(0.7 * scale, 3.2 * scale, 4, 10), this.mat); upper.position.y = -2.0 * scale; upper.castShadow = true; a.add(upper);
+      const hand = new THREE.Group(); hand.position.set(0, -4.2 * scale, 0); a.add(hand);
+      const palm = new THREE.Mesh(SPHG, this.mat); palm.scale.set(1.1 * scale, 0.7 * scale, 1.3 * scale); palm.castShadow = true; hand.add(palm);
+      for (let f = -1; f <= 1; f++) { const finger = new THREE.Mesh(new THREE.CapsuleGeometry(0.18 * scale, 0.7 * scale, 3, 6), this.mat); finger.position.set(f * 0.45 * scale, -0.7 * scale, 0.55 * scale); hand.add(finger); }
+      a.userData = { side, hand, upper }; return a;
+    });
+    // stubby legs
+    this.legs = [-1, 1].map(side => {
+      const leg = new THREE.Mesh(new THREE.CapsuleGeometry(0.95 * scale, 2.4 * scale, 4, 10), this.mat);
+      leg.position.set(side * 1.6 * scale, 1.6 * scale, 0); leg.castShadow = true; this.wob.add(leg); return leg;
+    });
+    // nape marker (weak point) — subtle red band on the back of the neck
+    this.nape = new THREE.Mesh(new THREE.TorusGeometry(1.6 * scale, 0.22 * scale, 6, 18).rotateX(Math.PI / 2), new THREE.MeshStandardMaterial({ color: 0xb03040, emissive: 0x601018, emissiveIntensity: 0.4, roughness: 0.6 }));
+    this.nape.position.set(0, 9.5 * scale, -2.6 * scale); this.wob.add(this.nape);
+    this.hp = 1;
+  }
+  fwd() { return { x: Math.sin(this.yaw), z: Math.cos(this.yaw) }; }
+  dispose() { scene.remove(this.root); if (this.held) { this.held.grabbedBy = null; this.held = null; } }
+  setVisible(v) { this.root.visible = v; }
+}
+
+function clearGiants() {
+  for (const g of giants) g.dispose();
+  giants.length = 0;
+  for (const b of G.beans) { b.grabbedBy = null; b.grabEscape = 0; b.tossT = 0; }
+}
+function spawnGiantsForMap() {
+  clearGiants();
+  if (G.giantsOn === false || G.state === 'menu' || G.state === 'lobby') return;
+  if (isClient()) return; // host / solo only create; clients get them from snapshot
+  const n = clamp(G.giantCount | 0, 0, MAP.name === 'city' ? 5 : 2);
+  const R = BOUND - 8;
+  for (let i = 0; i < n; i++) {
+    let x = 0, z = 0;
+    for (let k = 0; k < 40; k++) {
+      x = rand(-R, R); z = rand(-R, R);
+      if (Math.hypot(x - PLAZA.x, z - PLAZA.z) < 14) continue;
+      if (navFree(navCell(x, z)) || MAP.name === 'city') break;
+    }
+    
+    const scale = MAP.name === 'city' ? (0.95 + i * 0.12) : (0.85 + i * 0.1);
+    giants.push(new Giant(i, x, z, scale));
+  }
+}
+// clients create empty giant shells to receive sync
+function ensureGiantSlots(n) {
+  while (giants.length < n) giants.push(new Giant(giants.length, 0, -999, 1));
+  while (giants.length > n) { const g = giants.pop(); g.dispose(); }
+  for (const g of giants) g.setVisible(true);
+}
+
+const _gp = v3(), _gp2 = v3(), _gp3 = v3();
+function giantCanSee(g, b) {
+  if (!b || b.caught || b.ghost || b.grabbedBy) return false;
+  const dx = b.pos.x - g.pos.x, dz = b.pos.z - g.pos.z, d = Math.hypot(dx, dz);
+  if (d > 42 || d < 0.5) return false;
+  if (b.pos.y > g.height + 4) return false; // too high on a tower
+  const f = g.fwd(); const dot = (dx * f.x + dz * f.z) / (d || 1);
+  if (dot < 0.15 && d > 12) return false; // behind, unless close
+  // crude LOS: sample toward bean at mid height
+  const hy = Math.min(b.pos.y + 0.8, g.height * 0.6);
+  if (segBlocked(g.pos.x, hy, g.pos.z, b.pos.x, hy, b.pos.z)) return false;
+  return true;
+}
+function pickGiantRoam(g) {
+  const R = BOUND - 10;
+  for (let k = 0; k < 12; k++) {
+    const x = rand(-R, R), z = rand(-R, R);
+    if (Math.hypot(x - g.pos.x, z - g.pos.z) < 18) continue;
+    g.goal = { x, z }; g.t = rand(6, 14); return;
+  }
+  g.goal = { x: PLAZA.x + rand(-20, 20), z: PLAZA.z + rand(-20, 20) }; g.t = 8;
+}
+function giantStep(g, dt) {
+  if (!g.root.visible) return;
+  g.t -= dt; g.napeFlash = Math.max(0, g.napeFlash - dt);
+  g.nape.material.emissiveIntensity = 0.35 + (g.napeFlash > 0 ? 1.5 : 0) + Math.sin(G.t * 4) * 0.1;
+  if (g.stunT > 0) {
+    g.stunT -= dt; g.state = 'stun'; g.vel.set(0, 0, 0);
+    g.wob.rotation.x = damp(g.wob.rotation.x, 0.55, 3, dt);
+    g.wob.position.y = damp(g.wob.position.y, -1.2 * g.scale, 3, dt);
+    if (g.stunT <= 0) { g.state = 'roam'; g.wob.rotation.x = 0; g.wob.position.y = 0; pickGiantRoam(g); }
+    animateGiant(g, dt); return;
+  }
+  g.wob.rotation.x = damp(g.wob.rotation.x, 0, 4, dt);
+  g.wob.position.y = damp(g.wob.position.y, 0, 4, dt);
+
+  if (g.state === 'grab' && g.held) {
+    g.grabT -= dt; g.grabProg = 1 - g.grabT / 4;
+    const hand = giantHandWorld(g, 1, _gp);
+    g.held.pos.copy(hand); g.held.pos.y -= 0.4; g.held.vel.set(0, 0, 0); g.held.onGround = false; g.held.flying = false; g.held.releaseHooks(true);
+    g.held.grabEscape = g.held.grabEscape || 0;
+    // mash Space (player) or auto-wriggle (bots)
+    if (g.held.isPlayer && !g.held.remote) {
+      const sp = (typeof keys !== 'undefined') && keys.Space;
+      if (sp && !g._spaceWas) g.held.grabEscape += 0.14;
+      g._spaceWas = !!sp;
+    } else if (!g.held.human) {
+      g.held.grabEscape += dt * (0.18 + g.held.ai.bravery * 0.12);
+    }
+    // face the giant, wriggle
+    g.held.yaw = g.yaw + Math.PI; g.held.sq = 0.7 + Math.sin(G.t * 20) * 0.15;
+    if (g.held.grabEscape >= 1) {
+      // escaped!
+      const b = g.held; b.grabbedBy = null; g.held = null; g.state = 'roam'; g.target = null; pickGiantRoam(g);
+      b.vel.set(Math.sin(g.yaw + Math.PI) * 8, 10, Math.cos(g.yaw + Math.PI) * 8); b.flying = true; b.grabEscape = 0;
+      if (b.isPlayer) { popup('WRIGGLED FREE!'); Snd.ding(); shake(0.2); }
+      else b.say(pick(['Lemme go!!', 'Too squishy for you!', 'Hehe, escaped!']), 2);
+      addScore(b, 40, 'ESCAPED!');
+      netEv({ e: 'gesc', id: b.id, gid: g.id });
+    } else if (g.grabT <= 0) {
+      // toss!
+      giantToss(g);
+    }
+    animateGiant(g, dt); return;
+  }
+
+  if (g.state === 'toss') {
+    g.t -= dt; if (g.t <= 0) { g.state = 'roam'; pickGiantRoam(g); }
+    animateGiant(g, dt); return;
+  }
+
+  // acquire / keep target
+  if (!g.target || g.target.caught || g.target.ghost || g.target.grabbedBy || !giantCanSee(g, g.target)) {
+    g.target = null;
+    let best = null, bd = 1e9;
+    for (const b of G.beans) {
+      if (!giantCanSee(g, b)) continue;
+      const d = Math.hypot(b.pos.x - g.pos.x, b.pos.z - g.pos.z);
+      if (d < bd) { bd = d; best = b; }
+    }
+    if (best) { g.target = best; g.state = 'chase'; g.seeT = 0.6; if (best.isPlayer && g.warnT <= 0) { g.warnT = 4; Snd.alarm(0, 0.9); Snd.intensity = Math.max(Snd.intensity, 1.4); if (typeof showGiantWarn === 'function') showGiantWarn(); } }
+    else if (g.state === 'chase') { g.state = 'roam'; pickGiantRoam(g); }
+  }
+  g.warnT = Math.max(0, g.warnT - dt);
+
+  if (g.state === 'chase' && g.target) {
+    const b = g.target;
+    const dx = b.pos.x - g.pos.x, dz = b.pos.z - g.pos.z, d = Math.hypot(dx, dz);
+    g.yaw += angDiff(g.yaw, Math.atan2(dx, dz)) * Math.min(1, 2.2 * dt);
+    const speed = 4.6;
+    g.vel.x = Math.sin(g.yaw) * speed; g.vel.z = Math.cos(g.yaw) * speed;
+    // grab when close and roughly at ground
+    if (d < 6.5 && b.pos.y < g.height * 0.55 && !b.grabbedBy && !b.caught && !b.ghost) {
+      beginGrab(g, b);
+    }
+  } else {
+    if (!g.goal || g.t <= 0) pickGiantRoam(g);
+    const dx = g.goal.x - g.pos.x, dz = g.goal.z - g.pos.z, d = Math.hypot(dx, dz);
+    if (d < 2.5) pickGiantRoam(g);
+    else {
+      g.yaw += angDiff(g.yaw, Math.atan2(dx, dz)) * Math.min(1, 1.4 * dt);
+      const speed = 2.8;
+      g.vel.x = Math.sin(g.yaw) * speed; g.vel.z = Math.cos(g.yaw) * speed;
+    }
+  }
+
+  g.pos.x += g.vel.x * dt; g.pos.z += g.vel.z * dt;
+  g.pos.x = clamp(g.pos.x, -BOUND + 4, BOUND - 4);
+  g.pos.z = clamp(g.pos.z, -BOUND + 4, BOUND - 4);
+  // soft push out of buildings: sample ground / solid
+  if (solidAt(g.pos.x, 1.5, g.pos.z, 2.5)) {
+    g.pos.x -= g.vel.x * dt * 2; g.pos.z -= g.vel.z * dt * 2;
+    g.yaw += rand(-1, 1); pickGiantRoam(g);
+  }
+  g.pos.y = 0;
+  animateGiant(g, dt);
+}
+function beginGrab(g, b) {
+  if (isClient()) return;
+  g.state = 'grab'; g.held = b; g.grabT = 4; g.grabProg = 0; b.grabbedBy = g; b.grabEscape = 0; b.releaseHooks(true); b.arc = null; b.flying = false;
+  b.endDisguise && b.prop && b.endDisguise();
+  if (b.isPlayer) { bigText('GRABBED!', 'Mash <kbd>Space</kbd> to wriggle free!'); shake(0.45); Snd.alarm(0, 1); }
+  else b.say(pick(['AAAAH!', 'Put me down!!', 'Eek! Giant!']), 2);
+  netEv({ e: 'grab', gid: g.id, id: b.id });
+}
+function giantToss(g) {
+  const b = g.held; if (!b) { g.state = 'roam'; return; }
+  g.held = null; b.grabbedBy = null; b.grabEscape = 0;
+  const f = g.fwd();
+  const power = 28 + rand(0, 8);
+  b.vel.set(f.x * power + rand(-4, 4), 16 + rand(0, 6), f.z * power + rand(-4, 4));
+  b.flying = true; b.onGround = false; b.tossT = 1.8; b.mouthOpen = true;
+  g.state = 'toss'; g.t = 1.4; g.target = null;
+  if (b.isPlayer) { Snd.sad(); shake(0.6); bigText('YEETED!', 'The giant tossed you across town!'); }
+  else b.say(pick(LINES.flee), 2);
+  // reveal ping for hiders
+  if (b.role === 'hider' && !b.caught && G.seeker) {
+    b.markT = 4; b.mark.textContent = '📍'; b.mark.style.display = 'block';
+    b.tauntT = Math.max(b.tauntT, 3.5);
+    if (G.seeker.isPlayer) feed(`📍 A giant tossed <b style="color:${b.color}">${esc(b.name)}</b> — revealed!`);
+    addScore(G.seeker, 15, 'TITAN TIP');
+  }
+  if (near(g.pos, 40)) Snd.whoosh(volAt(g.pos));
+  puff(b.pos, 14, 0xffffff, 0.35, 2, 0.5);
+  netEv({ e: 'toss', gid: g.id, id: b.id, v: [+b.vel.x.toFixed(2), +b.vel.y.toFixed(2), +b.vel.z.toFixed(2)] });
+}
+function animateGiant(g, dt) {
+  const sp = Math.hypot(g.vel.x, g.vel.z);
+  g.stepPh += dt * (1.2 + sp * 0.45);
+  const bob = Math.sin(g.stepPh) * 0.15 * g.scale;
+  g.body.position.y = 4.6 * g.scale + (g.state === 'stun' ? 0 : bob);
+  g.legs[0].rotation.x = Math.sin(g.stepPh) * 0.45; g.legs[1].rotation.x = Math.sin(g.stepPh + Math.PI) * 0.45;
+  // arm poses
+  for (const a of g.arms) {
+    const side = a.userData.side;
+    if (g.state === 'grab' || g.state === 'toss') {
+      a.rotation.x = damp(a.rotation.x, -1.1, 6, dt);
+      a.rotation.z = damp(a.rotation.z, side * 0.4, 6, dt);
+    } else if (g.state === 'chase') {
+      a.rotation.x = damp(a.rotation.x, -0.6 + Math.sin(g.stepPh + side) * 0.2, 5, dt);
+      a.rotation.z = damp(a.rotation.z, side * 0.7, 5, dt);
+    } else if (g.state === 'stun') {
+      a.rotation.x = damp(a.rotation.x, 0.5, 3, dt); a.rotation.z = damp(a.rotation.z, side * 0.2, 3, dt);
+    } else {
+      a.rotation.x = damp(a.rotation.x, Math.sin(g.stepPh + side) * 0.35, 5, dt);
+      a.rotation.z = damp(a.rotation.z, side * 0.25, 5, dt);
+    }
+  }
+  g.root.rotation.y = g.yaw;
+  // footstep boom + camera shake when near
+  const foot = Math.sin(g.stepPh);
+  if (sp > 0.5 && Math.sign(foot) !== Math.sign(g._lastFoot || 0) && Math.abs(foot) > 0.7) {
+    g._lastFoot = foot;
+    if (near(g.pos, 55)) { Snd.drum(); }
+    if (G.player && Math.hypot(G.player.pos.x - g.pos.x, G.player.pos.z - g.pos.z) < 28) shake(0.08 + (g.state === 'chase' ? 0.06 : 0));
+  } else g._lastFoot = foot;
+}
+
+function updateGiants(dt) {
+  if (!giants.length) return;
+  if (!isClient()) {
+    for (const g of giants) giantStep(g, dt);
+    // bots flee giants
+    for (const b of G.beans) {
+      if (b.human || b.caught || b.ghost || b.grabbedBy || b.arc) continue;
+      let nearG = null, bd = 18;
+      for (const g of giants) {
+        if (g.state === 'stun') continue;
+        const d = Math.hypot(b.pos.x - g.pos.x, b.pos.z - g.pos.z);
+        if (d < bd) { bd = d; nearG = g; }
+      }
+      if (nearG && bd < 16) {
+        const away = Math.atan2(b.pos.x - nearG.pos.x, b.pos.z - nearG.pos.z);
+        if (b.ai.mode !== 'flee' || b.ai.fleeT < 1) {
+          b.ai.mode = 'flee'; b.ai.fleeT = 2.5;
+          const gx = b.pos.x + Math.sin(away) * 14, gz = b.pos.z + Math.cos(away) * 14;
+          if (typeof setGoal === 'function') setGoal(b, gx, gz, 0);
+        }
+      }
+    }
+  } else {
+    for (const g of giants) animateGiant(g, dt * 0.5); // light local animation; pose mostly from sync
+  }
+  // moveable hook anchors on giants (all peers)
+  for (const b of G.beans) {
+    for (const h of b.hooks) {
+      if ((h.st === 1 || h.st === 2) && h.giant != null && giants[h.giant]) {
+        const g = giants[h.giant];
+        const f = g.fwd();
+        h.a.set(g.pos.x + h.gx * f.z + h.gz * f.x, g.pos.y + h.gy, g.pos.z - h.gx * f.x + h.gz * f.z);
+      }
+    }
+  }
+}
+
+function tryNapeHit(b) {
+  if (!b || b.grabbedBy || b.caught || b.ghost) return false;
+  if (isClient()) { Net.send({ t: 'act', a: 'nape', cy: CAM.yaw }); return false; }
+  const sp = Math.hypot(b.vel.x, b.vel.y, b.vel.z);
+  if (sp < 14 && !b.hooked()) return false;
+  for (const g of giants) {
+    if (g.stunT > 0) continue;
+    giantNapeWorld(g, _gp);
+    const d = Math.hypot(b.pos.x - _gp.x, b.pos.y + 0.6 - _gp.y, b.pos.z - _gp.z);
+    if (d < 2.4 * g.scale) { stunGiant(g, b); return true; }
+  }
+  return false;
+}
+function stunGiant(g, by) {
+  if (g.stunT > 0) return;
+  if (g.held) { const b = g.held; b.grabbedBy = null; b.vel.set(0, 8, 0); b.flying = true; g.held = null; }
+  g.stunT = 10; g.state = 'stun'; g.target = null; g.napeFlash = 2; g.vel.set(0, 0, 0);
+  puff(_gp, 18, 0xff6688, 0.4, 2.5, 0.6);
+  confetti(g.pos.clone().setY(g.height * 0.8), 30, [0xff4d6d, 0xffd23f, 0xffffff], 5);
+  if (near(g.pos, 50)) { Snd.pop(volAt(g.pos)); Snd.whoosh(volAt(g.pos)); }
+  if (by) {
+    addScore(by, 150, 'NAPE HIT!');
+    if (by.isPlayer) { shake(0.5); popup('+150 NAPE HIT!'); Snd.fanfare(); }
+    else by.say(pick(['Titan down!', 'Nape sliced!', 'Got its nape!']), 2);
+  }
+  feed(`⚡ <b style="color:${by ? by.color : '#fff'}">${esc(by ? by.name : 'Someone')}</b> stunned a giant!`);
+  netEv({ e: 'stun', gid: g.id, id: by ? by.id : -1 });
+}
+
+// ray vs giant AABB for aiming / nape
+function rayGiant(ox, oy, oz, dx, dy, dz, L) {
+  let best = null, bt = 1;
+  for (const g of giants) {
+    if (!g.root.visible || g.stunT > 0 && false) { /* still grappleable when stunned */ }
+    const hw = 3.8 * g.scale, hh = g.height, hd = 3.8 * g.scale;
+    const c = { minX: g.pos.x - hw, maxX: g.pos.x + hw, minY: 0, maxY: hh, minZ: g.pos.z - hd, maxZ: g.pos.z + hd };
+    const t = rayAABB(c, ox, oy, oz, dx * L, dy * L, dz * L);
+    if (t > 0.0001 && t < bt) { bt = t; best = { g, t, p: v3(ox + dx * L * t, oy + dy * L * t, oz + dz * L * t) }; }
+  }
+  return best;
+}
+
+function _gr(v) { return Math.round(v * 100) / 100; }
+function giantWire() {
+  return giants.map(g => [g.id, _gr(g.pos.x), _gr(g.pos.y), _gr(g.pos.z), _gr(g.yaw),
+    g.state === 'roam' ? 0 : g.state === 'chase' ? 1 : g.state === 'grab' ? 2 : g.state === 'toss' ? 3 : 4,
+    g.target ? g.target.id : -1, g.held ? g.held.id : -1, _gr(g.stunT), _gr(g.grabT), _gr(g.stepPh)]);
+}
+function applyGiantWire(arr) {
+  if (!Array.isArray(arr)) return;
+  ensureGiantSlots(arr.length);
+  const states = ['roam', 'chase', 'grab', 'toss', 'stun'];
+  for (const row of arr) {
+    const [id, x, y, z, yaw, st, tid, hid, stun, grab, ph] = row;
+    const g = giants[id]; if (!g) continue;
+    g.pos.set(x, y, z); g.yaw = yaw; g.state = states[st] || 'roam'; g.stunT = stun; g.grabT = grab; g.stepPh = ph;
+    g.target = tid >= 0 ? beanById(tid) : null;
+    const held = hid >= 0 ? beanById(hid) : null;
+    if (held) { g.held = held; held.grabbedBy = g; }
+    else if (g.held && g.held.grabbedBy === g) { g.held.grabbedBy = null; g.held = null; }
+    else g.held = null;
+  }
+}
+
+function showGiantWarn() {
+  if ($('giantWarn')) { $('giantWarn').classList.add('on'); clearTimeout(showGiantWarn._t); showGiantWarn._t = setTimeout(() => $('giantWarn').classList.remove('on'), 2500); }
+}
+
+// ======================================================================
 // GAME STATE
 // ======================================================================
-const HIDE_T = 25, SEEK_T = 100;
+let HIDE_T = 25, SEEK_T = 100;
+function refreshTimers() { const M = MAPS[G.map] || {}; HIDE_T = M.hideT || 25; SEEK_T = M.seekT || 100; }
 const DIFF = {
   easy:   { range: 12, fov: 1.5, rate: 1.1, walk: 4.0, chase: 6.0, dashCd: 10, memory: 1.5, tagR: 1.1, hunch: 0, sniffCd: 45, sniffErr: 12, hear: 4, pokeR: 1.6, find: 0.5 },
   normal: { range: 18, fov: 1.9, rate: 2.0, walk: 5.0, chase: 7.0, dashCd: 7, memory: 2.5, tagR: 1.25, hunch: 0.3, sniffCd: 28, sniffErr: 8, hear: 7.5, pokeR: 1.8, find: 0.8 },
@@ -1839,7 +2279,7 @@ const LINES = {
 const G = {
   state: 'menu', round: 0, totalRounds: 5, difficulty: 'normal', botCount: 6, beans: [], player: null, seeker: null, lastSeeker: null,
   timer: 0, t: 0, paused: false, settings: { name: 'You', color: '#ff69b4', hat: 'party' }, hidersVer: 0, rl: null, endT: 0, forceSeeker: null,
-  trauma: 0, sniffTarget: null, feed: [],
+  trauma: 0, sniffTarget: null, feed: [], giantsOn: true, giantCount: 4,
 };
 G.debug = new URLSearchParams(location.search).has('debug');
 if (G.debug) window.__bh = G;
@@ -2332,7 +2772,7 @@ function nextRound() { // host / single-player: decide the round, then apply it 
 function roundSetup(r, sel, start, hops) {
   G.round = r;
   $('scoreboard').classList.add('hidden');
-  G.beans.forEach(b => { b.reset(); b.nb.length = 0; });
+  clearGiants(); G.beans.forEach(b => { b.reset(); b.nb.length = 0; });
   const n = G.beans.length;
   G.beans.forEach((b, i) => { const a = i / n * Math.PI * 2; b.pos.set(PLAZA.x + Math.cos(a) * 3.4, 0.05, PLAZA.z + Math.sin(a) * 3.4); b.yaw = Math.atan2(Math.cos(a), Math.sin(a)); b.role = 'hider'; });
   G.seeker = sel; sel.timesSeeker++; G.lastSeeker = sel;
@@ -2379,7 +2819,9 @@ function reveal() {
   shake(0.3);
 }
 function startHiding() {
+  refreshTimers();
   G.state = 'hiding'; G.timer = HIDE_T; G.lastBeep = 99;
+  if (!isClient()) { G.giantCount = G.giantsOn ? (G.giantCount || (MAPS[G.map] && MAPS[G.map].giants) || 3) : 0; spawnGiantsForMap(); }
   netEv({ e: 'hide' });
   const s = G.seeker;
   s.role = 'seeker'; s.blindfold.visible = true; s.crouch = false;
@@ -2397,6 +2839,7 @@ function startHiding() {
   G.hidersVer++;
 }
 function startSeeking() {
+  refreshTimers();
   G.state = 'seeking'; G.timer = SEEK_T;
   netEv({ e: 'seek' });
   const s = G.seeker; s.blindfold.visible = false; puff(v3(s.pos.x, s.pos.y + 1, s.pos.z), 10, 0x2b2250, 0.25, 1.2, 0.5);
@@ -2444,7 +2887,7 @@ function onNext() {
   if (G.state === 'roundEnd') nextRound();
 }
 function toMenu() {
-  G.state = 'menu'; G.seeker = null; G.inGame = false; buildRoster(true); setupMenuScene();
+  clearGiants(); G.state = 'menu'; G.seeker = null; G.inGame = false; buildRoster(true); setupMenuScene();
   $('menu').classList.remove('hidden'); $('hud').classList.add('hidden'); $('blindfold').classList.add('hidden');
   CAM.mode = 'menu';
 }
@@ -2470,7 +2913,7 @@ const Net = {
   peer: null, role: null, code: null, myId: 0,
   conns: new Map(),      // host: peerId -> { conn, id, name, color, hat, last }
   conn: null,            // client: connection to host
-  nextId: 1, bots: 3, diff: 'normal', rounds: 5, map: 'city',
+  nextId: 1, bots: 3, diff: 'normal', rounds: 5, map: 'city', giantsOn: 1, giantCount: 4,
   sendT: 0, pingT: 0, lastMsg: 0, lobbyInfo: null, tries: 0, joinTimer: 0, closing: false,
 
   // ------------------------------------------------------------ helpers
@@ -2490,7 +2933,7 @@ const Net = {
     if (!this.ok()) return netMsg('Online play unavailable', 'Could not load the networking library (PeerJS). Check your internet connection and reload.');
     Snd.init(); this.reset(); this.role = 'host'; G.net = this; this.myId = 0; this.nextId = 1;
     this.mpName();
-    this.bots = clamp(G.botCount, 0, MAX_BEANS - 1); this.diff = G.difficulty; this.rounds = G.totalRounds; this.map = MAPS[G.map] ? G.map : 'city';
+    this.bots = clamp(G.botCount, 0, MAX_BEANS - 1); this.diff = G.difficulty; this.rounds = G.totalRounds; this.map = MAPS[G.map] ? G.map : 'city'; this.giantsOn = G.giantsOn !== false ? 1 : 0; this.giantCount = G.giantCount | 0;
     $('lbMap').querySelectorAll('button').forEach(e => e.classList.toggle('sel', e.dataset.v === this.map));
     $('hostBtn').disabled = true; $('joinMsg').textContent = '';
     showLobby(); $('lbStatus').textContent = 'Creating room…'; $('lbCode').textContent = '…'; $('lbLink').value = '';
@@ -2538,14 +2981,14 @@ const Net = {
     if (d.t === 'in' && b && b.remote) {
       if (d.tp !== b.tp || G.state === 'roulette' || !Array.isArray(d.p)) return;
       const [x, y, z] = d.p; if (![x, y, z, d.yaw].every(Number.isFinite)) return;
-      b.nb.push({ t: nowMs(), x: clamp(x, -BOUND - 1, BOUND + 1), y: clamp(y, -2, 25), z: clamp(z, -BOUND - 1, BOUND + 1), yaw: d.yaw });
+      b.nb.push({ t: nowMs(), x: clamp(x, -BOUND - 1, BOUND + 1), y: clamp(y, -2, 70), z: clamp(z, -BOUND - 1, BOUND + 1), yaw: d.yaw });
       if (b.nb.length > 40) b.nb.shift();
       b.crouch = !!d.cr && !b.prop; if (Number.isFinite(d.cy)) b.camYaw = d.cy; b.sprinting = !!d.sp;
       netHooks(b, d.hk); b.flying = !!d.fl;
     } else if (d.t === 'act' && b && b.remote) {
       if (Number.isFinite(d.cy)) b.camYaw = d.cy;
       const a = d.a;
-      if (a === 'disg') doDisguise(b); else if (a === 'sniff') doSniff(b); else if (a === 'taunt') doTaunt(b); else if (a === 'dash') doDash(b); else if (a === 'tag') tryTag(b);
+      if (a === 'disg') doDisguise(b); else if (a === 'sniff') doSniff(b); else if (a === 'taunt') doTaunt(b); else if (a === 'dash') doDash(b); else if (a === 'tag') tryTag(b); else if (a === 'nape') tryNapeHit(b); else if (a === 'wrig') { if (b.grabbedBy) b.grabEscape = Math.min(1, (b.grabEscape || 0) + 0.14); }
     } else if (d.t === 'bye') this.drop(c);
   },
   drop(c) {
@@ -2564,8 +3007,8 @@ const Net = {
     } else { this.renderLobby(); this.sendLobby(); $('lbStatus').textContent = `${c.name || 'A player'} left.`; }
   },
   lobbyPlayers() { return [{ id: 0, name: G.player.name, color: G.settings.color, hat: G.settings.hat, host: 1 }, ...[...this.conns.values()].map(c => ({ id: c.id, name: c.name, color: c.color, hat: c.hat }))]; },
-  sendLobby(extra) { if (this.role !== 'host') return; this.broadcast({ t: 'lobby', players: this.lobbyPlayers(), bots: this.bots, diff: this.diff, rounds: this.rounds, map: this.map, code: this.code, ...(extra || {}) }); },
-  renderLobby() { renderLobby({ players: this.role === 'host' ? this.lobbyPlayers() : (this.lobbyInfo ? this.lobbyInfo.players : []), bots: this.role === 'host' ? this.bots : (this.lobbyInfo ? this.lobbyInfo.bots : 0), diff: this.role === 'host' ? this.diff : this.lobbyInfo && this.lobbyInfo.diff, rounds: this.role === 'host' ? this.rounds : this.lobbyInfo && this.lobbyInfo.rounds, map: this.role === 'host' ? this.map : this.lobbyInfo && this.lobbyInfo.map, code: this.code }); },
+  sendLobby(extra) { if (this.role !== 'host') return; this.broadcast({ t: 'lobby', players: this.lobbyPlayers(), bots: this.bots, diff: this.diff, rounds: this.rounds, map: this.map, giantsOn: this.giantsOn, giantCount: this.giantCount, code: this.code, ...(extra || {}) }); },
+  renderLobby() { renderLobby({ players: this.role === 'host' ? this.lobbyPlayers() : (this.lobbyInfo ? this.lobbyInfo.players : []), bots: this.role === 'host' ? this.bots : (this.lobbyInfo ? this.lobbyInfo.bots : 0), diff: this.role === 'host' ? this.diff : this.lobbyInfo && this.lobbyInfo.diff, rounds: this.role === 'host' ? this.rounds : this.lobbyInfo && this.lobbyInfo.rounds, map: this.role === 'host' ? this.map : this.lobbyInfo && this.lobbyInfo.map, giantsOn: this.role === 'host' ? this.giantsOn : this.lobbyInfo && this.lobbyInfo.giantsOn, giantCount: this.role === 'host' ? this.giantCount : this.lobbyInfo && this.lobbyInfo.giantCount, code: this.code }); },
   start() {
     if (this.role !== 'host' || G.inGame) return;
     const humans = [{ id: 0, name: G.player.name, color: G.settings.color, hat: G.settings.hat, human: true }, ...[...this.conns.values()].map(c => ({ id: c.id, name: c.name, color: c.color, hat: c.hat, human: true }))];
@@ -2574,10 +3017,10 @@ const Net = {
     const used = new Set(humans.map(h => h.color.toLowerCase()));
     let defs = shuffle(BOT_DEFS.slice()); defs = defs.filter(d => !used.has(d.color.toLowerCase())).concat(defs.filter(d => used.has(d.color.toLowerCase())));
     const roster = humans.concat(defs.slice(0, nb).map((d, i) => ({ id: 100 + i, name: d.name, color: d.color, hat: d.hat, human: false })));
-    G.difficulty = this.diff; G.totalRounds = this.rounds;
+    G.difficulty = this.diff; G.totalRounds = this.rounds; G.giantsOn = !!this.giantsOn; G.giantCount = this.giantCount | 0;
     if (G.map !== this.map) setMap(this.map);
     netRoster(roster, 0);
-    this.broadcast({ t: 'start', roster, diff: this.diff, rounds: this.rounds, map: this.map });
+    this.broadcast({ t: 'start', roster, diff: this.diff, rounds: this.rounds, map: this.map, giantsOn: this.giantsOn, giantCount: this.giantCount });
     beginNetGame();
     nextRound();
   },
@@ -2589,7 +3032,8 @@ const Net = {
     const S = G.seeker;
     return {
       t: 's', st: G.state, tm: r2(G.timer), sk: S ? S.id : -1, sm: S && S.ai.mode === 'chase' ? 1 : 0, ma: S ? r2(S.ai.maxAware || 0) : 0, stg: S && S.ai.target ? S.ai.target.id : -1,
-      b: G.beans.map(b => [b.id, r2(b.pos.x), r2(b.pos.y), r2(b.pos.z), r2(b.yaw), (b.crouch ? 1 : 0) | (b.caught ? 2 : 0) | (b.prop ? 4 : 0) | (b.blindfold.visible ? 8 : 0) | (b.tauntT > 0 ? 16 : 0) | (b.dashT > 0 ? 64 : 0) | (b.flying && !b.onGround ? 128 : 0), b.score, r2(b.cdA), r2(b.cdB), r2(b.aware), b.tp, hookWire(b)])
+      b: G.beans.map(b => [b.id, r2(b.pos.x), r2(b.pos.y), r2(b.pos.z), r2(b.yaw), (b.crouch ? 1 : 0) | (b.caught ? 2 : 0) | (b.prop ? 4 : 0) | (b.blindfold.visible ? 8 : 0) | (b.tauntT > 0 ? 16 : 0) | (b.dashT > 0 ? 64 : 0) | (b.flying && !b.onGround ? 128 : 0) | (b.grabbedBy ? 256 : 0), b.score, r2(b.cdA), r2(b.cdB), r2(b.aware), b.tp, hookWire(b)]),
+      g: typeof giantWire === 'function' ? giantWire() : []
     };
   },
 
@@ -2632,7 +3076,7 @@ const Net = {
         if (!G.inGame && MAPS[d.map] && G.map !== d.map) { setMap(d.map); setupMenuScene(); }
         this.renderLobby(); break;
       case 'start':
-        G.difficulty = d.diff; G.totalRounds = d.rounds;
+        G.difficulty = d.diff; G.totalRounds = d.rounds; G.giantsOn = !!d.giantsOn; G.giantCount = d.giantCount | 0;
         if (MAPS[d.map] && G.map !== d.map) setMap(d.map);
         netRoster(d.roster, this.myId); beginNetGame(); break;
       case 'ev': if (G.inGame) clientEv(d); break;
@@ -2732,7 +3176,12 @@ function renderLobby(info) {
     $('lbBots').max = Math.max(0, MAX_BEANS - ps.length); $('lbBots').value = bots; $('lbBotN').textContent = bots;
     $('lbStart').disabled = ps.length + bots < 2 || !(Net.peer && Net.peer.open);
     $('lbInfo').textContent = ps.length + bots < 2 ? 'Add at least one bot or wait for a friend to start.' : '';
-  } else $('lbInfo').textContent = `Map: ${info.map === 'yard' ? '🌳 Backyard' : '🏰 Walled City'} · Bots: ${bots} · Bot seeker: ${dn[info.diff] || info.diff} · Rounds: ${info.rounds} — the host will start the game.`;
+  } else $('lbInfo').textContent = `Map: ${info.map === 'yard' ? '🌳 Backyard' : '🏰 Walled City'} · Giants: ${info.giantsOn ? (info.giantCount || '?') : 'off'} · Bots: ${bots} · Bot seeker: ${dn[info.diff] || info.diff} · Rounds: ${info.rounds} — the host will start the game.`;
+  if (host && $('lbGiantsOn')) {
+    $('lbGiantsOn').querySelectorAll('button').forEach(b => b.classList.toggle('sel', (b.dataset.v === '1') === !!info.giantsOn));
+    if ($('lbGiantN')) $('lbGiantN').textContent = info.giantCount || 0;
+    if ($('lbGiants')) { $('lbGiants').value = info.giantCount || 0; $('lbGiants').disabled = !info.giantsOn; }
+  }
 }
 function netMsg(title, text) { $('netMsgTitle').textContent = title; $('netMsgText').textContent = text; $('netMsg').classList.remove('hidden'); }
 
@@ -2753,6 +3202,10 @@ function clientEv(e) {
     case 'mk': if (b) b.showMark(String(e.tx), e.d, true); break;
     case 'pop': if (b && b.isPlayer) popup(String(e.tx)); break;
     case 'left': if (b) { feed(`<b style="color:${b.color}">${esc(b.name)}</b> left — a bot took over 🤖`); b.human = false; b.name = cleanName(e.nm || b.name); b.lbl.textContent = b.name; G.hidersVer++; } break;
+    case 'grab': { const g = giants[e.gid], bb = beanById(e.id); if (g && bb) { g.state = 'grab'; g.held = bb; bb.grabbedBy = g; bb.grabEscape = 0; if (bb.isPlayer) { bigText('GRABBED!', 'Mash <kbd>Space</kbd> to wriggle free!'); shake(0.45); Snd.alarm(0, 1); } } } break;
+    case 'toss': { const g = giants[e.gid], bb = beanById(e.id); if (g) { g.held = null; g.state = 'toss'; g.t = 1.4; } if (bb) { bb.grabbedBy = null; if (e.v) bb.vel.set(e.v[0], e.v[1], e.v[2]); bb.flying = true; bb.tossT = 1.8; if (bb.isPlayer) { Snd.sad(); shake(0.6); bigText('YEETED!', 'The giant tossed you!'); } } } break;
+    case 'gesc': { const g = giants[e.gid], bb = beanById(e.id); if (g && g.held === bb) g.held = null; if (bb) { bb.grabbedBy = null; if (bb.isPlayer) popup('WRIGGLED FREE!'); } } break;
+    case 'stun': { const g = giants[e.gid]; if (g) { g.stunT = 10; g.state = 'stun'; g.held = null; g.napeFlash = 2; } const by = beanById(e.id); if (by && by.isPlayer) { shake(0.5); popup('+150 NAPE HIT!'); Snd.fanfare(); } } break;
   }
 }
 function applySnap(d) {
@@ -2779,6 +3232,7 @@ function applySnap(d) {
     if ((f & 4) && !b.prop && !b.caught && !roul) { b.disguiseT = 7; b.startDisguise(); }
     if (!(f & 4) && b.prop) { b.endDisguise(); puff(v3(b.pos.x, b.pos.y + 0.3, b.pos.z), 12, 0xffffff, 0.4, 1.4, 0.7); if (near(b.pos, 15)) Snd.poof(b.isPlayer ? 0 : panAt(b.pos), volAt(b.pos)); }
   }
+  if (d.g) applyGiantWire(d.g);
 }
 
 // ------------------------------------------------------------ UI wiring
@@ -2794,6 +3248,8 @@ function applySnap(d) {
   $('lbBots').oninput = e => { Net.bots = +e.target.value; Net.renderLobby(); Net.sendLobby(); };
   const seg = (id, key, conv) => $(id).querySelectorAll('button').forEach(b => b.onclick = () => { $(id).querySelectorAll('button').forEach(e => e.classList.remove('sel')); b.classList.add('sel'); Net[key] = conv(b.dataset.v); Snd.tick(100); Net.renderLobby(); Net.sendLobby(); });
   seg('lbDiff', 'diff', v => v); seg('lbRounds', 'rounds', v => +v);
+  if ($('lbGiantsOn')) $('lbGiantsOn').querySelectorAll('button').forEach(b => b.onclick = () => { Net.giantsOn = b.dataset.v === '1' ? 1 : 0; Snd.tick(100); Net.renderLobby(); Net.sendLobby(); });
+  if ($('lbGiants')) $('lbGiants').oninput = e => { Net.giantCount = +e.target.value; Net.renderLobby(); Net.sendLobby(); };
   $('lbMap').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { Net.map = b.dataset.v; if (G.map !== Net.map && !G.inGame) { setMap(Net.map); setupMenuScene(); } $('lbMap').querySelectorAll('button').forEach(e => e.classList.toggle('sel', e === b)); Snd.tick(100); Net.renderLobby(); Net.sendLobby(); }));
   $('lbCopy').onclick = () => {
     const link = $('lbLink').value; if (!link) return;
@@ -2891,7 +3347,7 @@ addEventListener('keydown', e => {
   if (p.caught) return;
   const frozen = G.state === 'hiding' && p === G.seeker;
   if (frozen) return;
-  if (e.code === 'Space') p.jumpReq = true;
+  if (e.code === 'Space' && !p.grabbedBy && !p.hooked()) p.jumpReq = true;
   if (e.code === 'KeyC') { if (p.role === 'hider' && p.disguiseT <= 0) { p.crouch = !p.crouch; if (p.crouch) puff(p.pos, 4, 0xffffff, 0.15, 0.6, 0.2); } else if (p.role === 'seeker') p.crouch = !p.crouch; }
   if (e.code === 'KeyQ') act(p.role === 'hider' ? 'disg' : 'sniff');
   if (e.code === 'KeyF') act(p.role === 'hider' ? 'taunt' : 'dash');
@@ -2935,22 +3391,24 @@ addEventListener('pointerdown', () => Snd.init(), { once: false });
 // ======================================================================
 const GR = { range: 60, reel: 15, pull: 26, thrust: 20, hookDrain: 0.26, airDrain: 0.34, regen: 0.45 };
 G.aim = { ok: false, p: v3(), d: 0, miss: v3() };
-function canGrapple(p) { return p && !p.caught && (G.state === 'hiding' || G.state === 'seeking') && !(G.state === 'hiding' && p === G.seeker) && p.disguiseT <= 0 && !p.arc; }
+function canGrapple(p) { return p && !p.caught && !p.grabbedBy && (G.state === 'hiding' || G.state === 'seeking') && !(G.state === 'hiding' && p === G.seeker) && p.disguiseT <= 0 && !p.arc; }
 // ray from the camera through the screen centre, against solid boxes
 function updateAim() {
-  const p = G.player, A = G.aim; A.ok = false;
+  const p = G.player, A = G.aim; A.ok = false; A.giant = null;
   camera.getWorldDirection(tmpF);
   const o = camera.position, hy = p.pos.y + 1;
   const tc = Math.max(0, (p.pos.x - o.x) * tmpF.x + (hy - o.y) * tmpF.y + (p.pos.z - o.z) * tmpF.z);
   const sx = o.x + tmpF.x * tc, sy = o.y + tmpF.y * tc, sz = o.z + tmpF.z * tc, L = GR.range + 10;
   let best = 1;
   for (let i = 0; i < colliders.length; i++) { const c = colliders[i]; if (!c.solid || c.maxY - c.minY < 0.25) continue; const t = rayAABB(c, sx, sy, sz, tmpF.x * L, tmpF.y * L, tmpF.z * L); if (t > 0.0001 && t < best) best = t; }
+  const hitG = typeof rayGiant === 'function' ? rayGiant(sx, sy, sz, tmpF.x, tmpF.y, tmpF.z, L) : null;
+  if (hitG && hitG.t < best) { best = hitG.t; A.giant = hitG.g; }
   A.miss.set(sx + tmpF.x * 28, sy + tmpF.y * 28, sz + tmpF.z * 28);
   if (best >= 1) { A.d = 0; return; }
   A.p.set(sx + tmpF.x * L * best, sy + tmpF.y * L * best, sz + tmpF.z * L * best);
   A.d = Math.hypot(A.p.x - p.pos.x, A.p.y - hy, A.p.z - p.pos.z);
   A.ok = A.d <= GR.range;
-  if (!A.ok) A.miss.copy(A.p);
+  if (!A.ok) { A.miss.copy(A.p); A.giant = null; }
 }
 function fireHook(i) {
   const p = G.player; if (!canGrapple(p)) return;
@@ -2958,8 +3416,16 @@ function fireHook(i) {
   Snd.init();
   if (p.crouch) p.crouch = false;
   const hp = p.hipPos(i, tmpV);
-  if (G.aim.ok) { h.st = 1; h.prog = 0; h.a.copy(G.aim.p); h.dist = hp.distanceTo(h.a); Snd.zip(1, i ? 0.25 : -0.25); }
-  else { h.st = 3; h.prog = 0; h.a.copy(G.aim.miss); h.dist = hp.distanceTo(h.a); Snd.fail(); }
+  if (G.aim.ok) {
+    h.st = 1; h.prog = 0; h.a.copy(G.aim.p); h.dist = hp.distanceTo(h.a); Snd.zip(1, i ? 0.25 : -0.25);
+    if (G.aim.giant) {
+      const g = G.aim.giant, f = g.fwd();
+      h.giant = g.id;
+      // local offset in giant's facing frame
+      const dx = h.a.x - g.pos.x, dz = h.a.z - g.pos.z;
+      h.gx = dx * f.z - dz * f.x; h.gz = dx * f.x + dz * f.z; h.gy = h.a.y - g.pos.y;
+    } else { h.giant = null; }
+  } else { h.st = 3; h.prog = 0; h.a.copy(G.aim.miss); h.dist = hp.distanceTo(h.a); h.giant = null; Snd.fail(); }
 }
 function releaseHook(i) {
   const p = G.player; if (!p) return; const h = p.hooks[i];
@@ -2997,6 +3463,15 @@ function updateGrapple(p, dt, frozen) {
 // ======================================================================
 function updatePlayer(dt) {
   const p = G.player;
+  if (p.grabbedBy) {
+    p.wish.set(0, 0, 0); p.jumpReq = false; p.sprinting = false;
+    if (isClient()) {
+      if (keys.Space && !p._wrigWas) { Net.send({ t: 'act', a: 'wrig' }); p.grabEscape = Math.min(1, (p.grabEscape || 0) + 0.14); }
+      p._wrigWas = !!keys.Space;
+    }
+    if (p.grabEscape > 0) { const el = $('status'); if (el) el.textContent = '🤼 Wriggle! Mash Space  ' + Math.round(p.grabEscape * 100) + '%'; }
+    return;
+  }
   if (p.caught) { // ghost flight
     let ix = 0, iz = 0, iy = 0;
     if (keys.KeyW) iz++; if (keys.KeyS) iz--; if (keys.KeyA) ix--; if (keys.KeyD) ix++; if (keys.Space) iy++; if (keys.KeyC || keys.ShiftLeft) iy--;
@@ -3004,7 +3479,7 @@ function updatePlayer(dt) {
     let wx = fx * iz + rx * ix, wz = fz * iz + rz * ix; const l = Math.hypot(wx, wz) || 1; if (ix || iz) { wx /= l; wz /= l; }
     p.vel.x = damp(p.vel.x, wx * 9, 5, dt); p.vel.z = damp(p.vel.z, wz * 9, 5, dt);
     p.vel.y = damp(p.vel.y, iy * 6 + (p.pos.y < 0.8 ? 2 : 0), 4, dt);
-    p.pos.addScaledVector(p.vel, dt); p.pos.y = clamp(p.pos.y, 0.3, 40); p.pos.x = clamp(p.pos.x, -40, 40); p.pos.z = clamp(p.pos.z, -40, 40);
+    p.pos.addScaledVector(p.vel, dt); p.pos.y = clamp(p.pos.y, 0.3, 70); p.pos.x = clamp(p.pos.x, -BOUND, BOUND); p.pos.z = clamp(p.pos.z, -BOUND, BOUND);
     if (ix || iz) p.yaw += angDiff(p.yaw, Math.atan2(wx, wz)) * Math.min(1, 8 * dt);
     p.sprinting = false;
     return;
@@ -3030,6 +3505,7 @@ function updatePlayer(dt) {
   if (p.hooked() && keys.Space) p.jumpReq = false;
   updateGrapple(p, dt, frozen);
   p.physics(dt, speed);
+  if ((p.flying || p.hooked()) && Math.hypot(p.vel.x, p.vel.y, p.vel.z) > 14) tryNapeHit(p);
   const hs = Math.hypot(p.vel.x, p.vel.z);
   if (p.flying && !p.onGround && hs > 2) p.yaw += angDiff(p.yaw, Math.atan2(p.vel.x, p.vel.z)) * Math.min(1, 8 * dt);
   else if (moving && !frozen) p.yaw += angDiff(p.yaw, Math.atan2(wx, wz)) * Math.min(1, 14 * dt);
@@ -3061,7 +3537,7 @@ function buildAbilities() {
     const d = document.createElement('div'); d.className = 'ab'; d.innerHTML = `<span class="key">${k}</span><span class="ic">${ic}</span><span class="nm">${nm}</span><div class="cd"></div>`;
     $('abilities').appendChild(d); return { d, cdEl: d.querySelector('.cd'), cd, max, act, was: 0 };
   });
-  const odm = '<br>🪝 <b>L/R click</b> (or hold <b>G</b>) fire &amp; hold hooks · <b>Space</b> gas-reel · <b>Shift</b> air thrust';
+  const odm = '<br>🪝 <b>L/R click</b> (or hold <b>G</b>) fire &amp; hold hooks · <b>Space</b> gas-reel · <b>Shift</b> air thrust<br>👹 Giants: mash <b>Space</b> if grabbed · zip the <b>nape</b> at high speed to stun';
   $('hint').innerHTML = p.role === 'seeker'
     ? '<b>Click</b> game to capture mouse<br><b>WASD</b> move · <b>Mouse</b> look · <b>Space</b> jump · <b>Shift</b> sprint<br><b>E</b> tag · <b>Q</b> sniff · <b>F</b> dash · <b>M</b> mute' + odm
     : '<b>Click</b> game to capture mouse<br><b>WASD</b> move · <b>Mouse</b> look · <b>Space</b> jump · <b>Shift</b> sprint<br><b>C</b> crouch/hide · <b>Q</b> disguise · <b>F</b> taunt (+50) · <b>M</b> mute' + odm;
@@ -3070,7 +3546,7 @@ let hidersVerShown = -1, hbT = 0, lastTimerTxt = '', giggleT = 3;
 const mm = $('minimap').getContext('2d');
 const mmStatic = document.createElement('canvas'); mmStatic.width = mmStatic.height = 180;
 function drawMinimapStatic() {
-  const g = mmStatic.getContext('2d'), S = 180 / 74, X = x => (x + 37) * S, Z = z => (z + 37) * S;
+  const g = mmStatic.getContext('2d'), half = BOUND + 2, span = half * 2, S = 180 / span, X = x => (x + half) * S, Z = z => (z + half) * S;
   if (MAP.name === 'city') {
     g.fillStyle = '#b9ad98'; g.fillRect(0, 0, 180, 180);
     g.fillStyle = '#e3d6bd'; g.beginPath(); g.arc(X(PLAZA.x), Z(PLAZA.z), 8 * S, 0, 7); g.fill();
@@ -3085,10 +3561,10 @@ function drawMinimapStatic() {
   g.fillStyle = '#3fc0f0'; g.beginPath(); g.ellipse(X(POND.x), Z(POND.z), POND.rx * S, POND.rz * S, 0, 0, 7); g.fill();
   for (const c of colliders) { if (!c.solid || c.maxX - c.minX > 60 || c.maxZ - c.minZ > 60) continue; const h = c.maxY - c.minY; if (h < 0.8) continue; g.fillStyle = h > 2.2 ? '#7a5a8c' : (c.maxY > 1.7 && c.minY < 0.1 ? '#2f7a37' : '#a77b52'); g.fillRect(X(c.minX), Z(c.minZ), Math.max(1, (c.maxX - c.minX) * S), Math.max(1, (c.maxZ - c.minZ) * S)); }
   g.fillStyle = '#2f8f3f'; for (const b of bushes) { g.beginPath(); g.arc(X(b.x), Z(b.z), b.r * S, 0, 7); g.fill(); }
-  g.strokeStyle = '#fff'; g.lineWidth = 2; g.strokeRect(X(-36), Z(-36), 72 * S, 72 * S);
+  g.strokeStyle = '#fff'; g.lineWidth = 2; g.strokeRect(X(-BOUND), Z(-BOUND), BOUND * 2 * S, BOUND * 2 * S);
 }
 function drawMinimap() {
-  const S = 180 / 74, X = x => (x + 37) * S, Z = z => (z + 37) * S, p = G.player;
+  const half = BOUND + 2, span = half * 2, S = 180 / span, X = x => (x + half) * S, Z = z => (z + half) * S, p = G.player;
   mm.save(); mm.clearRect(0, 0, 180, 180); mm.beginPath(); mm.arc(90, 90, 88, 0, 7); mm.clip();
   mm.drawImage(mmStatic, 0, 0);
   const dot = (b, r, col, stroke = '#4a2366') => { mm.fillStyle = col; mm.strokeStyle = stroke; mm.lineWidth = 2; mm.beginPath(); mm.arc(X(b.x), Z(b.z), r, 0, 7); mm.fill(); mm.stroke(); };
@@ -3281,7 +3757,7 @@ function update(dt) {
         if (G.timer <= 10 && Math.ceil(G.timer) !== G.lastBeep) { G.lastBeep = Math.ceil(G.timer); Snd.tick(400); }
         seekerSteps(s);
       }
-      if (!C) for (const b of G.beans) { if (b.human || b === s) continue; if (b.caught) ghostBot(b, dt); else botHider(b, dt); }
+      if (!C) for (const b of G.beans) { if (b.human || b === s || b.grabbedBy) continue; if (b.caught) ghostBot(b, dt); else botHider(b, dt); }
       for (const b of G.beans) if (b.remote) applyInterp(b, dt);
       updatePlayer(dt);
       // host checks bump-tags for a remote human seeker
@@ -3311,6 +3787,7 @@ function update(dt) {
     }
   }
   for (const b of G.beans) { commonBeanUpdate(b, dt); b.animate(dt, G.t); b.updateHooks(dt); }
+  if (typeof updateGiants === "function") updateGiants(dt);
   for (const bu of bushes) { bu.wigV += -bu.wig * 90 * dt; bu.wigV *= Math.exp(-5 * dt); bu.wig += bu.wigV * dt; const w = clamp(bu.wig, -1.5, 1.5); bu.group.scale.set(1 + w * 0.08, 1 - w * 0.06, 1 + w * 0.08); bu.group.rotation.z = w * 0.06; }
   for (const t of trampolines) { t.dipV += -t.dip * 120 * dt; t.dipV *= Math.exp(-6 * dt); t.dip += t.dipV * dt; t.mesh.position.y = 0.43 + clamp(t.dip, -0.3, 0.2) * 0.5; }
   for (const f of animated) f(G.t, dt);
@@ -3331,10 +3808,19 @@ function update(dt) {
   const seg = (id, key, conv) => $(id).querySelectorAll('button').forEach(b => b.onclick = () => { $(id).querySelectorAll('button').forEach(e => e.classList.remove('sel')); b.classList.add('sel'); G[key] = conv(b.dataset.v); Snd.tick(100); });
   seg('diff', 'difficulty', v => v); seg('rounds', 'totalRounds', v => +v);
   seg('mapSel', 'mapChoice', v => v);
-  $('mapSel').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { if (G.map !== b.dataset.v) { setMap(b.dataset.v); setupMenuScene(); } }));
+  $('mapSel').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { if (G.map !== b.dataset.v) { setMap(b.dataset.v); setupMenuScene(); const mx = (MAPS[G.map] && MAPS[G.map].giants) || 4; G.giantCount = Math.min(G.giantCount || mx, mx); if ($('giants')) { $('giants').max = mx; $('giants').value = G.giantCount; $('giantN').textContent = G.giantCount; } } }));
   $('bots').oninput = e => { G.botCount = +e.target.value; $('botN').textContent = G.botCount; };
   $('pname').oninput = e => { G.settings.name = e.target.value.trim() || 'You'; G.player.name = G.settings.name; G.player.lbl.textContent = G.settings.name; };
-  $('play').onclick = () => { Snd.init(); Snd.tick(300); startGame(); };
+  const syncGiantUI = () => {
+    const on = G.giantsOn !== false;
+    $('giantsOn') && $('giantsOn').querySelectorAll('button').forEach(b => b.classList.toggle('sel', (b.dataset.v === '1') === on));
+    if ($('giantN')) $('giantN').textContent = G.giantCount;
+    if ($('giants')) $('giants').value = G.giantCount;
+  };
+  if ($('giantsOn')) $('giantsOn').querySelectorAll('button').forEach(b => b.addEventListener('click', () => { G.giantsOn = b.dataset.v === '1'; syncGiantUI(); Snd.tick(100); }));
+  if ($('giants')) $('giants').oninput = e => { G.giantCount = +e.target.value; syncGiantUI(); };
+  syncGiantUI();
+  $('play').onclick = () => { Snd.init(); Snd.tick(300); if (G.giantsOn && MAPS[G.map]) G.giantCount = clamp(G.giantCount, 0, MAPS[G.map].giants || 4); startGame(); };
 }
 
 // ======================================================================
@@ -3342,7 +3828,7 @@ function update(dt) {
 // ======================================================================
 setMap('city'); G.mapChoice = 'city';
 buildRoster(true); setupMenuScene();
-if (G.debug) G.api = { startGame, startSeeking, endRound, nextRound, CAM, aliveHiders, update, updateCamera, updateHUD, spots, zones, setMap, setupMenuScene, fireHook, releaseHook, updateAim, colliders, roofs, groundHeight, planLegs, setGoal, startArc, solidAt, segBlocked, MAPS, keys };
+if (G.debug) G.api = { startGame, startSeeking, endRound, nextRound, CAM, aliveHiders, update, updateCamera, updateHUD, spots, zones, setMap, setupMenuScene, fireHook, releaseHook, updateAim, colliders, roofs, groundHeight, planLegs, setGoal, startArc, solidAt, segBlocked, MAPS, keys, giants, spawnGiantsForMap, clearGiants, tryNapeHit, updateGiants, renderer, scene };
 let last = performance.now(), fpsAcc = 0, fpsN = 0;
 G.fps = 0;
 function frame(now) {
