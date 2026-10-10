@@ -81,7 +81,7 @@ canvas#c{display:block;position:fixed;inset:0;width:100vw;height:100vh}
 #gearIcon{position:fixed;bottom:14px;right:70px;z-index:13;font-size:24px;background:rgba(255,255,255,.85);border:3px solid var(--ink);border-radius:50%;width:48px;height:48px;display:flex;align-items:center;justify-content:center;cursor:pointer}
 #camSet{position:fixed;left:50%;bottom:76px;transform:translateX(-50%);z-index:14;background:#fff;border:3px solid var(--ink);border-radius:18px;padding:12px 18px;font-size:16px;min-width:300px;box-shadow:0 6px 0 rgba(0,0,0,.25);cursor:default}
 #camSet h4{margin:0 0 8px;font-size:18px}#camSet label{display:flex;align-items:center;justify-content:space-between;gap:12px;margin:6px 0}#camSet input[type=range]{width:150px}
-body.podium #bottom,body.racing #timer,body.racing #role,body.racing #hiders,body.racing #minimap,body.racing #eyeMeter,body.racing #sniffArrow,body.racing #crosshair,body.racing #reticle,body.racing #stamina,body.racing #gasRow,body.racing #hint{display:none!important}
+body.podium #bottom,body.racing #timer,body.racing #role,body.racing #hiders,body.racing #minimap,body.racing #eyeMeter,body.racing #sniffArrow,body.racing #crosshair,body.racing #reticle,body.racing #stamina,body.racing #hint{display:none!important}
 #raceHud{position:fixed;inset:0;pointer-events:none;z-index:6;font-family:inherit}
 #rhPlace{position:absolute;right:22px;bottom:84px;font-size:76px;font-weight:900;color:#fff;-webkit-text-stroke:3px #2a1840;text-shadow:0 5px 0 #2a1840;line-height:1}
 #rhPlace sup{font-size:32px}#rhPlace small{font-size:24px;opacity:.85}#rhPlace.p1{color:#ffd23f}#rhPlace.p2{color:#e3eaf0}#rhPlace.p3{color:#f0a36b}
@@ -238,7 +238,7 @@ kbd{display:inline-block;background:#fff;border:2px solid var(--ink);border-radi
     <div class="row"><label class="h">Giant count: <span id="giantN">4</span></label><input id="giants" type="range" min="1" max="5" value="4"></div>
     </div>
     <div id="raceOpts" class="hidden">
-      <div class="row"><label class="h">Laps</label><div class="seg" id="raceLaps"><button data-v="1">1</button><button data-v="3" class="sel">3</button><button data-v="5">5</button></div></div>
+      <div class="row"><label class="h">Laps</label><div class="seg" id="raceLaps"><button data-v="1">1</button><button data-v="2" class="sel">2</button><button data-v="3">3</button></div></div>
       <div class="row"><label class="h">Track seed</label><div class="jrow" style="gap:8px"><input id="raceSeed" type="text" maxlength="10" placeholder="random" style="flex:1"><button type="button" id="raceSeedRnd" class="mpb" style="flex:0">🎲</button></div></div>
       <div class="row"><label class="h">Racers (bots fill): <span id="botN2">6</span></label><input id="bots2" type="range" min="1" max="7" value="6"></div>
     </div>
@@ -281,7 +281,7 @@ kbd{display:inline-block;background:#fff;border:2px solid var(--ink);border-radi
     <div class="row"><label class="h">Giant count: <span id="lbGiantN">4</span></label><input id="lbGiants" type="range" min="1" max="5" value="4"></div>
     </div>
     <div id="lbRaceOpts" class="hidden">
-      <div class="row"><label class="h">Laps</label><div class="seg" id="lbRaceLaps"><button data-v="1">1</button><button data-v="3" class="sel">3</button><button data-v="5">5</button></div></div>
+      <div class="row"><label class="h">Laps</label><div class="seg" id="lbRaceLaps"><button data-v="1">1</button><button data-v="2" class="sel">2</button><button data-v="3">3</button></div></div>
       <div class="row"><label class="h">Track seed</label><div class="jrow" style="gap:8px"><input id="lbRaceSeed" type="text" maxlength="10" placeholder="random" style="flex:1"><button type="button" id="lbRaceSeedRnd" class="mpb" style="flex:0">🎲</button></div></div>
     </div>
   </div>
@@ -1947,6 +1947,7 @@ class Bean {
     const h = this.hooks[i];
     if (this.isPlayer || near(h.a, 25)) { Snd.clank(this.isPlayer ? 1 : volAt(h.a)); }
     puff(h.a, 4, 0xd8cfc0, 0.16, 0.8, 0.4);
+    if (G.mode === 'race') return;
     if (!this.remote && !this.arc) {
       h.L = Math.max(1.2, _hv1.set(this.pos.x, this.pos.y + 0.7, this.pos.z).distanceTo(h.a) - 0.4);
       // AoT-style yank toward the anchor
@@ -2472,7 +2473,7 @@ const LINES = {
   fooled: ["Just a box... probably.", "Nice plant.", "Nothing to see here."],
 };
 const G = {
-  state: 'menu', mode: 'hide', round: 0, totalRounds: 5, difficulty: 'normal', botCount: 6, raceLaps: 3, raceSeed: 0, beans: [], player: null, seeker: null, lastSeeker: null,
+  state: 'menu', mode: 'hide', round: 0, totalRounds: 5, difficulty: 'normal', botCount: 6, raceLaps: 2, raceSeed: 0, beans: [], player: null, seeker: null, lastSeeker: null,
   timer: 0, t: 0, paused: false, settings: { name: 'You', color: '#ff69b4', hat: 'party' }, hidersVer: 0, rl: null, endT: 0, forceSeeker: null,
   trauma: 0, sniffTarget: null, feed: [], giantsOn: true, giantCount: 4,
 };
@@ -2963,7 +2964,7 @@ function startGame() {
   $('menu').classList.add('hidden');
   if (G.mode === 'race') {
     const seed = G.raceSeed || raceRandSeed();
-    startRaceGame({ seed, laps: G.raceLaps || 3 });
+    startRaceGame({ seed, laps: G.raceLaps || 2 });
     return;
   }
   nextRound();
@@ -3157,7 +3158,7 @@ function applyTheme(T) {
     skyMat.uniforms.top.value.set(T.top); skyMat.uniforms.mid.value.set(T.mid); skyMat.uniforms.bot.value.set(T.bot);
   }
   if (!SKY_DEFAULT.fog) { SKY_DEFAULT.fog = scene.fog.color.clone(); SKY_DEFAULT.near = scene.fog.near; SKY_DEFAULT.far = scene.fog.far; SKY_DEFAULT.ground = hemi.groundColor.clone(); }
-  scene.fog.color.set(T.fog); scene.fog.near = 90; scene.fog.far = 330; hemi.groundColor.set(T.ground);
+  scene.fog.color.set(T.fog); scene.fog.near = 80; scene.fog.far = 290; hemi.groundColor.set(T.ground);
 }
 function restoreTheme() {
   if (SKY_DEFAULT.top && typeof skyMat !== 'undefined' && skyMat) for (const k of ['top', 'mid', 'bot']) skyMat.uniforms[k].value.copy(SKY_DEFAULT[k]);
@@ -3181,211 +3182,17 @@ function clearRaceWorld() {
   Snd.raceFinal = false; if (CAM.mode === 'race' || CAM.mode === 'podium') CAM.mode = 'play';
 }
 
-// ---------------------------------------------------------------- track generation
-function buildRaceTrack(seed) {
-  disposeGroup(Race.group); Race.group = null;
-  Race.seed = (seed >>> 0) || 1;
-  const rnd = mulberry32(Race.seed);
-  const tk = THEME_KEYS[Race.seed % THEME_KEYS.length]; Race.theme = tk; const T = THEMES[tk];
-  applyTheme(T);
-  const group = new THREE.Group(); Race.group = group; scene.add(group);
-  const N = 11 + Math.floor(rnd() * 5), R0 = 62 + rnd() * 22, ph = rnd() * 6.28, fr = 1 + Math.floor(rnd() * 3);
-  const ctrl = [];
-  for (let i = 0; i < N; i++) {
-    const a = (i / N) * Math.PI * 2 + (rnd() - 0.5) * 0.3, r = R0 * (0.6 + rnd() * 0.55);
-    ctrl.push({ x: Math.cos(a) * r, z: Math.sin(a) * r, y: T.base + T.amp * (0.5 + 0.5 * Math.sin(i / N * Math.PI * 2 * fr + ph)) + (rnd() - 0.5) * T.amp * 0.5 });
-  }
-  const cat = (a, b, c, d, u) => 0.5 * ((2 * b) + (-a + c) * u + (2 * a - 5 * b + 4 * c - d) * u * u + (-a + 3 * b - 3 * c + d) * u * u * u);
-  const dense = [];
-  for (let i = 0; i < N * 60; i++) {
-    const t = i / 60, i0 = Math.floor(t) % N, u = t - Math.floor(t);
-    const p0 = ctrl[(i0 - 1 + N) % N], p1 = ctrl[i0], p2 = ctrl[(i0 + 1) % N], p3 = ctrl[(i0 + 2) % N];
-    dense.push({ x: cat(p0.x, p1.x, p2.x, p3.x, u), y: cat(p0.y, p1.y, p2.y, p3.y, u), z: cat(p0.z, p1.z, p2.z, p3.z, u) });
-  }
-  const STEP = 1.6, pts = [{ ...dense[0] }]; let acc = 0;
-  for (let i = 1; i <= dense.length; i++) {
-    const a = dense[i - 1], b = dense[i % dense.length], seg = Math.hypot(b.x - a.x, b.z - a.z); let t0 = 0;
-    if (seg < 1e-6) continue;
-    while (acc + seg * (1 - t0) >= STEP) { const tt = t0 + (STEP - acc) / seg; pts.push({ x: lerp(a.x, b.x, tt), y: lerp(a.y, b.y, tt), z: lerp(a.z, b.z, tt) }); t0 = tt; acc = 0; }
-    acc += seg * (1 - t0);
-  }
-  if (Math.hypot(pts[pts.length - 1].x - pts[0].x, pts[pts.length - 1].z - pts[0].z) < STEP * 0.6) pts.pop();
-  const n = pts.length; Race.n = n;
-  for (let i = 0; i < n; i++) { const a = pts[(i - 1 + n) % n], b = pts[(i + 1) % n]; const dx = b.x - a.x, dz = b.z - a.z, l = Math.hypot(dx, dz) || 1; const p = pts[i]; p.tx = dx / l; p.tz = dz / l; p.nx = -p.tz; p.nz = p.tx; p.h = Math.atan2(p.tx, p.tz); }
-  for (let i = 0; i < n; i++) { const p = pts[i], q = pts[(i + 1) % n]; p.turn = ((q.tx - p.tx) * p.nx + (q.tz - p.tz) * p.nz) / STEP; }
-  for (let pass = 0; pass < 3; pass++) { const ys = pts.map(p => p.y); for (let i = 0; i < n; i++) pts[i].y = (ys[(i - 1 + n) % n] + ys[i] * 2 + ys[(i + 1) % n]) / 4; }
-  const bank = pts.map(p => clamp(p.turn * 7, -0.42, 0.42));
-  for (let i = 0; i < n; i++) { let s = 0; for (let k = -6; k <= 6; k++) s += bank[(i + k + n) % n]; pts[i].bank = s / 13; }
-  pts.forEach(p => { p.gap = false; p.hp = false; p.boost = false; p.ramp = 0; p.padOff = 0; });
-  const straight = i => { let s = 0; for (let k = 0; k < 22; k++) s += Math.abs(pts[(i + k) % n].turn); return s; };
-  const used = new Uint8Array(n);
-  const mark = (a, len) => { for (let k = -4; k < len + 4; k++) used[(a + k + n) % n] = 1; };
-  const free = (a, len) => { for (let k = -4; k < len + 4; k++) if (used[(a + k + n) % n]) return false; return true; };
-  mark(n - 12, 26);
-  const gaps = 1 + Math.floor(rnd() * 2);
-  for (let g = 0, tries = 0; g < gaps && tries < 300; tries++) {
-    const a = Math.floor(rnd() * n); if (!free(a, 22) || straight(a) > 0.35) continue;
-    for (let k = 0; k < 9; k++) { const p = pts[(a + k) % n]; p.ramp = (k + 1) / 9 * 2.4; p.bank = 0; }
-    for (let k = 9; k < 14; k++) { const p = pts[(a + k) % n]; p.gap = true; p.bank = 0; }
-    for (let k = 14; k < 18; k++) pts[(a + k) % n].bank = 0;
-    pts[(a + 2) % n].boost = true; mark(a, 18); g++;
-  }
-  const hps = 1 + Math.floor(rnd() * 2);
-  for (let g = 0, tries = 0; g < hps && tries < 300; tries++) {
-    const a = Math.floor(rnd() * n); if (!free(a, 30) || straight(a) < 0.5) continue;
-    for (let k = 0; k < 30; k++) pts[(a + k) % n].hp = true; mark(a, 30); g++;
-  }
-  const pads = 5 + Math.floor(rnd() * 4);
-  for (let g = 0, tries = 0; g < pads && tries < 300; tries++) { const a = Math.floor(rnd() * n); if (!free(a, 2)) continue; pts[a].boost = true; pts[a].padOff = (rnd() - 0.5) * 3.5; mark(a, 2); g++; }
-  pts.forEach(p => { p.y = Math.max(1.2, p.y) + p.ramp; });
-  Race.pts = pts;
-  Race.cpEvery = Math.floor(n / 8); Race.cps = []; for (let c = 0; c < 8; c++) Race.cps.push(c * Race.cpEvery);
-  Race.boxes = [];
-  const rows = 3 + Math.floor(rnd() * 2);
-  for (let r = 0; r < rows; r++) {
-    let a = Math.floor((r + 0.5) / rows * n + (rnd() - 0.5) * 10 + n) % n; let tries = 0;
-    while ((pts[a].gap || pts[a].ramp || pts[a].hp) && tries++ < 60) a = (a + 3) % n;
-    for (const L of [-2.6, 0, 2.6]) Race.boxes.push({ i: a, L, on: true, t: 0, x: pts[a].x + pts[a].nx * L, z: pts[a].z + pts[a].nz * L, y: surfY(pts[a], L) + 0.9 });
-  }
-  Race.planks = []; let best = null;
-  for (let i = 0; i < n; i += 2) for (let L = 28; L <= 60; L += 2) {
-    const j = (i + L) % n, a = pts[i], b = pts[j], d = Math.hypot(a.x - b.x, a.z - b.z);
-    if (d < 12 || d > 34 || Math.abs(a.y - b.y) > 4) continue;
-    let ok = true; for (let k = -3; k <= L + 3; k += 3) { const q = pts[(i + k + n) % n]; if (q.gap || q.hp) { ok = false; break; } }
-    if (!ok) continue; const ratio = (L * STEP) / d; if (!best || ratio > best.ratio) best = { i, j, ratio };
-  }
-  if (best && best.ratio > 2.2) Race.planks.push({ a: best.i, b: best.j, ax: pts[best.i].x, az: pts[best.i].z, ay: pts[best.i].y, bx: pts[best.j].x, bz: pts[best.j].z, by: pts[best.j].y, w: 1.7 });
-  buildTrackMeshes(group, T, rnd);
-  return pts[0];
-}
-
-function buildTrackMeshes(group, T, rnd) {
-  const pts = Race.pts, n = Race.n;
-  const roadMat = new THREE.MeshStandardMaterial({ color: 0xffffff, roughness: 0.8, side: THREE.DoubleSide });
-  const wallMat = new THREE.MeshStandardMaterial({ color: T.wall, roughness: 0.7, side: THREE.DoubleSide });
-  const cols = [-RW - HPW, -RW - HPW * 0.5, -RW, 0, RW, RW + HPW * 0.5, RW + HPW], C = cols.length;
-  const pos = [], idxRoad = [], idxWall = [], uv = [];
-  for (let i = 0; i < n; i++) {
-    const p = pts[i];
-    for (let c = 0; c < C; c++) {
-      let L = cols[c]; const out = Math.abs(L) > RW; let y = surfY(p, clamp(L, -RW, RW));
-      if (out) { if (p.hp) { const u = (Math.abs(L) - RW) / HPW; y += u * u * HPW * 1.05; } else L = Math.sign(L) * RW; }
-      pos.push(p.x + p.nx * L, y + 0.02, p.z + p.nz * L); uv.push(c / (C - 1), i * 0.25);
-    }
-  }
-  for (let i = 0; i < n; i++) {
-    const j = (i + 1) % n; if (pts[i].gap || pts[j].gap) continue;
-    for (let c = 0; c < C - 1; c++) {
-      const a = i * C + c, b = a + 1, d = j * C + c, e = d + 1, wall = c < 2 || c >= C - 3;
-      if (wall && !(pts[i].hp || pts[j].hp)) continue;
-      (wall ? idxWall : idxRoad).push(a, b, d, b, e, d);
-    }
-  }
-  const mkGeo = idx => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(pos, 3)); g.setAttribute('uv', new THREE.Float32BufferAttribute(uv, 2)); g.setIndex(idx); g.computeVertexNormals(); return g; };
-  const hex = c => '#' + new THREE.Color(c).getHexString();
-  roadMat.map = canvasTex(64, 64, (g, w, h) => { g.fillStyle = hex(T.road); g.fillRect(0, 0, w, h); g.fillStyle = 'rgba(255,255,255,.07)'; for (let k = 0; k < 120; k++) g.fillRect((k * 37) % w, (k * 53) % h, 1, 1); g.fillStyle = hex(T.stripe); g.fillRect(w * 0.48, 0, w * 0.04, h * 0.5); g.fillRect(w * 0.335, 0, w * 0.02, h); g.fillRect(w * 0.645, 0, w * 0.02, h); }, true);
-  const road = new THREE.Mesh(mkGeo(idxRoad), roadMat); road.receiveShadow = true; group.add(road);
-  if (idxWall.length) { const wl = new THREE.Mesh(mkGeo(idxWall), wallMat); wl.receiveShadow = true; group.add(wl); }
-  const sk = [], sIdx = [];
-  for (let i = 0; i < n; i++) { const p = pts[i]; for (const L of [-RW, RW]) { const y = surfY(p, L); sk.push(p.x + p.nx * L, y, p.z + p.nz * L, p.x + p.nx * L, y - 0.7, p.z + p.nz * L); } }
-  for (let i = 0; i < n; i++) { const j = (i + 1) % n; if (pts[i].gap || pts[j].gap) continue; for (let s = 0; s < 2; s++) { const a = i * 4 + s * 2, b = j * 4 + s * 2; sIdx.push(a, a + 1, b, a + 1, b + 1, b); } }
-  const sg = new THREE.BufferGeometry(); sg.setAttribute('position', new THREE.Float32BufferAttribute(sk, 3)); sg.setIndex(sIdx); sg.computeVertexNormals();
-  group.add(new THREE.Mesh(sg, new THREE.MeshStandardMaterial({ color: new THREE.Color(T.wall).multiplyScalar(0.6), side: THREE.DoubleSide })));
-  const gMat = new THREE.MeshStandardMaterial({ color: T.ground, roughness: 1, emissive: T.lava ? 0xff3300 : 0x000000, emissiveIntensity: T.lava ? 0.55 : 0 });
-  const ground = new THREE.Mesh(new THREE.CircleGeometry(260, 48).rotateX(-Math.PI / 2), gMat); ground.receiveShadow = true; group.add(ground);
-  Race.lava = !!T.lava;
-  const dummy = new THREE.Object3D();
-  const inst = (geo, mat, list) => { if (!list.length) return; const m = new THREE.InstancedMesh(geo, mat, list.length); list.forEach((f, k) => { f(dummy); dummy.updateMatrix(); m.setMatrixAt(k, dummy.matrix); }); m.castShadow = true; m.receiveShadow = true; group.add(m); };
-  const posts = [], pillars = [];
-  for (let i = 0; i < n; i += 2) { const p = pts[i]; if (p.gap || p.hp) continue; for (const s of [-1, 1]) { const L = s * (RW + 0.25), y = surfY(p, s * RW); posts.push(d => { d.position.set(p.x + p.nx * L, y + 0.45, p.z + p.nz * L); d.rotation.set(0, p.h, 0); d.scale.set(1, 1, 1); }); } }
-  for (let i = 0; i < n; i += 7) { const p = pts[i]; if (p.gap || p.y < 2.2) continue; pillars.push(d => { d.position.set(p.x, (p.y - 0.6) / 2, p.z); d.rotation.set(0, p.h, 0); d.scale.set(2.2, p.y - 0.6, 1.4); }); }
-  inst(new THREE.BoxGeometry(0.3, 0.9, 1.4), new THREE.MeshStandardMaterial({ color: T.rail, roughness: 0.5 }), posts);
-  inst(new THREE.BoxGeometry(1, 1, 1), new THREE.MeshStandardMaterial({ color: new THREE.Color(T.wall).multiplyScalar(0.8), roughness: 0.9 }), pillars);
-  for (const s of [-1, 1]) {
-    const rp = [], ri = [];
-    for (let i = 0; i < n; i++) { const p = pts[i], L = s * (RW + 0.25), y = surfY(p, s * RW) + 0.9; rp.push(p.x + p.nx * L, y, p.z + p.nz * L, p.x + p.nx * L, y - 0.22, p.z + p.nz * L); }
-    for (let i = 0; i < n; i++) { const j = (i + 1) % n; if (pts[i].gap || pts[j].gap || pts[i].hp || pts[j].hp) continue; const a = i * 2, b = j * 2; ri.push(a, a + 1, b, a + 1, b + 1, b); }
-    const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(rp, 3)); g.setIndex(ri); g.computeVertexNormals();
-    group.add(new THREE.Mesh(g, new THREE.MeshStandardMaterial({ color: T.rail, side: THREE.DoubleSide, roughness: 0.4 })));
-  }
-  const padMat = new THREE.MeshBasicMaterial({ transparent: true, map: canvasTex(64, 64, (g, w, h) => { g.fillStyle = '#00d2ff'; g.fillRect(0, 0, w, h); g.strokeStyle = '#fff'; g.lineWidth = 8; for (let k = 0; k < 2; k++) { g.beginPath(); g.moveTo(10, 50 - k * 24); g.lineTo(32, 30 - k * 24); g.lineTo(54, 50 - k * 24); g.stroke(); } }) });
-  for (let i = 0; i < n; i++) { const p = pts[i]; if (!p.boost) continue; const L = p.padOff; const m = new THREE.Mesh(new THREE.PlaneGeometry(2.6, 3.0), padMat); m.rotation.order = 'YXZ'; m.rotation.y = p.h + Math.PI; m.rotation.x = -Math.PI / 2; m.position.set(p.x + p.nx * L, surfY(p, L) + 0.07, p.z + p.nz * L); group.add(m); }
-  { const p = pts[0];
-    const chk = canvasTex(64, 16, (g) => { for (let x = 0; x < 16; x++) for (let y = 0; y < 4; y++) { g.fillStyle = (x + y) % 2 ? '#111' : '#fff'; g.fillRect(x * 4, y * 4, 4, 4); } });
-    const line = new THREE.Mesh(new THREE.PlaneGeometry(RW * 2, 1.4), new THREE.MeshBasicMaterial({ map: chk })); line.rotation.order = 'YXZ'; line.rotation.y = p.h; line.rotation.x = -Math.PI / 2; line.position.set(p.x, p.y + 0.06, p.z); group.add(line);
-    const gm = new THREE.MeshStandardMaterial({ color: 0xffffff, emissive: 0x3355ff, emissiveIntensity: 0.4 });
-    for (const s of [-1, 1]) { const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 6, 10), gm); pole.position.set(p.x + p.nx * (RW + 0.6) * s, p.y + 3, p.z + p.nz * (RW + 0.6) * s); group.add(pole); }
-    const bt = canvasTex(256, 48, (g, w) => { g.fillStyle = '#ff3b5c'; g.fillRect(0, 0, w, 48); g.fillStyle = '#fff'; g.font = 'bold 32px sans-serif'; g.textAlign = 'center'; g.fillText('BEAN GP', w / 2, 35); });
-    const ban = new THREE.Mesh(new THREE.BoxGeometry(RW * 2 + 1.6, 1.3, 0.2), new THREE.MeshStandardMaterial({ map: bt })); ban.position.set(p.x, p.y + 5.6, p.z); ban.rotation.y = p.h; group.add(ban); }
-  const archMat = new THREE.MeshStandardMaterial({ color: 0x3fa7ff, emissive: 0x2266ff, emissiveIntensity: 0.5 });
-  for (let c = 1; c < Race.cps.length; c++) { const p = pts[Race.cps[c]]; if (p.gap) continue; const a = new THREE.Mesh(new THREE.TorusGeometry(RW + 0.5, 0.14, 6, 24, Math.PI), archMat); a.position.set(p.x, p.y, p.z); a.rotation.y = p.h + Math.PI / 2; group.add(a); }
-  for (let i = 0; i < n; i++) { const p = pts[i], q = pts[(i + 1) % n]; if (!p.gap && q.gap) { const s = new THREE.Mesh(new THREE.BoxGeometry(RW * 2, 0.15, 0.6), new THREE.MeshBasicMaterial({ color: 0xffd23f })); s.position.set(p.x, p.y + 0.1, p.z); s.rotation.y = p.h; group.add(s); } }
-  const boxMat = new THREE.MeshStandardMaterial({ emissive: 0xffffff, emissiveIntensity: 0.25, transparent: true, opacity: 0.92, map: canvasTex(64, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, w, h); gr.addColorStop(0, '#ff5fa2'); gr.addColorStop(0.5, '#ffd23f'); gr.addColorStop(1, '#3fa7ff'); g.fillStyle = gr; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.font = 'bold 46px sans-serif'; g.textAlign = 'center'; g.fillText('?', w / 2, 48); }) });
-  for (const b of Race.boxes) { const m = new THREE.Mesh(new THREE.BoxGeometry(1.1, 1.1, 1.1), boxMat); m.position.set(b.x, b.y, b.z); m.castShadow = true; group.add(m); b.mesh = m; }
-  for (const pl of Race.planks) {
-    const dx = pl.bx - pl.ax, dz = pl.bz - pl.az, L = Math.hypot(dx, dz);
-    const m = new THREE.Mesh(new THREE.BoxGeometry(pl.w * 2, 0.3, L), new THREE.MeshStandardMaterial({ color: 0xb07a45, roughness: 0.9 }));
-    m.rotation.order = 'YXZ'; m.rotation.y = Math.atan2(dx, dz); m.rotation.x = -Math.atan2(pl.by - pl.ay, L); m.position.set((pl.ax + pl.bx) / 2, (pl.ay + pl.by) / 2 - 0.13, (pl.az + pl.bz) / 2); m.castShadow = m.receiveShadow = true; group.add(m);
-    const sign = new THREE.Mesh(new THREE.ConeGeometry(0.5, 1.2, 4), new THREE.MeshBasicMaterial({ color: 0xffd23f })); sign.position.set(pl.ax, pl.ay + 2.6, pl.az); sign.rotation.z = Math.PI; group.add(sign);
-  }
-  const deco = [], deco2 = [];
-  const farFromRoad = (x, z) => { for (let i = 0; i < n; i += 3) if (Math.hypot(pts[i].x - x, pts[i].z - z) < RW + 6) return false; return true; };
-  for (let k = 0, tries = 0; k < 90 && tries < 700; tries++) {
-    const a = rnd() * 6.28, r = 20 + rnd() * 170, x = Math.cos(a) * r, z = Math.sin(a) * r; if (!farFromRoad(x, z)) continue;
-    const s = 0.6 + rnd() * 1.4, rot = rnd() * 6.28, hh = 6 + rnd() * 26; k++;
-    if (Race.theme === 'city') deco.push(d => { d.position.set(x, hh / 2, z); d.rotation.set(0, rot, 0); d.scale.set(4 + s * 3, hh, 4 + s * 3); });
-    else deco.push(d => { d.position.set(x, 0, z); d.rotation.set(0, rot, 0); d.scale.set(s, s, s); });
-    if (k % 2) deco2.push(d => { d.position.set(x + 2.5, 0, z + 2); d.rotation.set(0, rot, 0); d.scale.set(s * 0.7, s * 0.7, s * 0.7); });
-  }
-  const th = Race.theme, M = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.85, ...o });
-  if (th === 'city') { inst(new THREE.BoxGeometry(1, 1, 1), M(0x8792a8), deco); inst(new THREE.BoxGeometry(3, 2, 3).translate(0, 1, 0), M(0x4cc9f0, { emissive: 0x113355 }), deco2); }
-  else if (th === 'candy') { inst(new THREE.CylinderGeometry(0.2, 0.2, 6, 8).translate(0, 3, 0), M(0xffffff), deco); inst(new THREE.SphereGeometry(1.6, 16, 10).translate(0, 6.6, 0), M(0xff4fa0, { emissive: 0x551133, emissiveIntensity: 0.4 }), deco); inst(new THREE.SphereGeometry(1.4, 12, 8).translate(0, 1, 0), M(0x7bd1ff), deco2); }
-  else if (th === 'desert') { inst(new THREE.CylinderGeometry(0.6, 0.7, 5, 8).translate(0, 2.5, 0), M(0x4f9a4a), deco); inst(new THREE.BoxGeometry(9, 12, 7).translate(0, 6, 0), M(0xc46a32), deco2); }
-  else if (th === 'lava') { inst(new THREE.DodecahedronGeometry(2.4, 0).translate(0, 1.4, 0), M(0x2c2626), deco); inst(new THREE.ConeGeometry(4, 9, 7).translate(0, 4.5, 0), M(0x3a2a2a, { emissive: 0x551100, emissiveIntensity: 0.6 }), deco2); }
-  else { inst(new THREE.ConeGeometry(1.8, 6, 8).translate(0, 3.6, 0), M(0x2f7d4f), deco); inst(new THREE.SphereGeometry(1.5, 12, 8).translate(0, 0.6, 0), M(0xffffff), deco2); }
-}
-
-// ---------------------------------------------------------------- surface
-function nearestIdx(x, z, hint) {
-  const pts = Race.pts, n = Race.n; let best = 0, bd = 1e12;
-  if (hint >= 0) { for (let k = -24; k <= 24; k++) { const i = (hint + k + n) % n, p = pts[i]; const d = (p.x - x) ** 2 + (p.z - z) ** 2; if (d < bd) { bd = d; best = i; } } if (bd < 64) return best; }
-  for (let i = 0; i < n; i++) { const p = pts[i]; const d = (p.x - x) ** 2 + (p.z - z) ** 2; if (d < bd) { bd = d; best = i; } }
-  return best;
-}
-function raceSurface(x, z, hint, yNow) {
-  const n = Race.n, pts = Race.pts, out = { i: 0, L: 0, y: -1e9, road: false, wall: 0, plank: false, ty: 0 };
-  if (!n) return out;
-  const i = nearestIdx(x, z, hint), p = pts[i]; out.i = i;
-  const fwd = (x - p.x) * p.tx + (z - p.z) * p.tz, q = pts[fwd >= 0 ? (i + 1) % n : (i - 1 + n) % n];
-  const u = clamp(Math.abs(fwd) / 1.6, 0, 1), L = (x - p.x) * p.nx + (z - p.z) * p.nz; out.L = L;
-  const by = lerp(p.y, q.y, u), bb = lerp(p.bank, q.bank, u); out.ty = by;
-  const gap = p.gap || (u > 0.5 && q.gap), hp = p.hp || q.hp;
-  if (!gap) {
-    const aL = Math.abs(L), y = by - clamp(L, -RW, RW) * Math.sin(bb);
-    if (aL <= RW + 0.05) { out.road = true; out.y = y; }
-    else if (hp && aL <= RW + HPW) { const w = (aL - RW) / HPW; out.road = true; out.wall = w; out.y = y + w * w * HPW * 1.05; }
-    else if (hp && aL <= RW + HPW + 0.8) { out.road = true; out.y = y + HPW * 1.05; out.wall = -1; out.edge = RW + HPW; }
-    else if (!hp && aL <= RW + 0.6) { out.road = true; out.y = y; out.wall = -1; out.edge = RW; }
-    if (out.road && yNow !== undefined && yNow < out.y - 2.0) { out.road = false; out.y = -1e9; out.wall = 0; }
-  }
-  for (const pl of Race.planks) {
-    const dx = pl.bx - pl.ax, dz = pl.bz - pl.az, t = clamp(((x - pl.ax) * dx + (z - pl.az) * dz) / (dx * dx + dz * dz), 0, 1);
-    if (Math.hypot(x - (pl.ax + dx * t), z - (pl.az + dz * t)) < pl.w) { const yy = lerp(pl.ay, pl.by, t) + 0.02; if ((yNow === undefined || yNow > yy - 1.2) && yy > out.y) { out.y = yy; out.road = true; out.plank = true; out.wall = 0; } }
-  }
-  return out;
-}
-
 // ---------------------------------------------------------------- karts
 const BOT_PERSONA = { 'Gumdrop': 'Bully', 'Sir Jellington': 'Steady', 'Lil Pinto': 'Speedy', 'Mr. Wobbles': 'Chaos', 'Princess Pea': 'Drifter', 'Bean Diesel': 'Speedy', 'Mochi': 'Drifter', 'Garbanzo': 'Steady', 'Jellybelly': 'Chaos' };
 function initKart(b, slot) {
   const n = Race.n, row = Math.floor(slot / 2), col = slot % 2, si = (n - (row + 1) * 3) % n, s = Race.pts[si];
   const L = col ? 1.8 : -1.8;
-  b.kart = { h: s.h, spd: 0, y: surfY(s, L), vy: 0, gvy: 0, air: false, airT: 0, hopAir: false, drift: 0, driftT: 0, tier: 0, mtT: 0, boostT: 0, trickPend: false, trickDone: false, spinT: 0, shieldT: 0, item: null, rolling: 0, ri: si - n, hint: si, yankT: 0, yankTgt: -1, respawnT: 0, offT: 0, lean: 0, lapStart: 0, lapTimes: [], visTier: 0, visFlags: 0, slide: 0, padCd: 0, startBoost: 0 };
+  b.kart = { h: s.h, spd: 0, y: surfY(s, L), vy: 0, gvy: 0, air: false, airT: 0, hopAir: false, drift: 0, driftT: 0, tier: 0, mtT: 0, boostT: 0, trickPend: false, trickDone: false, spinT: 0, shieldT: 0, item: null, rolling: 0, ri: si - n, hint: si, yankT: 0, yankTgt: -1, respawnT: 0, offT: 0, lean: 0, lapStart: 0, lapTimes: [], visTier: 0, visFlags: 0, slide: 0, padCd: 0, startBoost: 0, gas: 1, hook: null, hookCd: 0, slingT: 0, hookT: 0 };
   b.race = { lap: -1, place: slot + 1, finished: false, finishT: 0 };
   b.pos.set(s.x + s.nx * L, b.kart.y, s.z + s.nz * L); b.yaw = s.h; b.vel.set(0, 0, 0); b.onGround = true;
   b.role = 'racer'; b.caught = false; b.setGhost(false); if (b.setSeekerLook) b.setSeekerLook(false); if (b.endDisguise) b.endDisguise(true); b.crouch = false; if (b.blindfold) b.blindfold.visible = false; if (b.releaseHooks) b.releaseHooks(true); b.arc = null; b.flying = false; b.grabbedBy = null;
   b.roundScore = 0; b.root.visible = true; b.nb = [];
-  if (!b.human) { const pn = BOT_PERSONA[b.name.replace(/ 🤖$/, '')] || Object.keys(BOT_TRAITS)[b.id % 5]; b.persona = pn; b.trait = BOT_TRAITS[pn]; b.bot = { lane: b.trait.line, itemT: 1 + Math.random() * 2, hopT: 2 + Math.random() * 4, avoidT: 0 }; }
+  if (!b.human) { const pn = BOT_PERSONA[b.name.replace(/ 🤖$/, '')] || Object.keys(BOT_TRAITS)[b.id % 5]; b.persona = pn; b.trait = BOT_TRAITS[pn]; b.bot = { lane: b.trait.line, itemT: 1 + Math.random() * 2, hopT: 2 + Math.random() * 4, avoidT: 0, route: (b.trait.aggr || 0.5) + Math.random() * 0.5 > 0.75 ? 'high' : 'low', fails: 0 }; }
 }
 function kartTop(b) {
   const k = b.kart; let top = KART.top;
@@ -3408,10 +3215,10 @@ function kartStep(b, inp, dt) {
   if (k.drift) top *= 0.97;
   if (k.spinT > 0) { k.spinT -= dt; k.spd *= Math.exp(-2.6 * dt); k.drift = 0; k.driftT = 0; k.tier = 0; b.spinT = Math.max(b.spinT || 0, 0.3); }
   else {
-    if (thr > 0) k.spd += (k.spd < top ? KART.accel * (boosting ? 2.2 : 1) * (1 - 0.55 * clamp(k.spd / top, 0, 1)) : -14) * dt;
+    if (thr > 0) k.spd += (k.spd < top ? KART.accel * (boosting ? 2.2 : 1) * (1 - 0.55 * clamp(k.spd / top, 0, 1)) : (k.hook || k.slingT > 0 ? 0 : -14)) * dt;
     else if (thr < 0) k.spd -= (k.spd > 0 ? 42 : 14) * dt;
     else k.spd -= Math.sign(k.spd) * Math.min(Math.abs(k.spd), 7 * dt);
-    if (k.spd > top && !boosting && !k.air) k.spd = damp(k.spd, top, 3, dt);
+    if (k.spd > top && !boosting && !k.air) k.spd = damp(k.spd, top, k.hook ? 0.6 : (k.slingT > 0 ? 1.2 : 3), dt);
     if (boosting && thr >= 0) k.spd = Math.max(k.spd, top * 0.92);
     k.spd = clamp(k.spd, -8, KART.boostTop * 1.2);
     if (inp.hop && !k.air && racing) { k.vy = 5.2; k.air = true; k.airT = 0; k.hopAir = true; }
@@ -3436,7 +3243,7 @@ function kartStep(b, inp, dt) {
   let nx = b.pos.x + fx * k.spd * dt, nz = b.pos.z + fz * k.spd * dt;
   let s2 = raceSurface(nx, nz, k.hint, k.y);
   if (s2.road && s2.wall < 0 && !s2.plank) {
-    const p = Race.pts[s2.i], over = Math.abs(s2.L) - (s2.edge || RW), sg = Math.sign(s2.L);
+    const p = s2.p || Race.pts[s2.i], over = Math.abs(s2.L) - (s2.edge || RW), sg = Math.sign(s2.L);
     nx -= p.nx * sg * (over + 0.02); nz -= p.nz * sg * (over + 0.02);
     const along = Math.cos(angDiff(k.h, p.h)) >= 0 ? p.h : p.h + Math.PI;
     k.h += angDiff(k.h, along) * 0.25; k.spd *= Math.pow(0.35, dt); if (Math.random() < dt * 20) puff(v3(nx, b.pos.y + 0.4, nz), 2, 0xffe08a, 0.12, 1.5, 1);
@@ -3444,14 +3251,14 @@ function kartStep(b, inp, dt) {
   }
   // airborne (or below the deck) next to the road: rails / half-pipe lips still block you
   if (!s2.road && !s2.plank) {
-    const p = Race.pts[s2.i], edge = p.hp ? RW + HPW : RW + 0.3, aL = Math.abs(s2.L);
-    if (!p.gap && aL > edge && aL < edge + 2.5 && k.y < s2.ty + (p.hp ? HPW + 2.5 : 3.5) && k.y > s2.ty - 2) {
+    const p = s2.p || Race.pts[s2.i], edge = p.hp ? RW + HPW : RW + 0.3, aL = Math.abs(s2.L);
+    if (!p.gap && !(p.noRail & (s2.L < 0 ? 1 : 2)) && aL > edge && aL < edge + 2.5 && k.y < s2.ty + (p.hp ? HPW + 2.5 : 3.5) && k.y > s2.ty - 2) {
       const sg = Math.sign(s2.L); nx -= p.nx * sg * (aL - edge + 0.05); nz -= p.nz * sg * (aL - edge + 0.05);
       const along = Math.cos(angDiff(k.h, p.h)) >= 0 ? p.h : p.h + Math.PI; k.h += angDiff(k.h, along) * 0.35; k.spd *= Math.pow(0.5, dt);
       s2 = raceSurface(nx, nz, s2.i, k.y);
     }
   }
-  if (s2.road && s2.wall > 0) { const p = Race.pts[s2.i]; const along = Math.cos(angDiff(k.h, p.h)) >= 0 ? p.h : p.h + Math.PI; k.h += angDiff(k.h, along) * Math.min(1, s2.wall * 3 * dt); }
+  if (s2.road && s2.wall > 0) { const p = s2.p || Race.pts[s2.i]; const along = Math.cos(angDiff(k.h, p.h)) >= 0 ? p.h : p.h + Math.PI; k.h += angDiff(k.h, along) * Math.min(1, s2.wall * 3 * dt); }
   b.pos.x = nx; b.pos.z = nz;
   const gy = s2.road ? s2.y : 0;
   if (!k.air) {
@@ -3469,12 +3276,13 @@ function kartStep(b, inp, dt) {
       k.trickPend = false; k.trickDone = false; k.hopAir = false;
     }
   }
+  s2 = raceHookStep(b, dt, s2) || s2;
   b.pos.y = k.y;
-  if (s2.road && !s2.plank && k.padCd <= 0 && !k.air) { const p = Race.pts[s2.i]; if (p.boost && Math.abs(s2.L - p.padOff) < 1.6) { k.boostT = Math.max(k.boostT, 1.1); k.padCd = 0.5; if (b.isPlayer) { Snd.whoosh(0.7); shake(0.06); } } }
-  const fell = !s2.road && k.y < s2.ty - 3.5;
+  if (s2.road && !s2.plank && k.padCd <= 0 && !k.air) { const p = s2.p || Race.pts[s2.i]; if (p.boost && Math.abs(s2.L - p.padOff) < 1.6) { k.boostT = Math.max(k.boostT, 1.1); k.padCd = 0.5; k.gas = Math.min(1, (k.gas || 0) + 0.3); if (b.isPlayer) { Snd.whoosh(0.7); shake(0.06); } } }
+  const fell = !s2.road && k.y < s2.ty - 3.5 && !k.hook;
   if (Race.lava && !s2.road && !k.air && k.y < 0.3) raceRespawn(b, 'lava');
-  else if (!s2.road && (fell || !k.air)) { k.offT += dt; if (k.offT > (fell ? 0.5 : 2.2)) raceRespawn(b); } else k.offT = 0;
-  if (k.y < -20 || Math.hypot(b.pos.x, b.pos.z) > 255) raceRespawn(b);
+  else if (!s2.road && !k.hook && (fell || !k.air)) { k.offT += dt; if (k.offT > (fell ? 0.5 : 2.2)) raceRespawn(b); } else k.offT = 0;
+  if (k.y < -20 || Math.hypot(b.pos.x, b.pos.z) > (Race.bound || 255)) raceRespawn(b);
   k.slide = damp(k.slide, k.drift * 0.5, 8, dt);
   b.yaw = k.h + k.slide; b.vel.set(fx * k.spd, k.air ? k.vy : 0, fz * k.spd); b.onGround = !k.air;
   k.lean = damp(k.lean, -steer * 0.12 - k.drift * 0.22, 8, dt); b.root.rotation.z = k.lean;
@@ -3493,9 +3301,9 @@ function emitKartFx(b, dt) {
 }
 function raceRespawn(b, why) {
   const k = b.kart; if (!k || k.respawnT > 0) return;
-  const n = Race.n, lapBase = Math.floor(k.ri / n) * n, idx = k.ri - lapBase, cpI = Math.min(Race.cpEvery * 7, Math.floor(idx / Race.cpEvery) * Race.cpEvery), si = k.ri < 0 ? (((k.ri % n) + n) % n) : cpI, s = Race.pts[si];
+  const n = Race.n, lapBase = Math.floor(k.ri / n) * n, idx = k.ri - lapBase, cpI = Math.min(Race.cpEvery * (Race.cps.length - 1), Math.floor(idx / Race.cpEvery) * Race.cpEvery), si = k.ri < 0 ? (((k.ri % n) + n) % n) : cpI, s = Race.pts[si];
   if (k.ri >= 0) k.ri = lapBase + cpI;
-  b.pos.set(s.x, surfY(s, 0), s.z); k.y = b.pos.y; k.h = s.h; k.spd = 0; k.vy = 0; k.air = false; k.drift = 0; k.tier = 0; k.spinT = 0; k.offT = 0; k.hint = si; k.respawnT = 1.0; k.yankT = 0;
+  b.pos.set(s.x, surfY(s, 0), s.z); k.y = b.pos.y; k.h = s.h; k.spd = 0; k.vy = 0; k.air = false; k.drift = 0; k.tier = 0; k.spinT = 0; k.offT = 0; k.hint = si; k.respawnT = 1.0; k.yankT = 0; if (k.hook) raceHookRelease(b, true);
   if (!isClient()) b.tp = (b.tp || 0) + 1;
   if (b.isPlayer) { Snd.poof(0, 0.8); bigText(why === 'lava' ? '🔥 TOO HOT!' : 'OOPS!', 'Back to the last checkpoint'); CAM.rYaw = s.h; }
   puff(v3(b.pos.x, b.pos.y + 1, b.pos.z), 14, 0xffffff, 0.4, 1.6, 1);
@@ -3638,7 +3446,7 @@ function updateBoxes(dt) {
       if (!b.kart || b.race.finished || b.kart.respawnT > 0) continue;
       if (Math.hypot(b.pos.x - bx.x, b.pos.z - bx.z) < 1.5 && Math.abs(b.pos.y + 0.6 - bx.y) < 1.8) {
         bx.on = false; bx.t = 3.5; puff(v3(bx.x, bx.y, bx.z), 14, pick(CONFETTI_COLS), 0.25, 2, 1);
-        if (!b.kart.item) setItem(b, rollItem(b));
+        b.kart.gas = Math.min(1, (b.kart.gas || 0) + 0.25); if (!b.kart.item) setItem(b, rollItem(b));
         break;
       }
     }
@@ -3651,7 +3459,8 @@ function botInput(b, dt) {
   for (const hz of Race.hazards) if (hz.type === 'peel' && hz.owner !== b.id) { if (Math.hypot(hz.x - b.pos.x, hz.z - b.pos.z) < 10) { const p = pts[i]; const hl = (hz.x - p.x) * p.nx + (hz.z - p.z) * p.nz; bt.lane = hl > 0 ? -2.4 : 2.4; bt.avoidT = 1; } }
   bt.avoidT -= dt;
   const lane = clamp(bt.avoidT > 0 ? bt.lane : tr.line + Math.sin(G.t * 0.35 + b.id) * 0.9 + sumTurn * 1.5, -RW + 1.2, RW - 1.2);
-  const t = pts[(i + 5 + Math.floor(Math.max(0, k.spd) / 5)) % n];
+  raceBotHook(b, dt);
+  const t = botAimPoint(b, 5 + Math.floor(Math.max(0, k.spd) / 5));
   const err = angDiff(k.h, Math.atan2(t.x + t.nx * lane - b.pos.x, t.z + t.nz * lane - b.pos.z));
   let steer = clamp(-err * 2.6, -1, 1), drift = false;
   if (k.drift) { const want = Math.min(3, Math.max(1, Math.round(tr.drift * skill * 3))); drift = !(k.tier >= want || Math.abs(sumTurn) < 0.12 || Math.abs(err) > 0.9); if (drift) steer = clamp(k.drift * 0.4 - err * 2, -1, 1); }
@@ -3671,13 +3480,15 @@ function botInput(b, dt) {
   }
   return { thr: 1, steer, drift, hop, trick, use };
 }
-const RIN = { spWas: false, useWas: false, useClick: false, spPress: false };
+const RIN = { spWas: false, useWas: false, useClick: false, spPress: false, hookDn: [false, false], hookUp: [false, false] };
 function playerInput() {
   let steer = 0; if (keys.KeyA || keys.ArrowLeft) steer -= 1; if (keys.KeyD || keys.ArrowRight) steer += 1;
   let thr = 0; if (keys.KeyW || keys.ArrowUp) thr += 1; if (keys.KeyS || keys.ArrowDown) thr -= 1;
   const sp = !!keys.Space, sh = !!(keys.ShiftLeft || keys.ShiftRight), k = G.player.kart;
   const spEdge = (sp && !RIN.spWas) || RIN.spPress; RIN.spWas = sp; RIN.spPress = false;
   const useEdge = RIN.useClick; RIN.useClick = false;
+  if (typeof keys !== 'undefined') { const g = !!keys.KeyG; if (g && !RIN.gWas) RIN.hookDn[0] = true; if (!g && RIN.gWas) RIN.hookUp[0] = true; RIN.gWas = g; }
+  racePlayerHooks(G.player);
   return { thr, steer, drift: sh || sp, hop: spEdge && k && !k.air && Math.abs(steer) < 0.25, trick: spEdge && k && k.air, use: useEdge };
 }
 
@@ -3687,7 +3498,7 @@ function startRaceGame({ seed, laps }) {
   if (typeof mapRoot !== 'undefined') { mapRoot.yard.visible = false; mapRoot.city.visible = false; }
   if (typeof colliders !== 'undefined' && !Race._savedCols) { Race._savedCols = colliders.slice(); colliders.length = 0; }
   G.mode = 'race'; G.inGame = true; G.state = 'race'; G.sbShown = false; G.endT = 0;
-  Race.laps = laps || 3; Race.finishOrder = []; Race.phase = 'countdown'; Race.countT = 3.6; Race.hazards = []; Race.fx = []; Race.endT = 0; Race.lastBeep = 9; Race.lastPlace = 0;
+  Race.laps = laps || 2; Race.stats = { fires: 0, attaches: 0, slings: 0, bestSling: 0, releases: [] }; Race.finishOrder = []; Race.phase = 'countdown'; Race.countT = 3.6; Race.hazards = []; Race.fx = []; Race.endT = 0; Race.lastBeep = 9; Race.lastPlace = 0;
   $('menu').classList.add('hidden'); $('lobby').classList.add('hidden'); $('hud').classList.remove('hidden'); $('scoreboard').classList.add('hidden'); $('blindfold').classList.add('hidden');
   buildRaceTrack(seed || raceRandSeed()); Race.active = true;
   G.beans.forEach((b, i) => initKart(b, i));
@@ -3695,13 +3506,14 @@ function startRaceGame({ seed, laps }) {
   CAM.pos.set(G.player.pos.x - Math.sin(CAM.rYaw) * 8, G.player.pos.y + 4, G.player.pos.z - Math.cos(CAM.rYaw) * 8);
   Snd.raceFinal = false; Snd.setPhase('race');
   ensureRaceHud(); $('raceHud').classList.remove('hidden');
-  $('abilities').innerHTML = `<div class="ab"><kbd>Shift</kbd> Drift</div><div class="ab"><kbd>Space</kbd> Hop / Trick</div><div class="ab"><kbd>E</kbd> Item</div><div class="ab"><kbd>R</kbd> Cam</div>`;
+  $('abilities').innerHTML = `<div class="ab"><kbd>Shift</kbd> Drift</div><div class="ab"><kbd>Space</kbd> Hop / Trick</div><div class="ab"><kbd>Click</kbd> Hook</div><div class="ab"><kbd>E</kbd> Item</div><div class="ab"><kbd>Q</kbd> Cam</div>`;
   bigText(THEMES[Race.theme].name.toUpperCase(), `Seed ${Race.seed} · ${Race.laps} lap${Race.laps > 1 ? 's' : ''} · get ready!`);
   if (!G.net) loadGhost();
   Race.ghostRec = { t0: 0, pts: [] };
 }
 function updateRace(dt) {
   if (!Race.active) return;
+  raceCullChunks();
   const C = isClient(), p = G.player;
   if (Race.phase === 'countdown') {
     Race.countT -= dt; const sec = Math.ceil(Race.countT);
@@ -3712,9 +3524,9 @@ function updateRace(dt) {
     return;
   }
   if (Race.phase === 'racing') {
-    if (p.kart) { const inp = playerInput(); if (inp.use && p.kart.item && p.kart.rolling <= 0) { if (C) Net.send({ t: 'act', a: 'ritem' }); else raceUseItem(p); } if (keys.Backspace) raceRespawn(p); kartStep(p, inp, dt); updateProgress(p); recordGhost(); }
+    if (p.kart && !G.autoDrive) { const inp = playerInput(); if (inp.use && p.kart.item && p.kart.rolling <= 0) { if (C) Net.send({ t: 'act', a: 'ritem' }); else raceUseItem(p); } if (keys.Backspace) raceRespawn(p); kartStep(p, inp, dt); updateProgress(p); recordGhost(); }
     for (const b of G.beans) {
-      if (b.isPlayer || !b.kart) continue;
+      if ((b.isPlayer && !G.autoDrive) || !b.kart) continue;
       if (b.remote) { applyInterp(b, dt); const s = raceSurface(b.pos.x, b.pos.z, b.kart.hint); b.kart.hint = s.i; b.kart.h = b.yaw; emitKartFx(b, dt); if (!C) updateProgress(b); continue; }
       if (C) continue;
       const inp = botInput(b, dt); if (b.race.finished) { inp.thr = 0.55; inp.use = false; inp.drift = false; } if (inp.use) raceUseItem(b); kartStep(b, inp, dt); updateProgress(b);
@@ -3727,7 +3539,7 @@ function updateRace(dt) {
   if (Race.phase === 'done') { G.endT += dt; updateRaceFx(dt); updatePodium(dt); if (!G.sbShown && G.endT > 6) showRaceScoreboard(); }
 }
 function raceGo() {
-  Race.phase = 'racing'; Race.startT = G.t; bigText('GO!', 'Shift+steer: drift · Space in air: trick · E: item'); Snd.beep(true); Snd.setPhase('race');
+  Race.phase = 'racing'; Race.startT = G.t; bigText('GO!', 'Click: hook · Shift+steer: drift · E: item'); Snd.beep(true); Snd.setPhase('race');
   for (const b of G.beans) if (b.kart) { b.kart.lapStart = G.t; if (b.isPlayer && b.kart.startBoost > 0.15 && b.kart.startBoost < 0.75) { b.kart.boostT = 1.0; popup('ROCKET START!', '#ffd23f'); Snd.whoosh(0.8); } if (!b.human && Math.random() < 0.4) b.kart.boostT = 0.6; }
   Race.ghostRec = { t0: G.t, pts: [] }; if (Race.ghost) Race.ghost.t0 = G.t;
   netEv({ e: 'raceGo' });
@@ -3801,8 +3613,9 @@ function updateRaceHUD() {
   const dp = k.drift ? clamp(k.driftT / DRIFT_TIERS[2], 0, 1) : 0; $('rhDriftFill').style.width = (dp * 100).toFixed(0) + '%'; $('rhDriftFill').style.background = '#' + new THREE.Color(k.tier ? SPARK_COLS[k.tier] : 0xdddddd).getHexString(); $('rhDrift').style.opacity = k.drift ? 1 : 0.25;
   $('rhSpeed').textContent = `${Math.round(Math.abs(k.spd) * 3.6)} km/h` + (k.mtT > 0 || k.boostT > 0 ? ' 🔥' : '') + (k.shieldT > 0 ? ' 🛡️' : '');
   if ((G._rhT = (G._rhT || 0) + 1) % 10 === 0) { const rows = G.beans.filter(b => b.race).sort((a, b) => a.race.place - b.race.place); $('rhStand').innerHTML = rows.map(b => `<div class="${b.isPlayer ? 'me' : ''}"><b>${b.race.place}</b> <span class="dot" style="background:${b.color}"></span>${b.isPlayer ? 'You' : esc(b.name)}${b.race.finished ? ' 🏁' : ''}</div>`).join(''); }
+  $('gasFill').style.width = (clamp(k.gas || 0, 0, 1) * 100).toFixed(1) + '%'; $('gasFill').classList.toggle('low', (k.gas || 0) < 0.2);
   const sl = $('speedLines'); if (sl) sl.style.opacity = clamp((Math.abs(k.spd) - 22) / 14, 0, 0.75).toFixed(2);
-  $('status').textContent = Race.phase === 'countdown' ? 'Get ready…' : r.finished ? 'Waiting for the others…' : (k.drift ? ['Drifting…', '💙 Blue sparks!', '🧡 Orange sparks!', '💜 PURPLE sparks!'][k.tier] : 'W gas · A/D steer · Shift drift · E item');
+  $('status').textContent = Race.phase === 'countdown' ? 'Get ready…' : r.finished ? 'Waiting for the others…' : (k.drift ? ['Drifting…', '💙 Blue sparks!', '🧡 Orange sparks!', '💜 PURPLE sparks!'][k.tier] : (k.hook ? '🪝 Swinging! release to slingshot' : 'W gas · A/D steer · Shift drift · Click hooks · E item'));
 }
 
 // ---------------------------------------------------------------- ghost lap (single player)
@@ -3857,14 +3670,14 @@ function applyRaceSnapshot(rs) {
   for (let i = Race.hazards.length - 1; i >= 0; i--) if (!seen.has(Race.hazards[i].id)) { disposeGroup(Race.hazards[i].mesh); Race.hazards.splice(i, 1); }
   if (rs.bx) Race.boxes.forEach((b, i) => { b.on = rs.bx[i] === '1'; });
 }
-function raceGoClient() { Race.phase = 'racing'; Race.startT = G.t; bigText('GO!', 'Shift+steer: drift · Space in air: trick · E: item'); Snd.beep(true); for (const b of G.beans) if (b.kart) b.kart.lapStart = G.t; const k = G.player.kart; if (k && k.startBoost > 0.15 && k.startBoost < 0.75) { k.boostT = 1.0; popup('ROCKET START!', '#ffd23f'); } }
+function raceGoClient() { Race.phase = 'racing'; Race.startT = G.t; bigText('GO!', 'Click: hook · Shift+steer: drift · E: item'); Snd.beep(true); for (const b of G.beans) if (b.kart) b.kart.lapStart = G.t; const k = G.player.kart; if (k && k.startBoost > 0.15 && k.startBoost < 0.75) { k.boostT = 1.0; popup('ROCKET START!', '#ffd23f'); } }
 // host: remote racer input extras
 function raceRemoteInput(b, d) { if (!b.kart) return; if (Number.isFinite(d.rt)) b.kart.visTier = d.rt | 0; if (Number.isFinite(d.rf)) b.kart.visFlags = d.rf | 0; }
 function onRaceEvent(e) {
   const b = e.id !== undefined ? beanById(e.id) : null;
   switch (e.e) {
     case 'raceGo': if (Race.phase === 'countdown') raceGoClient(); break;
-    case 'ritem': if (b && b.kart) { b.kart.item = e.it || null; b.kart.rolling = e.it ? 0.8 : 0; if (b.isPlayer && e.it) Snd.tone({ f: 880, d: 0.1, v: 0.12, type: 'square' }); } break;
+    case 'ritem': if (b && b.kart) { b.kart.item = e.it || null; b.kart.rolling = e.it ? 0.8 : 0; if (b.isPlayer && isClient()) b.kart.gas = Math.min(1, (b.kart.gas || 0) + 0.25); if (b.isPlayer && e.it) Snd.tone({ f: 880, d: 0.1, v: 0.12, type: 'square' }); } break;
     case 'reff': if (b && b.kart && (b.isPlayer || e.k !== 'jelly')) applyEffect(b, e.k, e.tg); break;
     case 'rhit': if (b && b.kart) raceHit(b, e.k, e.by); break;
     case 'rstomp': stampedeFx(e.ids || []); if ((e.ids || []).includes(G.player.id)) shake(0.3); break;
@@ -3875,6 +3688,707 @@ function onRaceEvent(e) {
       if (Race.phase !== 'done') { Race.phase = 'done'; G.endT = 0; Snd.setPhase('end'); Snd.raceFinal = false; Race.finishOrder.forEach((id, i) => { const x = beanById(id); if (x && x.race) { x.race.finished = true; x.race.place = i + 1; } }); startPodium(); }
       break;
   }
+}
+// ---------------------------------------------------------------- track generation (v2: long laps, branches, anchors, scenery)
+const TSTEP = 1.6;
+function catmullLoop(ctrl, per) {
+  const N = ctrl.length, cat = (a, b, c, d, u) => 0.5 * ((2 * b) + (-a + c) * u + (2 * a - 5 * b + 4 * c - d) * u * u + (-a + 3 * b - 3 * c + d) * u * u * u), dense = [];
+  for (let i = 0; i < N * per; i++) {
+    const t = i / per, i0 = Math.floor(t) % N, u = t - Math.floor(t);
+    const p0 = ctrl[(i0 - 1 + N) % N], p1 = ctrl[i0], p2 = ctrl[(i0 + 1) % N], p3 = ctrl[(i0 + 2) % N];
+    dense.push({ x: cat(p0.x, p1.x, p2.x, p3.x, u), y: cat(p0.y, p1.y, p2.y, p3.y, u), z: cat(p0.z, p1.z, p2.z, p3.z, u) });
+  }
+  const pts = [{ ...dense[0] }]; let acc = 0;
+  for (let i = 1; i <= dense.length; i++) {
+    const a = dense[i - 1], b = dense[i % dense.length], seg = Math.hypot(b.x - a.x, b.z - a.z); let t0 = 0;
+    if (seg < 1e-6) continue;
+    while (acc + seg * (1 - t0) >= TSTEP) { const tt = t0 + (TSTEP - acc) / seg; pts.push({ x: lerp(a.x, b.x, tt), y: lerp(a.y, b.y, tt), z: lerp(a.z, b.z, tt) }); t0 = tt; acc = 0; }
+    acc += seg * (1 - t0);
+  }
+  if (Math.hypot(pts[pts.length - 1].x - pts[0].x, pts[pts.length - 1].z - pts[0].z) < TSTEP * 0.6) pts.pop();
+  return pts;
+}
+// tangents / normals / curvature for a path (closed loop or open strip)
+function framePath(pts, closed) {
+  const n = pts.length, at = i => closed ? pts[(i + n) % n] : pts[clamp(i, 0, n - 1)];
+  for (let i = 0; i < n; i++) { const a = at(i - 1), b = at(i + 1); const dx = b.x - a.x, dz = b.z - a.z, l = Math.hypot(dx, dz) || 1; const p = pts[i]; p.tx = dx / l; p.tz = dz / l; p.nx = -p.tz; p.nz = p.tx; p.h = Math.atan2(p.tx, p.tz); }
+  for (let i = 0; i < n; i++) { const p = pts[i], q = at(i + 1); p.turn = q === p ? 0 : ((q.tx - p.tx) * p.nx + (q.tz - p.tz) * p.nz) / TSTEP; }
+}
+// spatial hash of every drivable sample, used for clearance checks (scenery, branches, self-overlap)
+function makeGrid(cell) {
+  const m = new Map(), key = (x, z) => (Math.floor(x / cell) + 500) * 2000 + (Math.floor(z / cell) + 500);
+  return {
+    add(x, z, tag) { const k = key(x, z); let a = m.get(k); if (!a) m.set(k, a = []); a.push({ x, z, tag }); },
+    near(x, z, r, skip) { const c0 = Math.floor((x - r) / cell), c1 = Math.floor((x + r) / cell), d0 = Math.floor((z - r) / cell), d1 = Math.floor((z + r) / cell);
+      for (let cx = c0; cx <= c1; cx++) for (let cz = d0; cz <= d1; cz++) { const a = m.get((cx + 500) * 2000 + (cz + 500)); if (a) for (const q of a) if ((!skip || !skip(q.tag)) && (q.x - x) ** 2 + (q.z - z) ** 2 < r * r) return true; }
+      return false; },
+  };
+}
+function genMainPath(rnd, T) {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const N = 20 + Math.floor(rnd() * 6), R0 = 140 + rnd() * 40, ph = rnd() * 6.28, fr = 2 + Math.floor(rnd() * 2), ph2 = rnd() * 6.28;
+    const ctrl = [];
+    for (let i = 0; i < N; i++) {
+      const a = (i / N) * Math.PI * 2 + (rnd() - 0.5) * 0.12;
+      let r = R0 * (0.62 + rnd() * 0.42); if (i % 4 === 2) r *= 0.66; // pinches -> hairpins / S-bends
+      const u = i / N * Math.PI * 2;
+      ctrl.push({ x: Math.cos(a) * r, z: Math.sin(a) * r, y: T.base + T.amp * 1.3 * (0.5 + 0.35 * Math.sin(u * fr + ph) + 0.15 * Math.sin(u * (fr + 3) + ph2)) + (rnd() - 0.5) * T.amp * 0.4 });
+    }
+    let pts = catmullLoop(ctrl, 90);
+    // stretch to the target lap length (~1000 samples = 1.6 km)
+    if (pts.length < 1200 || pts.length > 1450) { const s = 1310 / pts.length; ctrl.forEach(c => { c.x *= s; c.z *= s; }); pts = catmullLoop(ctrl, 90); }
+    const n = pts.length; framePath(pts, true);
+    // reject loops whose far-apart parts overlap
+    const grid = makeGrid(12); pts.forEach((p, i) => grid.add(p.x, p.z, i));
+    let bad = false;
+    for (let i = 0; i < n && !bad; i += 2) { const p = pts[i]; if (grid.near(p.x, p.z, RW * 2 + 5, t => { const d = Math.abs(t - i); return Math.min(d, n - d) < 22; })) bad = true; }
+    if (Math.abs(pts.reduce((s, p) => s + p.turn, 0) * TSTEP) > 7.5) bad = true; // stray loop-the-loop
+    if (bad && attempt < 9) continue;
+    return pts;
+  }
+}
+function buildRaceTrack(seed) {
+  disposeGroup(Race.group); Race.group = null;
+  Race.seed = (seed >>> 0) || 1;
+  const rnd = mulberry32(Race.seed);
+  const tk = THEME_KEYS[Race.seed % THEME_KEYS.length]; Race.theme = tk; const T = THEMES[tk];
+  applyTheme(T);
+  const group = new THREE.Group(); Race.group = group; scene.add(group);
+  const pts = genMainPath(rnd, T), n = pts.length; Race.n = n; Race.pts = pts;
+  // elevation: smooth + clamp grade so drops are big but drivable
+  for (let pass = 0; pass < 6; pass++) { const ys = pts.map(p => p.y); for (let i = 0; i < n; i++) pts[i].y = (ys[(i - 2 + n) % n] + ys[(i - 1 + n) % n] * 2 + ys[i] * 2 + ys[(i + 1) % n] * 2 + ys[(i + 2) % n]) / 8; }
+  for (let pass = 0; pass < 2; pass++) for (let i = 0; i < 2 * n; i++) { const a = pts[i % n], b = pts[(i + 1) % n]; b.y = clamp(b.y, a.y - 0.42, a.y + 0.3); }
+  const bank = pts.map(p => clamp(p.turn * 8, -0.5, 0.5));
+  for (let i = 0; i < n; i++) { let s = 0; for (let k = -7; k <= 7; k++) s += bank[(i + k + n) % n]; pts[i].bank = s / 15; }
+  pts.forEach(p => { p.gap = false; p.hp = false; p.boost = false; p.ramp = 0; p.padOff = 0; p.tunnel = false; p.roof = false; p.corr = false; p.noRail = 0; p.ggap = false; });
+  const W = i => pts[((i % n) + n) % n];
+  const curv = (i, len) => { let s = 0; for (let k = 0; k < len; k++) s += Math.abs(W(i + k).turn); return s * TSTEP; }; // radians turned
+  const used = new Uint8Array(n);
+  const mark = (a, len, pad = 4) => { for (let k = -pad; k < len + pad; k++) used[((a + k) % n + n) % n] = 1; };
+  const free = (a, len, pad = 4) => { for (let k = -pad; k < len + pad; k++) if (used[((a + k) % n + n) % n]) return false; return true; };
+  const place = (len, maxCurv, fn, tries = 400) => { for (let t = 0; t < tries; t++) { const a = Math.floor(rnd() * n); if (!free(a, len) || curv(a, len) > maxCurv) continue; fn(a); mark(a, len); return a; } return -1; };
+  mark(n - 16, 34);
+  Race.anchors = []; Race.branches = []; Race.ggaps = [];
+  // grapple-only gap with a slower low road around it
+  const GL = 14;
+  place(GL + 64, 1.4, a => {
+    const gs = a + 30, ge = gs + GL;
+    for (let k = gs - 10; k < ge + 8; k++) W(k).bank = 0;
+    for (let k = gs; k < ge; k++) { W(k).gap = true; W(k).ggap = true; }
+    const br = makeBranch(pts, gs - 22, ge + 20, rnd);
+    const mid = W(gs + GL / 2), ay = Math.max(W(gs).y, W(ge).y) + 13.5;
+    Race.ggaps.push({ gs: gs % n, ge: ge % n, x: mid.x, z: mid.z, y: ay, br });
+    Race.anchors.push({ kind: 'gap', x: mid.x, y: ay, z: mid.z, r: 13, i: (gs - 12 + n) % n, i1: (gs - 1 + n) % n, rel: ge % n, route: 'high' });
+    if (!br) { // no room for a detour: give it a launch ramp so it's still clearable without hooks
+      for (let k = 0; k < 9; k++) { const p = W(gs - 9 + k); p.ramp = (k + 1) / 9 * 2.6; }
+      W(gs - 7).boost = true;
+    }
+  }, 1500);
+  // regular ramp jumps
+  for (let g = 0; g < 2; g++) place(20, 0.4, a => { for (let k = 0; k < 9; k++) { const p = W(a + k); p.ramp = (k + 1) / 9 * 2.4; p.bank = 0; } for (let k = 9; k < 15; k++) { const p = W(a + k); p.gap = true; p.bank = 0; } for (let k = 15; k < 19; k++) W(a + k).bank = 0; W(a + 2).boost = true; });
+  // half-pipes on twisty bits
+  for (let g = 0; g < 2; g++) place(36, 9, a => { for (let k = 0; k < 36; k++) W(a + k).hp = true; });
+  // boost corridors: a pad every 6 samples under glowing rings
+  for (let g = 0; g < 2; g++) place(26, 0.5, a => { for (let k = 0; k < 4; k++) { const p = W(a + k * 7); p.boost = true; p.padOff = 0; p.corr = true; } });
+  // tunnels
+  for (let g = 0; g < 2; g++) place(34, 1.6, a => { for (let k = 0; k < 34; k++) W(a + k).tunnel = true; });
+  // rooftop run (city) / viaduct (others): the deck rests on buildings
+  place(70, 4, a => { for (let k = 0; k < 70; k++) { const p = W(a + k); p.roof = true; } for (let k = -20; k < 90; k++) { const p = W(a + k), u = clamp(Math.min(k + 20, 90 - k) / 20, 0, 1); p.y = lerp(p.y, Math.max(p.y, T.base + T.amp * 0.9), u); } }, 600);
+  for (let g = 0, tries = 0; g < 7 && tries < 300; tries++) { const a = Math.floor(rnd() * n); if (!free(a, 2)) continue; pts[a].boost = true; pts[a].padOff = (rnd() - 0.5) * 3.5; mark(a, 2); g++; }
+  pts.forEach(p => { p.y = Math.max(1.2, p.y) + p.ramp; });
+  // corner anchors (glowing rings on poles at the inside of hairpins: hook + swing = slingshot)
+  const cand = [];
+  for (let i = 0; i < n; i++) { const c = curv(i - 11, 22); if (c > 1.0) cand.push({ i, c }); }
+  cand.sort((a, b) => b.c - a.c);
+  for (const c of cand) {
+    if (Race.anchors.filter(a => a.kind === 'corner').length >= 9) break;
+    if (Race.anchors.some(a => { const d = Math.abs(a.i - c.i); return Math.min(d, n - d) < 50; })) continue;
+    const p = W(c.i); if (p.gap || p.hp) continue;
+    let s = 0; for (let k = -11; k < 11; k++) s += W(c.i + k).turn;
+    const sg = Math.sign(s), R = clamp(22 * TSTEP / Math.max(0.2, Math.abs(s * TSTEP)) * 0.85, 11, 22);
+    const x = p.x + p.nx * sg * R, z = p.z + p.nz * sg * R;
+    if (pts.some(q => Math.hypot(q.x - x, q.z - z) < RW + 3.2)) continue;
+    Race.anchors.push({ kind: 'corner', x, y: p.y + 8.5, z, r: Math.hypot(R * 0.97, 7.7), rh: R * 0.97, i: (c.i - 16 + n) % n, i1: (c.i - 4 + n) % n, rel: (c.i + 4) % n, ci: c.i, sg, pole: true });
+  }
+  Race.cpEvery = Math.floor(n / 14); Race.cps = []; for (let c = 0; c < 14; c++) Race.cps.push(c * Race.cpEvery);
+  // ? box rows
+  Race.boxes = [];
+  const rows = 8;
+  for (let r = 0; r < rows; r++) {
+    let a = Math.floor((r + 0.5) / rows * n + (rnd() - 0.5) * 20 + n) % n; let tries = 0;
+    while ((pts[a].gap || pts[a].ramp || pts[a].hp || pts[a].tunnel || used[a] && pts[a].noRail) && tries++ < 80) a = (a + 3) % n;
+    for (const L of [-2.6, 0, 2.6]) Race.boxes.push({ i: a, L, on: true, t: 0, x: pts[a].x + pts[a].nx * L, z: pts[a].z + pts[a].nz * L, y: surfY(pts[a], L) + 0.9 });
+  }
+  // elevated grapple shortcut: a plank floating 5 m up across a hairpin, reached by reeling up to its anchor
+  Race.planks = []; let best = null;
+  for (let i = 0; i < n; i += 2) for (let L = 30; L <= 96; L += 2) {
+    const j = (i + L) % n, a = pts[i], b = pts[j], d = Math.hypot(a.x - b.x, a.z - b.z);
+    if (d < 14 || d > 42 || Math.abs(a.y - b.y) > 5) continue;
+    let ok = true; for (let k = -8; k <= L + 3; k += 2) { const q = W(i + k); if (q.gap || q.hp || q.tunnel || q.roof) { ok = false; break; } }
+    if (!ok) continue; const ratio = (L * TSTEP) / d; if (!best || ratio > best.ratio) best = { i, j, ratio };
+  }
+  if (best && best.ratio > 2.2) {
+    const a = pts[best.i], b = pts[best.j], dx = b.x - a.x, dz = b.z - a.z, d = Math.hypot(dx, dz);
+    const pl = { a: best.i, b: best.j, ax: a.x + dx / d * 2, az: a.z + dz / d * 2, ay: a.y + 5, bx: b.x - dx / d * 4, bz: b.z - dz / d * 4, by: b.y + 4.2, w: 2.0 };
+    Race.planks.push(pl);
+    Race.anchors.push({ kind: 'plank', x: pl.ax + dx / d * 7, y: pl.ay + 8, z: pl.az + dz / d * 7, r: 6, i: (best.i - 10 + n) % n, i1: best.i, rel: -1, plank: pl, route: 'high' });
+  }
+  let maxR = 0; pts.forEach(p => { maxR = Math.max(maxR, Math.hypot(p.x, p.z)); }); Race.bound = maxR + 60;
+  buildTrackMeshes(group, T, rnd);
+  return pts[0];
+}
+// low "safe" detour around a grapple gap: leaves the main road, swings out ~18 m, dips, rejoins
+function makeBranch(pts, a, b, rnd) {
+  const n = pts.length, W = i => pts[((i % n) + n) % n];
+  const grid = makeGrid(12); pts.forEach((p, i) => grid.add(p.x, p.z, i));
+  const sides = rnd() < 0.5 ? [1, -1] : [-1, 1];
+  for (const D of [18, 24]) for (const s of sides) {
+    const span = b - a, m = Math.round(span * 1.5), bp = [];
+    let ok = true;
+    for (let k = 0; k <= m; k++) {
+      const u = k / m, f = a + u * span, i0 = Math.floor(f), t = f - i0, p = W(i0), q = W(i0 + 1);
+      const bx = lerp(p.x, q.x, t), bz = lerp(p.z, q.z, t), by = lerp(p.y, q.y, t), nx = lerp(p.nx, q.nx, t), nz = lerp(p.nz, q.nz, t);
+      const off = D * Math.pow(Math.sin(Math.PI * u), 0.6) * s, dip = Math.min(5, Math.max(0, by - 1.6)) * Math.sin(Math.PI * u);
+      const x = bx + nx * off, z = bz + nz * off;
+      if (u > 0.18 && u < 0.82 && grid.near(x, z, RW * 2 + 2.5, tg => { const d = ((tg - i0) % n + n) % n; return Math.min(d, n - d) < 4 && Math.abs(off) < RW * 2; })) { ok = false; break; }
+      bp.push({ x, z, y: by - dip, mi: (Math.round(f) % n + n) % n, u });
+    }
+    if (!ok) continue;
+    framePath(bp, false);
+    bp.forEach(p => { p.bank = 0; p.gap = false; p.hp = false; p.boost = false; p.ramp = 0; p.padOff = 0; p.tunnel = false; p.roof = false; p.noRail = 0; });
+    for (let k = 0; k < bp.length; k++) { const p = bp[k]; for (const sd of [-1, 1]) { const rx = p.x + p.nx * sd * (RW + 0.25), rz = p.z + p.nz * sd * (RW + 0.25); if (pts.some((q, qi) => { const dd = Math.abs(qi - (p.mi | 0)); return Math.min(dd, n - dd) < 40 && Math.hypot(q.x - rx, q.z - rz) < RW + 1.0; })) p.noRail |= sd < 0 ? 1 : 2; } }
+    // the main road loses its rail on the branch side for the whole split so you can peel off
+    for (let i = a - 2; i <= b + 2; i++) { const q = W(i), ex = q.x + q.nx * s * RW, ez = q.z + q.nz * s * RW; if (bp.some(p => Math.hypot(p.x - ex, p.z - ez) < RW + 2.5)) for (let k = -2; k <= 2; k++) W(i + k).noRail |= s < 0 ? 1 : 2; }
+    bp[Math.floor(bp.length * 0.5)].boost = true;
+    const br = { a: ((a % n) + n) % n, b: ((b % n) + n) % n, pts: bp, n: bp.length, side: s };
+    let x0 = 1e9, x1 = -1e9, z0 = 1e9, z1 = -1e9; bp.forEach(p => { x0 = Math.min(x0, p.x); x1 = Math.max(x1, p.x); z0 = Math.min(z0, p.z); z1 = Math.max(z1, p.z); });
+    br.bb = [x0 - RW - 3, x1 + RW + 3, z0 - RW - 3, z1 + RW + 3];
+    Race.branches.push(br);
+    return br;
+  }
+  return null;
+}
+// ---------------------------------------------------------------- surface queries
+function nearestIdx(x, z, hint) {
+  const pts = Race.pts, n = Race.n; let best = 0, bd = 1e12;
+  if (hint >= 0) { for (let k = -24; k <= 24; k++) { const i = (hint + k + n) % n, p = pts[i]; const d = (p.x - x) ** 2 + (p.z - z) ** 2; if (d < bd) { bd = d; best = i; } } if (bd < 64) return best; }
+  for (let i = 0; i < n; i++) { const p = pts[i]; const d = (p.x - x) ** 2 + (p.z - z) ** 2; if (d < bd) { bd = d; best = i; } }
+  return best;
+}
+// surface of one path at (x,z): main loop (closed) or a branch strip (open)
+function pathSurf(P, closed, i, x, z, yNow, out) {
+  const n = P.length, p = P[i];
+  const fwd = (x - p.x) * p.tx + (z - p.z) * p.tz, j = fwd >= 0 ? i + 1 : i - 1, q = closed ? P[(j + n) % n] : P[clamp(j, 0, n - 1)];
+  const u = clamp(Math.abs(fwd) / TSTEP, 0, 1), L = (x - p.x) * p.nx + (z - p.z) * p.nz;
+  out.L = L; out.p = p; out.li = i;
+  const by = lerp(p.y, q.y, u), bb = lerp(p.bank, q.bank, u); out.ty = by;
+  const gap = p.gap || (u > 0.5 && q.gap), hp = p.hp || q.hp; out.gap = gap; out.hp = hp;
+  out.road = false; out.y = -1e9; out.wall = 0; out.edge = 0;
+  if (!closed && ((i === 0 && fwd < 0) || (i === n - 1 && fwd > 0))) return out;
+  if (!gap) {
+    const aL = Math.abs(L), y = by - clamp(L, -RW, RW) * Math.sin(bb), railed = !(p.noRail & (L < 0 ? 1 : 2));
+    if (aL <= RW + 0.05) { out.road = true; out.y = y; }
+    else if (hp && aL <= RW + HPW) { const w = (aL - RW) / HPW; out.road = true; out.wall = w; out.y = y + w * w * HPW * 1.05; }
+    else if (hp && aL <= RW + HPW + 0.8) { out.road = true; out.y = y + HPW * 1.05; out.wall = -1; out.edge = RW + HPW; }
+    else if (!hp && railed && aL <= RW + 0.6) { out.road = true; out.y = y; out.wall = -1; out.edge = RW; }
+    if (out.road && yNow !== undefined && yNow < out.y - 2.0) { out.road = false; out.y = -1e9; out.wall = 0; }
+  }
+  return out;
+}
+const _bs = {};
+function raceSurface(x, z, hint, yNow) {
+  const n = Race.n, out = { i: 0, L: 0, y: -1e9, road: false, wall: 0, plank: false, ty: 0, br: null };
+  if (!n) return out;
+  const i = nearestIdx(x, z, hint); out.i = i;
+  pathSurf(Race.pts, true, i, x, z, yNow, out);
+  for (const br of Race.branches) {
+    const bb = br.bb; if (x < bb[0] || x > bb[1] || z < bb[2] || z > bb[3]) continue;
+    let bi = 0, bd = 1e12; for (let k = 0; k < br.n; k++) { const p = br.pts[k], d = (p.x - x) ** 2 + (p.z - z) ** 2; if (d < bd) { bd = d; bi = k; } }
+    if (bd > (RW + 4) ** 2) continue;
+    pathSurf(br.pts, false, bi, x, z, yNow, _bs);
+    if (!_bs.road) continue;
+    const mainGood = out.road && out.wall >= 0;
+    const take = !out.road || (out.wall < 0 && _bs.wall >= 0) || (mainGood && _bs.wall >= 0 && yNow !== undefined && Math.abs(_bs.y - yNow) + 0.05 < Math.abs(out.y - yNow));
+    if (take) { Object.assign(out, _bs); out.i = br.pts[bi].mi; out.br = br; }
+  }
+  for (const pl of Race.planks) {
+    const dx = pl.bx - pl.ax, dz = pl.bz - pl.az, t = clamp(((x - pl.ax) * dx + (z - pl.az) * dz) / (dx * dx + dz * dz), 0, 1);
+    if (Math.hypot(x - (pl.ax + dx * t), z - (pl.az + dz * t)) < pl.w) { const yy = lerp(pl.ay, pl.by, t) + 0.02; if ((yNow === undefined || yNow > yy - 1.2) && yy > out.y) { out.y = yy; out.road = true; out.plank = pl; out.wall = 0; out.pt = t; } }
+  }
+  return out;
+}
+// ---------------------------------------------------------------- meshes
+function canvasHex(c) { return '#' + new THREE.Color(c).getHexString(); }
+// road ribbon + half-pipe walls + skirts + rails for one path
+function buildPathMesh(group, P, closed, T, mats) {
+  const n = P.length, nseg = closed ? n : n - 1;
+  const cols = [-RW - HPW, -RW - HPW * 0.5, -RW, 0, RW, RW + HPW * 0.5, RW + HPW], C = cols.length;
+  const pos = [], idxRoad = [], idxWall = [], uv = [];
+  for (let i = 0; i < n; i++) {
+    const p = P[i];
+    for (let c = 0; c < C; c++) {
+      let L = cols[c]; const out = Math.abs(L) > RW; let y = surfY(p, clamp(L, -RW, RW));
+      if (out) { if (p.hp) { const u = (Math.abs(L) - RW) / HPW; y += u * u * HPW * 1.05; } else L = Math.sign(L) * RW; }
+      pos.push(p.x + p.nx * L, y + 0.02, p.z + p.nz * L); uv.push(c / (C - 1), i * 0.25);
+    }
+  }
+  for (let i = 0; i < nseg; i++) {
+    const j = (i + 1) % n; if (P[i].gap || P[j].gap) continue;
+    for (let c = 0; c < C - 1; c++) {
+      const a = i * C + c, b = a + 1, d = j * C + c, e = d + 1, wall = c < 2 || c >= C - 3;
+      if (wall && !(P[i].hp || P[j].hp)) continue;
+      (wall ? idxWall : idxRoad).push(a, b, d, b, e, d);
+    }
+  }
+  const mkGeo = (vp, idx, uvs) => { const g = new THREE.BufferGeometry(); g.setAttribute('position', new THREE.Float32BufferAttribute(vp, 3)); if (uvs) g.setAttribute('uv', new THREE.Float32BufferAttribute(uvs, 2)); g.setIndex(idx); g.computeVertexNormals(); return g; };
+  const road = new THREE.Mesh(mkGeo(pos, idxRoad, uv), mats.road); road.receiveShadow = true; group.add(road);
+  if (idxWall.length) { const wl = new THREE.Mesh(mkGeo(pos, idxWall, uv), mats.wall); wl.receiveShadow = true; group.add(wl); }
+  const sk = [], sIdx = [];
+  for (let i = 0; i < n; i++) { const p = P[i]; for (const L of [-RW, RW]) { const y = surfY(p, L); sk.push(p.x + p.nx * L, y, p.z + p.nz * L, p.x + p.nx * L, y - 0.7, p.z + p.nz * L); } }
+  for (let i = 0; i < nseg; i++) { const j = (i + 1) % n; if (P[i].gap || P[j].gap) continue; for (let s = 0; s < 2; s++) { const a = i * 4 + s * 2, b = j * 4 + s * 2; sIdx.push(a, a + 1, b, a + 1, b + 1, b); } }
+  group.add(new THREE.Mesh(mkGeo(sk, sIdx), mats.skirt));
+  const rp = [], ri = [];
+  for (const s of [-1, 1]) {
+    const base = rp.length / 3;
+    for (let i = 0; i < n; i++) { const p = P[i], L = s * (RW + 0.25), y = surfY(p, s * RW) + 0.9; rp.push(p.x + p.nx * L, y, p.z + p.nz * L, p.x + p.nx * L, y - 0.22, p.z + p.nz * L); }
+    const bit = s < 0 ? 1 : 2;
+    for (let i = 0; i < nseg; i++) { const j = (i + 1) % n; if (P[i].gap || P[j].gap || P[i].hp || P[j].hp || (P[i].noRail & bit) || (P[j].noRail & bit)) continue; const a = base + i * 2, b = base + j * 2; ri.push(a, a + 1, b, a + 1, b + 1, b); }
+  }
+  group.add(new THREE.Mesh(mkGeo(rp, ri), mats.railStrip));
+  for (let i = 0; i < n; i += 2) { const p = P[i]; if (p.gap || p.hp) continue; for (const s of [-1, 1]) { if (p.noRail & (s < 0 ? 1 : 2)) continue; const L = s * (RW + 0.25), y = surfY(p, s * RW); mats.posts.push([p.x + p.nx * L, y + 0.45, p.z + p.nz * L, p.h]); } }
+  for (let i = 0; i < n; i += 7) { const p = P[i]; if (p.gap || p.y < 2.2 || p.roof) continue; mats.pillars.push([p.x, p.y - 0.6, p.z, p.h]); }
+  const padMat = mats.pad;
+  for (let i = 0; i < n; i++) { const p = P[i]; if (!p.boost) continue; const L = p.padOff; const m = new THREE.Mesh(mats.padGeo, padMat); m.rotation.order = 'YXZ'; m.rotation.y = p.h + Math.PI; m.rotation.x = -Math.PI / 2; m.position.set(p.x + p.nx * L, surfY(p, L) + 0.07, p.z + p.nz * L); group.add(m); }
+  for (let i = 0; i < nseg; i++) { const p = P[i], q = P[(i + 1) % n]; if (!p.gap && q.gap) { const s = new THREE.Mesh(new THREE.BoxGeometry(RW * 2, 0.15, 0.6), mats.stripe); s.position.set(p.x, p.y + 0.1, p.z); s.rotation.y = p.h; group.add(s); } }
+}
+function buildTrackMeshes(group, T, rnd) {
+  const pts = Race.pts, n = Race.n, th = Race.theme;
+  const M = (c, o = {}) => new THREE.MeshStandardMaterial({ color: c, roughness: 0.85, ...o });
+  const roadMat = M(0xffffff, { roughness: 0.8, side: THREE.DoubleSide });
+  roadMat.map = canvasTex(64, 64, (g, w, h) => { g.fillStyle = canvasHex(T.road); g.fillRect(0, 0, w, h); g.fillStyle = 'rgba(255,255,255,.07)'; for (let k = 0; k < 120; k++) g.fillRect((k * 37) % w, (k * 53) % h, 1, 1); g.fillStyle = canvasHex(T.stripe); g.fillRect(w * 0.48, 0, w * 0.04, h * 0.5); g.fillRect(w * 0.335, 0, w * 0.02, h); g.fillRect(w * 0.645, 0, w * 0.02, h); }, true);
+  const padMat = new THREE.MeshBasicMaterial({ transparent: true, map: canvasTex(64, 64, (g, w, h) => { g.fillStyle = '#00d2ff'; g.fillRect(0, 0, w, h); g.strokeStyle = '#fff'; g.lineWidth = 8; for (let k = 0; k < 2; k++) { g.beginPath(); g.moveTo(10, 50 - k * 24); g.lineTo(32, 30 - k * 24); g.lineTo(54, 50 - k * 24); g.stroke(); } }) });
+  const mats = { road: roadMat, wall: M(T.wall, { roughness: 0.7, side: THREE.DoubleSide }), skirt: M(new THREE.Color(T.wall).multiplyScalar(0.6), { side: THREE.DoubleSide }), railStrip: M(T.rail, { side: THREE.DoubleSide, roughness: 0.4 }), pad: padMat, padGeo: new THREE.PlaneGeometry(2.6, 3.0), stripe: new THREE.MeshBasicMaterial({ color: 0xffd23f }), posts: [], pillars: [] };
+  buildPathMesh(group, pts, true, T, mats);
+  for (const br of Race.branches) buildPathMesh(group, br.pts, false, T, mats);
+  const gMat = M(T.ground, { roughness: 1, emissive: T.lava ? 0xff3300 : 0x000000, emissiveIntensity: T.lava ? 0.55 : 0 });
+  const ground = new THREE.Mesh(new THREE.CircleGeometry(Race.bound + 140, 64).rotateX(-Math.PI / 2), gMat); ground.receiveShadow = true; group.add(ground);
+  Race.lava = !!T.lava;
+  const dummy = new THREE.Object3D();
+  const inst = (geo, mat, list, f, shadow = true) => { if (!list.length) return null; const m = new THREE.InstancedMesh(geo, mat, list.length); list.forEach((it, k) => { f(dummy, it); dummy.updateMatrix(); m.setMatrixAt(k, dummy.matrix); }); m.castShadow = shadow; m.receiveShadow = true; group.add(m); return m; };
+  inst(new THREE.BoxGeometry(0.3, 0.9, 1.4), M(T.rail, { roughness: 0.5 }), mats.posts, (d, q) => { d.position.set(q[0], q[1], q[2]); d.rotation.set(0, q[3], 0); d.scale.set(1, 1, 1); });
+  inst(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), M(new THREE.Color(T.wall).multiplyScalar(0.8), { roughness: 0.9 }), mats.pillars, (d, q) => { d.position.set(q[0], 0, q[2]); d.rotation.set(0, q[3], 0); d.scale.set(2.2, q[1], 1.4); });
+  // start line + banner
+  { const p = pts[0];
+    const chk = canvasTex(64, 16, (g) => { for (let x = 0; x < 16; x++) for (let y = 0; y < 4; y++) { g.fillStyle = (x + y) % 2 ? '#111' : '#fff'; g.fillRect(x * 4, y * 4, 4, 4); } });
+    const line = new THREE.Mesh(new THREE.PlaneGeometry(RW * 2, 1.4), new THREE.MeshBasicMaterial({ map: chk })); line.rotation.order = 'YXZ'; line.rotation.y = p.h; line.rotation.x = -Math.PI / 2; line.position.set(p.x, p.y + 0.06, p.z); group.add(line);
+    const gm = M(0xffffff, { emissive: 0x3355ff, emissiveIntensity: 0.4 });
+    for (const s of [-1, 1]) { const pole = new THREE.Mesh(new THREE.CylinderGeometry(0.25, 0.25, 6, 10), gm); pole.position.set(p.x + p.nx * (RW + 0.6) * s, p.y + 3, p.z + p.nz * (RW + 0.6) * s); group.add(pole); }
+    const bt = canvasTex(256, 48, (g, w) => { g.fillStyle = '#ff3b5c'; g.fillRect(0, 0, w, 48); g.fillStyle = '#fff'; g.font = 'bold 32px sans-serif'; g.textAlign = 'center'; g.fillText('BEAN GP', w / 2, 35); });
+    const ban = new THREE.Mesh(new THREE.BoxGeometry(RW * 2 + 1.6, 1.3, 0.2), M(0xffffff, { map: bt })); ban.position.set(p.x, p.y + 5.6, p.z); ban.rotation.y = p.h; group.add(ban); }
+  // checkpoint arches + boost-corridor rings (one instanced torus)
+  const rings = [];
+  for (let c = 1; c < Race.cps.length; c++) { const p = pts[Race.cps[c]]; if (p.gap || p.tunnel) continue; rings.push([p.x, p.y, p.z, p.h, RW + 0.5]); }
+  pts.forEach(p => { if (p.corr) rings.push([p.x, p.y, p.z, p.h, RW + 0.9]); });
+  inst(new THREE.TorusGeometry(1, 0.035, 6, 28, Math.PI), M(0x3fa7ff, { emissive: 0x2266ff, emissiveIntensity: 0.6 }), rings, (d, q) => { d.position.set(q[0], q[1], q[2]); d.rotation.set(0, q[3] + Math.PI / 2, 0); d.scale.set(q[4], q[4], q[4]); }, false);
+  const boxMat = M(0xffffff, { emissive: 0xffffff, emissiveIntensity: 0.25, transparent: true, opacity: 0.92, map: canvasTex(64, 64, (g, w, h) => { const gr = g.createLinearGradient(0, 0, w, h); gr.addColorStop(0, '#ff5fa2'); gr.addColorStop(0.5, '#ffd23f'); gr.addColorStop(1, '#3fa7ff'); g.fillStyle = gr; g.fillRect(0, 0, w, h); g.fillStyle = '#fff'; g.font = 'bold 46px sans-serif'; g.textAlign = 'center'; g.fillText('?', w / 2, 48); }) });
+  const boxGeo = new THREE.BoxGeometry(1.1, 1.1, 1.1);
+  for (const b of Race.boxes) { const m = new THREE.Mesh(boxGeo, boxMat); m.position.set(b.x, b.y, b.z); m.castShadow = true; group.add(m); b.mesh = m; }
+  for (const pl of Race.planks) {
+    const dx = pl.bx - pl.ax, dz = pl.bz - pl.az, L = Math.hypot(dx, dz);
+    const m = new THREE.Mesh(new THREE.BoxGeometry(pl.w * 2, 0.4, L), M(0xb07a45, { roughness: 0.9 }));
+    m.rotation.order = 'YXZ'; m.rotation.y = Math.atan2(dx, dz); m.rotation.x = -Math.atan2(pl.by - pl.ay, L); m.position.set((pl.ax + pl.bx) / 2, (pl.ay + pl.by) / 2 - 0.18, (pl.az + pl.bz) / 2); m.castShadow = m.receiveShadow = true; group.add(m);
+    for (const t of [0.5]) { const s = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.35, 1, 8), M(0x6b4a2b)); const y = lerp(pl.ay, pl.by, t); s.scale.y = y; s.position.set(lerp(pl.ax, pl.bx, t), y / 2, lerp(pl.az, pl.bz, t)); group.add(s); }
+  }
+  buildAnchors(group, T, M, inst);
+  buildScenery(group, T, rnd, M, inst);
+}
+// glowing hook anchors + the per-theme set-piece
+function buildAnchors(group, T, M, inst) {
+  const pts = Race.pts, n = Race.n, th = Race.theme;
+  Race.hookBoxes = [];
+  const addBox = (x0, y0, z0, x1, y1, z1) => Race.hookBoxes.push([Math.min(x0, x1), Math.min(y0, y1), Math.min(z0, z1), Math.max(x0, x1), Math.max(y0, y1), Math.max(z0, z1)]);
+  const ringMat = M(0xffffff, { emissive: 0xff8a1c, emissiveIntensity: 1.1, roughness: 0.3 });
+  const poleMat = M(new THREE.Color(T.wall).multiplyScalar(0.7), { roughness: 0.6 });
+  const rings = [], poles = [], beams = [];
+  const tight = Race.anchors.find(a => a.kind === 'corner'), gg = Race.ggaps[0];
+  let set = th === 'city' || th === 'candy' ? (tight ? 'tower' : null) : (gg ? th : (tight ? 'tower' : null));
+  Race.setPiece = { city: 'Clock Tower swing', candy: 'Cake Tower swing', desert: "Giant's Arm gap", lava: 'Lava Falls gap', snow: 'Ice Arch gap' }[th];
+  for (const a of Race.anchors) {
+    const p = pts[a.ci != null ? a.ci : a.i], face = Math.atan2(p.x - a.x, p.z - a.z);
+    rings.push([a.x, a.y, a.z, face]);
+    if (a.kind === 'corner') {
+      if (set === 'tower' && a === tight) continue;
+      poles.push([a.x, 0, a.z, 0.35, a.y - 0.9]); beams.push([a.x, a.y + 1.4, a.z, 0.9, 0.5, 0.9, 0]);
+      addBox(a.x - 0.6, 0, a.z - 0.6, a.x + 0.6, a.y + 1.6, a.z + 0.6);
+    } else if (a.kind === 'gap') {
+      if (set && set !== 'tower') continue;
+      const q = pts[(gg.gs + 8) % n];
+      for (const s of [-1, 1]) { const x = q.x + q.nx * s * (RW + 3), z = q.z + q.nz * s * (RW + 3); poles.push([x, 0, z, 0.8, a.y + 2]); addBox(x - 0.9, 0, z - 0.9, x + 0.9, a.y + 2, z + 0.9); }
+      beams.push([q.x, a.y + 2, q.z, (RW + 4) * 2, 1.2, 1.4, q.h]); poles.push([a.x, a.y + 0.9, a.z, 0.08, 1.4]);
+    } else if (a.kind === 'plank') {
+      const pl = a.plank, x = a.x - (pl.bz - pl.az) * 0.0, z = a.z; poles.push([x + 2.6, 0, z, 0.3, a.y + 1.5]); beams.push([x + 1.3, a.y + 1.5, z, 3, 0.35, 0.35, 0]);
+    }
+  }
+  inst(new THREE.TorusGeometry(1.15, 0.2, 8, 20), ringMat, rings, (d, q) => { d.position.set(q[0], q[1], q[2]); d.rotation.set(0, q[3], 0); d.scale.set(1, 1, 1); }, false);
+  // set-piece
+  const sp = new THREE.Group(); group.add(sp);
+  if (set === 'tower') {
+    const a = tight, p = pts[a.ci], ox = (a.x - p.x) / Math.hypot(a.x - p.x, a.z - p.z), oz = (a.z - p.z) / Math.hypot(a.x - p.x, a.z - p.z);
+    const cx = a.x + ox * 4.2, cz = a.z + oz * 4.2, face = Math.atan2(-ox, -oz), H = a.y + 18;
+    if (th === 'city') {
+      const tw = new THREE.Mesh(new THREE.BoxGeometry(7, H, 7), M(0xb9a27c, { roughness: 0.8 })); tw.position.set(cx, H / 2, cz); tw.rotation.y = face; tw.castShadow = true; sp.add(tw);
+      const roof = new THREE.Mesh(new THREE.ConeGeometry(5.6, 8, 4), M(0x5a6b8c)); roof.position.set(cx, H + 4, cz); roof.rotation.y = face + Math.PI / 4; sp.add(roof);
+      const clk = canvasTex(128, 128, (g) => { g.fillStyle = '#fff8e1'; g.beginPath(); g.arc(64, 64, 62, 0, 7); g.fill(); g.strokeStyle = '#333'; g.lineWidth = 6; g.stroke(); for (let k = 0; k < 12; k++) { const an = k / 12 * 6.283; g.fillStyle = '#333'; g.fillRect(64 + Math.sin(an) * 50 - 3, 64 - Math.cos(an) * 50 - 3, 6, 6); } g.lineWidth = 7; g.beginPath(); g.moveTo(64, 64); g.lineTo(64, 22); g.moveTo(64, 64); g.lineTo(92, 70); g.stroke(); });
+      const face1 = new THREE.Mesh(new THREE.CircleGeometry(2.8, 28), new THREE.MeshBasicMaterial({ map: clk })); face1.position.set(cx - ox * 3.52, a.y + 6, cz - oz * 3.52); face1.rotation.y = face + Math.PI; sp.add(face1);
+    } else {
+      const cols = [0xff9fd6, 0xfff0a8, 0x9fe3ff, 0xffffff];
+      for (let k = 0; k < 4; k++) { const r = 6 - k * 1.3, h = H / 4; const c = new THREE.Mesh(new THREE.CylinderGeometry(r, r, h, 24), M(cols[k])); c.position.set(cx, h * k + h / 2, cz); c.castShadow = true; sp.add(c); const ic = new THREE.Mesh(new THREE.TorusGeometry(r, 0.45, 6, 24), M(0xff4fa0)); ic.rotation.x = Math.PI / 2; ic.position.set(cx, h * (k + 1), cz); sp.add(ic); }
+      const ch = new THREE.Mesh(new THREE.SphereGeometry(1.6, 16, 12), M(0xe0102f, { roughness: 0.3 })); ch.position.set(cx, H + 1.2, cz); sp.add(ch);
+    }
+    addBox(cx - 4, 0, cz - 4, cx + 4, H, cz + 4);
+  } else if (set && gg) {
+    const a = Race.anchors.find(x => x.kind === 'gap'), q = pts[(gg.gs + 8) % n], s = gg.br ? -gg.br.side : 1;
+    if (th === 'desert') {
+      const gx = q.x + q.nx * s * 20, gz = q.z + q.nz * s * 20;
+      const body = new THREE.Mesh(new THREE.SphereGeometry(1, 24, 18), M(0xc98a4b, { roughness: 0.95 })); body.scale.set(7, 13, 7); body.position.set(gx, 11, gz); body.castShadow = true; sp.add(body);
+      const eyeM = M(0x222222); for (const e of [-1, 1]) { const ey = new THREE.Mesh(new THREE.SphereGeometry(1.1, 10, 8), eyeM); ey.position.set(gx - q.nx * s * 6.3 + q.tx * e * 2.4, 17, gz - q.nz * s * 6.3 + q.tz * e * 2.4); sp.add(ey); }
+      const sx = gx - q.nx * s * 5, sz = gz - q.nz * s * 5, sy = 14, dx = a.x - sx, dy = a.y + 1 - sy, dz = a.z - sz, L = Math.hypot(dx, dy, dz);
+      const arm = new THREE.Mesh(new THREE.CylinderGeometry(1.1, 1.6, L, 12), M(0xc98a4b)); arm.position.set(sx + dx / 2, sy + dy / 2, sz + dz / 2); arm.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), new THREE.Vector3(dx, dy, dz).normalize()); arm.castShadow = true; sp.add(arm);
+      const hand = new THREE.Mesh(new THREE.SphereGeometry(1.8, 14, 10), M(0xc98a4b)); hand.position.set(a.x, a.y + 1.6, a.z); sp.add(hand);
+      addBox(gx - 7, 0, gz - 7, gx + 7, 24, gz + 7);
+    } else if (th === 'lava') {
+      const fx = q.x + q.nx * s * 16, fz = q.z + q.nz * s * 16;
+      const cliff = new THREE.Mesh(new THREE.BoxGeometry(10, 34, 10), M(0x2a2222, { roughness: 1 })); cliff.position.set(fx + q.nx * s * 5, 17, fz + q.nz * s * 5); cliff.rotation.y = q.h; cliff.castShadow = true; sp.add(cliff);
+      const fallTex = canvasTex(32, 128, (g, w, h) => { const gr = g.createLinearGradient(0, 0, 0, h); gr.addColorStop(0, '#ffd23f'); gr.addColorStop(0.5, '#ff6a00'); gr.addColorStop(1, '#ff2a00'); g.fillStyle = gr; g.fillRect(0, 0, w, h); g.fillStyle = 'rgba(255,255,200,.5)'; for (let k = 0; k < 40; k++) g.fillRect((k * 13) % w, (k * 29) % h, 2, 10); });
+      fallTex.wrapT = THREE.RepeatWrapping; Race.lavaFall = fallTex;
+      const fall = new THREE.Mesh(new THREE.PlaneGeometry(7, 32), new THREE.MeshBasicMaterial({ map: fallTex, side: THREE.DoubleSide, fog: false })); fall.position.set(fx, 16, fz); fall.rotation.y = q.h; sp.add(fall);
+      const pool = new THREE.Mesh(new THREE.CircleGeometry(9, 24).rotateX(-Math.PI / 2), new THREE.MeshBasicMaterial({ color: 0xffa21c })); pool.position.set((fx + q.x) / 2, 0.08, (fz + q.z) / 2); sp.add(pool);
+      addBox(fx - 6, 0, fz - 6, fx + 6, 34, fz + 6);
+      // the arch over the gap holds the anchor
+      for (const sd of [-1, 1]) { const x = q.x + q.nx * sd * (RW + 3), z = q.z + q.nz * sd * (RW + 3); const pl = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 1.2, a.y + 2, 8), M(0x1c1818)); pl.position.set(x, (a.y + 2) / 2, z); sp.add(pl); addBox(x - 1, 0, z - 1, x + 1, a.y + 2, z + 1); }
+      const bm = new THREE.Mesh(new THREE.BoxGeometry((RW + 4) * 2, 1.2, 1.4), M(0x1c1818, { emissive: 0x551100, emissiveIntensity: 0.6 })); bm.position.set(q.x, a.y + 2, q.z); bm.rotation.y = q.h; sp.add(bm);
+    } else if (th === 'snow') {
+      const arch = new THREE.Mesh(new THREE.TorusGeometry(RW + 5, 1.1, 10, 32, Math.PI), M(0xbfe6ff, { transparent: true, opacity: 0.85, roughness: 0.15, emissive: 0x3366aa, emissiveIntensity: 0.25 }));
+      arch.position.set(q.x, Math.max(0, a.y + 2 - (RW + 5)), q.z); arch.rotation.y = q.h + Math.PI / 2; arch.scale.y = (a.y + 2) / (RW + 5); arch.castShadow = true; sp.add(arch);
+      const ic = new THREE.ConeGeometry(0.35, 2.2, 6); for (let k = -3; k <= 3; k++) { const m = new THREE.Mesh(ic, M(0xe8f6ff)); m.rotation.x = Math.PI; m.position.set(q.x + q.nx * k * 1.5, a.y + 0.6, q.z + q.nz * k * 1.5); sp.add(m); }
+      addBox(q.x - RW - 6, a.y, q.z - RW - 6, q.x + RW + 6, a.y + 3, q.z + RW + 6);
+    }
+    const hang = new THREE.Mesh(new THREE.CylinderGeometry(0.08, 0.08, 1.4, 6), poleMat); hang.position.set(a.x, a.y + 1.3, a.z); sp.add(hang);
+  }
+  inst(new THREE.CylinderGeometry(1, 1, 1, 10).translate(0, 0.5, 0), poleMat, poles, (d, q) => { d.position.set(q[0], q[1], q[2]); d.rotation.set(0, 0, 0); d.scale.set(q[3], q[4], q[3]); });
+  inst(new THREE.BoxGeometry(1, 1, 1), poleMat, beams, (d, q) => { d.position.set(q[0], q[1], q[2]); d.rotation.set(0, q[6], 0); d.scale.set(q[3], q[4], q[5]); });
+  // aim marker (player's current hook target)
+  const am = new THREE.Mesh(new THREE.TorusGeometry(1.7, 0.12, 6, 28), new THREE.MeshBasicMaterial({ color: 0x7bffb0, transparent: true, opacity: 0.9, depthTest: false, fog: false }));
+  am.renderOrder = 10; am.visible = false; group.add(am); Race.aimMark = am;
+}
+// dense themed structures lining the course (5 instanced batches total)
+function buildScenery(group, T, rnd, M, inst) {
+  const pts = Race.pts, n = Race.n, th = Race.theme, R = () => rnd(), pick = a => a[Math.floor(rnd() * a.length)];
+  const grid = makeGrid(10);
+  pts.forEach(p => grid.add(p.x, p.z, 0));
+  for (const br of Race.branches) br.pts.forEach(p => grid.add(p.x, p.z, 0));
+  for (const pl of Race.planks) for (let t = 0; t <= 1; t += 0.05) grid.add(lerp(pl.ax, pl.bx, t), lerp(pl.az, pl.bz, t), 0);
+  for (const a of Race.anchors) grid.add(a.x, a.z, 0);
+  const S = { box: [], cyl: [], cone: [], roof: [], sph: [] }, HB = Race.hookBoxes; Race.chunks = [];
+  const box = (x, y, z, w, h, d, ry, c, hook = true) => { S.box.push([x, y, z, w, h, d, ry, c]); if (hook && h > 3) { const e = (Math.abs(Math.cos(ry)) * w + Math.abs(Math.sin(ry)) * d) / 2, f = (Math.abs(Math.sin(ry)) * w + Math.abs(Math.cos(ry)) * d) / 2; HB.push([x - e, y, z - f, x + e, y + h, z + f]); } };
+  const cyl = (x, y, z, r, h, c, hook = true) => { S.cyl.push([x, y, z, r, h, r, 0, c]); if (hook && h > 4 && r > 0.6) HB.push([x - r, y, z - r, x + r, y + h, z + r]); };
+  const cone = (x, y, z, r, h, c) => S.cone.push([x, y, z, r, h, r, 0, c]);
+  const roof = (x, y, z, w, h, d, ry, c) => S.roof.push([x, y, z, w * 0.72, h, d * 0.72, ry + Math.PI / 4, c]);
+  const sph = (x, y, z, r, c, sy = 1) => S.sph.push([x, y, z, r, r * sy, r, 0, c]);
+  const clear = (x, z, r) => !grid.near(x, z, r + RW + 1.4);
+  const CITY = [0x8792a8, 0xc9b79c, 0xe08a6a, 0x9fb6c9, 0xd9d2c5, 0x7d8ca3, 0xf2c57c], CANDY = [0xff6fb5, 0x7bd1ff, 0xffe066, 0xb27dff, 0x8ef0b0, 0xff9f5a];
+  // returns footprint radius used, or 0 if it didn't fit
+  const struct = (x, z, ry, far, roofSide) => {
+    const r = R();
+    if (th === 'city') {
+      if (r < 0.62 || roofSide) { const w = 5 + R() * 5, d = 5 + R() * 5, h = (roofSide ? 16 : 8) + R() * 22 * (far ? 1.4 : 1), fr = Math.max(w, d) * 0.72; if (!clear(x, z, fr)) return 0; box(x, 0, z, w, h, d, ry, pick(CITY)); if (R() < 0.45) roof(x, h, z, w, 2.5 + R() * 3, d, ry, pick([0x8a3b3b, 0x3b4f8a, 0x4a4a4a])); else box(x, h, z, w * 0.4, 1.6, d * 0.4, ry, 0x9aa3b5, false); return fr; }
+      if (r < 0.85) { const rr = 2.4 + R() * 1.4, h = 26 + R() * 22; if (!clear(x, z, rr + 0.5)) return 0; cyl(x, 0, z, rr, h, pick([0xd9d2c5, 0x9fb6c9, 0xc9b79c])); cone(x, h, z, rr * 1.1, 5 + R() * 4, pick([0x3b4f8a, 0x8a3b3b])); return rr; }
+      const w = 7 + R() * 4; if (!clear(x, z, w * 0.7)) return 0; box(x, 0, z, w, 4.5, 6, ry, pick(CITY)); box(x, 3.2, z, w + 1, 0.3, 7.5, ry, pick([0xff5f5f, 0x4cc9f0, 0xffd23f]), false); return w * 0.7;
+    }
+    if (th === 'candy') {
+      if (r < 0.45) { const h = 8 + R() * 8, rr = 2.4 + R() * 1.4; if (!clear(x, z, rr)) return 0; cyl(x, 0, z, 0.32, h, 0xffffff, false); sph(x, h + rr * 0.8, z, rr, pick(CANDY), 0.85); HB.push([x - rr, h, z - rr, x + rr, h + rr * 1.6, z + rr]); return rr; }
+      if (r < 0.7) { const r0 = 4 + R() * 2.5; if (!clear(x, z, r0)) return 0; let y = 0; for (let k = 0; k < 3; k++) { const rr = r0 * (1 - k * 0.27), h = 3 + R() * 2; cyl(x, y, z, rr, h, pick(CANDY)); cyl(x, y + h - 0.3, z, rr + 0.25, 0.6, 0xffffff, false); y += h; } sph(x, y + 0.8, z, 1.0, 0xe0102f); return r0; }
+      if (r < 0.88) { if (!clear(x, z, 0.8)) return 0; for (let k = 0; k < 5; k++) cyl(x, k * 2.2, z, 0.55, 2.2, k % 2 ? 0xffffff : 0xe8243c, false); sph(x, 11, z, 0.55, 0xe8243c); return 0.8; }
+      if (!clear(x, z, 2.4)) return 0; cone(x, 0, z, 2.4, 3.2, pick(CANDY)); return 2.4;
+    }
+    if (th === 'desert') {
+      if (r < 0.4) { const w = 9 + R() * 9, d = 9 + R() * 9, h = 10 + R() * 16 * (far ? 1.5 : 1), fr = Math.max(w, d) * 0.72; if (!clear(x, z, fr)) return 0; const c = pick([0xc46a32, 0xd17d43, 0xb85a2a]); box(x, 0, z, w, h, d, ry, c); box(x, h, z, w + 1.2, 1.4, d + 1.2, ry, 0xa9532a, false); return fr; }
+      if (r < 0.72) { const rr = 1.3 + R() * 1, h = 9 + R() * 12; if (!clear(x, z, rr + 0.6)) return 0; cyl(x, 0, z, rr, h, pick([0xe0b07a, 0xd49a5e])); cyl(x, h, z, rr + 0.5, 1, 0xc98a4b, false); return rr + 0.6; }
+      if (!clear(x, z, 4)) return 0; const c = 0xe8d3a8; for (let k = -1; k <= 1; k++) { const h = 2 + R() * 5; cyl(x + Math.cos(ry) * k * 2.6, 0, z - Math.sin(ry) * k * 2.6, 0.7, h, c); } if (R() < 0.5) box(x, 6, z, 7, 0.9, 1.4, -ry + Math.PI / 2, c, false); return 4;
+    }
+    if (th === 'lava') {
+      if (r < 0.5) { const rr = 2.4 + R() * 2.4, h = 14 + R() * 20 * (far ? 1.4 : 1); if (!clear(x, z, rr)) return 0; cone(x, 0, z, rr, h, pick([0x241c22, 0x2e2026, 0x1c1418])); HB.push([x - rr * 0.5, 0, z - rr * 0.5, x + rr * 0.5, h * 0.6, z + rr * 0.5]); return rr; }
+      if (r < 0.75) { const y = 9 + R() * 10, w = 5 + R() * 3; if (!clear(x, z, w * 0.7)) return 0; box(x, y, z, w, 1.4, w, ry, 0x3a2a2a); cyl(x - w * 0.35, y + 1.4, z, 0.12, 14, 0x3a3434, false); cyl(x + w * 0.35, y + 1.4, z, 0.12, 14, 0x3a3434, false); cone(x, y + 1.4, z, 1.4, 4 + R() * 3, 0x241c22); cone(x, y - 3, z, w * 0.5, 3, 0x2a1d1d); return w * 0.7; }
+      if (!clear(x, z, 3)) return 0; sph(x, 0.6, z, 2 + R() * 1.4, pick([0x2c2626, 0x3a2a2a]), 0.6); return 3;
+    }
+    // snow
+    if (r < 0.25) { const rr = 2 + R() * 1.2, h = 14 + R() * 14; if (!clear(x, z, rr)) return 0; cyl(x, 0, z, rr, h, pick([0xbfe6ff, 0xa8d8ff, 0xd8f0ff])); cone(x, h, z, rr * 1.25, 5 + R() * 3, 0xe8f6ff); return rr; }
+    if (r < 0.4) { if (!clear(x, z, 4)) return 0; box(x, 0, z, 6, 3.6, 5, ry, 0x8b5a2b); roof(x, 3.6, z, 6.6, 2.8, 5.6, ry, 0xf4f8ff); box(x + 2, 3.6, z, 0.7, 2.6, 0.7, ry, 0x6b4a2b, false); return 4; }
+    if (!clear(x, z, 2.4)) return 0;
+    const s = 0.8 + R() * 0.7; cyl(x, 0, z, 0.35 * s, 2 * s, 0x6b4a2b, false); cone(x, 1.5 * s, z, 2.4 * s, 5 * s, pick([0x2f7d4f, 0x2a6e46, 0x357f55])); cone(x, 4.4 * s, z, 1.7 * s, 4 * s, pick([0x2f7d4f, 0x3c8f5f])); cone(x, 7.2 * s, z, 0.8 * s, 1.6 * s, 0xf4f8ff); return 2.4;
+  };
+  // 1) line both sides of the main loop and the branches
+  const lineup = (P, step) => {
+    for (let i = 0; i < P.length; i += step) {
+      const p = P[i];
+      for (const sd of [-1, 1]) {
+        if (R() > (th === 'snow' ? 0.95 : 0.85)) continue;
+        for (let row = 0; row < (th === 'snow' ? 3 : 2); row++) {
+          const L = sd * (RW + 5.5 + row * 9 + R() * 5), x = p.x + p.nx * L, z = p.z + p.nz * L;
+          if (Math.hypot(x, z) > Race.bound - 30) continue;
+          struct(x, z, p.h, row > 0, p.roof);
+        }
+      }
+    }
+  };
+  lineup(pts, 3); for (const br of Race.branches) lineup(br.pts, 4);
+  // 2) rooftop run: the deck sits on buildings / stone viaduct blocks
+  for (let i = 0; i < n; i += 3) { const p = pts[i]; if (!p.roof || p.gap) continue; const c = th === 'city' ? pick(CITY) : new THREE.Color(T.wall).multiplyScalar(0.75 + R() * 0.3).getHex(); box(p.x, 0, p.z, RW * 2 + 3.5, Math.max(0.5, p.y - 0.72), 4.4, p.h, c, false); if (th === 'city' && i % 6 === 0) { box(p.x + p.nx * (RW + 1.2), p.y - 0.7, p.z + p.nz * (RW + 1.2), 1, 1.8, 1, p.h, 0x666f80, false); } }
+  // 3) arches / bridges over the track
+  const archC = { city: 0x9aa3b5, candy: 0xff6fb5, desert: 0xe0b07a, lava: 0x1c1418, snow: 0xbfe6ff }[th];
+  for (let i = 20; i < n - 20; i += 55 + Math.floor(R() * 20)) {
+    let ok = true; for (let k = -4; k <= 4; k++) { const q = pts[(i + k) % n]; if (q.gap || q.tunnel || q.hp || q.ramp || q.corr) ok = false; } if (!ok) continue;
+    const p = pts[i], H = 9 + R() * 4, wide = th === 'city' && R() < 0.5;
+    for (const sd of [-1, 1]) { const x = p.x + p.nx * sd * (RW + 1.8), z = p.z + p.nz * sd * (RW + 1.8); box(x, 0, z, 1.6, p.y + H, 1.6, p.h, archC); }
+    box(p.x, p.y + H, p.z, (RW + 2.6) * 2, wide ? 1.6 : 1.1, wide ? 4 : 1.6, p.h, archC);
+    if (wide) for (const sd of [-1, 1]) box(p.x + p.tx * sd * 1.9, p.y + H + 1.6, p.z + p.tz * sd * 1.9, (RW + 2.6) * 2, 0.8, 0.2, p.h, 0x666f80, false);
+  }
+  // 4) tunnels: side walls + roof + light strips
+  const tunC = new THREE.Color(T.wall).multiplyScalar(0.7).getHex(), lights = [];
+  for (let i = 0; i < n; i += 2) { const p = pts[i]; if (!p.tunnel) continue; for (const sd of [-1, 1]) box(p.x + p.nx * sd * (RW + 1.0), surfY(p, sd * RW) - 0.7, p.z + p.nz * sd * (RW + 1.0), 0.8, 7, 3.4, p.h, tunC, false); box(p.x, p.y + 6.2, p.z, RW * 2 + 2.8, 0.9, 3.4, p.h, tunC); if (i % 4 === 0) lights.push([p.x, p.y + 6.1, p.z, p.h]); }
+  // 5) far backdrop
+  for (let k = 0, tries = 0; k < 140 && tries < 900; tries++) { const a = R() * 6.28, rr = 30 + R() * (Race.bound + 40), x = Math.cos(a) * rr, z = Math.sin(a) * rr; if (grid.near(x, z, 28)) continue; if (struct(x, z, R() * 6.28, true, false)) k++; }
+  const winTex = th === 'city' ? canvasTex(64, 128, (g, w, h) => { g.fillStyle = '#fff'; g.fillRect(0, 0, w, h); for (let y = 6; y < h - 6; y += 14) for (let x = 6; x < w - 6; x += 14) { g.fillStyle = (x * 7 + y * 3) % 5 === 0 ? '#ffe9a8' : '#5a6b8c'; g.fillRect(x, y, 8, 9); } }) : null;
+  const mat = (o = {}) => M(0xffffff, { roughness: 0.85, ...o });
+  // chunked instancing: one InstancedMesh per geometry per 90 m cell, so frustum + distance culling (and the small
+  // shadow frustum) only touch nearby chunks
+  const put = (geo, m, list) => {
+    const cells = new Map(); list.forEach(q => { const key = Math.floor(q[0] / 90) * 1000 + Math.floor(q[2] / 90); let a = cells.get(key); if (!a) cells.set(key, a = []); a.push(q); });
+    for (const L of cells.values()) {
+      const im = inst(geo, m, L, (d, q) => { d.position.set(q[0], q[1], q[2]); d.rotation.set(0, q[6], 0); d.scale.set(q[3], q[4], q[5]); }); if (!im) continue;
+      const c = new THREE.Color(); L.forEach((q, k) => im.setColorAt(k, c.setHex(q[7]))); im.instanceColor.needsUpdate = true;
+      im.computeBoundingSphere(); const bs = im.boundingSphere; Race.chunks.push({ m: im, x: bs.center.x, z: bs.center.z, r: bs.radius });
+    }
+  };
+  put(new THREE.BoxGeometry(1, 1, 1).translate(0, 0.5, 0), mat(winTex ? { map: winTex } : {}), S.box);
+  put(new THREE.CylinderGeometry(1, 1, 1, 9).translate(0, 0.5, 0), mat(), S.cyl);
+  put(new THREE.ConeGeometry(1, 1, 8).translate(0, 0.5, 0), mat(th === 'lava' ? { emissive: 0x330800, emissiveIntensity: 0.5 } : {}), S.cone);
+  put(new THREE.ConeGeometry(1, 1, 4).translate(0, 0.5, 0), mat(), S.roof);
+  put(new THREE.SphereGeometry(1, 10, 7), mat({ roughness: 0.5 }), S.sph);
+  inst(new THREE.BoxGeometry(RW * 1.6, 0.12, 0.5), new THREE.MeshBasicMaterial({ color: 0xfff2c0 }), lights, (d, q) => { d.position.set(q[0], q[1], q[2]); d.rotation.set(0, q[3], 0); d.scale.set(1, 1, 1); }, false);
+  Race.sceneryCount = S.box.length + S.cyl.length + S.cone.length + S.roof.length + S.sph.length;
+}
+// ---------------------------------------------------------------- race grappling: ODM hooks on karts
+// Click (LMB/RMB, or hold G) fires a hook at the highlighted target: glowing anchor rings at hairpins / over gaps /
+// under shortcuts, or any building facade you aim at. Hold to stay attached; the cable auto-reels to a swing radius,
+// a taut cable pumps speed along your velocity (gas), release to slingshot out. One hook at a time; gas refills on the
+// ground, on boost pads and from ? boxes.
+const HOOK = { range: 60, reel: 10, pump: 12, maxSpd: 44, drain: 0.15, cost: 0.08, regen: 0.13 };
+Race.stats = { fires: 0, attaches: 0, slings: 0, bestSling: 0, releases: [] };
+function rayBox(ox, oy, oz, dx, dy, dz, b, maxT) {
+  let t0 = 0, t1 = maxT;
+  const o = [ox, oy, oz], d = [dx, dy, dz];
+  for (let a = 0; a < 3; a++) {
+    if (Math.abs(d[a]) < 1e-6) { if (o[a] < b[a] || o[a] > b[a + 3]) return -1; continue; }
+    let ta = (b[a] - o[a]) / d[a], tb = (b[a + 3] - o[a]) / d[a]; if (ta > tb) { const s = ta; ta = tb; tb = s; }
+    t0 = Math.max(t0, ta); t1 = Math.min(t1, tb); if (t0 > t1) return -1;
+  }
+  return t0;
+}
+function hookAim(b) {
+  const k = b.kart;
+  if (b.isPlayer && CAM.mode === 'race') { const dx = CAM.look.x - CAM.pos.x, dz = CAM.look.z - CAM.pos.z; return { yaw: Math.atan2(dx, dz), up: 0.42 - CAM.rLookPitch * 0.6 }; }
+  return { yaw: k.h, up: 0.42 };
+}
+function pickHookTarget(b, excl) {
+  const k = b.kart, ox = b.pos.x, oy = k.y + 1, oz = b.pos.z, aim = hookAim(b);
+  let best = null, bs = 1e9;
+  for (const a of Race.anchors) {
+    if (a === excl) continue;
+    const dx = a.x - ox, dy = a.y - oy, dz = a.z - oz, d = Math.hypot(dx, dy, dz);
+    if (d > HOOK.range || d < 3) continue;
+    const ang = Math.abs(angDiff(aim.yaw, Math.atan2(dx, dz))); if (ang > 1.25) continue;
+    const sc = ang * 1.4 + d / HOOK.range; if (sc < bs) { bs = sc; best = a; }
+  }
+  if (best) return { x: best.x, y: best.y, z: best.z, anchor: best, r: best.r };
+  const cp = Math.cos(aim.up), dx = Math.sin(aim.yaw) * cp, dy = Math.sin(aim.up), dz = Math.cos(aim.yaw) * cp;
+  let bt = HOOK.range;
+  for (const hb of Race.hookBoxes) {
+    const cx = (hb[0] + hb[3]) / 2, cz = (hb[2] + hb[5]) / 2; if (Math.abs(cx - ox) > HOOK.range + 25 || Math.abs(cz - oz) > HOOK.range + 25) continue;
+    const t = rayBox(ox, oy, oz, dx, dy, dz, hb, bt); if (t > 2.5 && t < bt) bt = t;
+  }
+  if (bt < HOOK.range) return { x: ox + dx * bt, y: oy + dy * bt, z: oz + dz * bt, anchor: null, r: Math.max(5, bt * 0.55) };
+  return null;
+}
+function raceHookFire(b, hand, forced) {
+  const k = b.kart; if (!k || k.respawnT > 0 || Race.phase !== 'racing' || b.race.finished) return false;
+  if (k.gas < HOOK.cost) { if (b.isPlayer && G.t - (Race.noGasT || 0) > 1) { Race.noGasT = G.t; popup('NO GAS', '#ff9f9f'); Snd.tone({ f: 180, d: 0.1, v: 0.1, type: 'square' }); } return false; }
+  const tgt = forced || pickHookTarget(b, k.hook && k.hook.anchor);
+  if (k.hook) raceHookRelease(b, true);
+  const h = b.hooks[hand]; Race.stats.fires++;
+  if (!tgt) { // whiff: cable shoots out and zips back
+    const aim = hookAim(b); h.a.set(b.pos.x + Math.sin(aim.yaw) * 22, k.y + 9, b.pos.z + Math.cos(aim.yaw) * 22); h.st = 3; h.prog = 0; h.dist = 22; k.gas -= HOOK.cost * 0.5;
+    if (b.isPlayer) Snd.tone({ f: 900, f2: 300, d: 0.12, v: 0.08 });
+    return false;
+  }
+  const d = Math.hypot(tgt.x - b.pos.x, tgt.y - k.y - 0.8, tgt.z - b.pos.z);
+  h.a.set(tgt.x, tgt.y, tgt.z); h.st = 1; h.prog = 0; h.dist = Math.max(2, d);
+  k.hook = { x: tgt.x, y: tgt.y, z: tgt.z, hand, anchor: tgt.anchor || null, r: tgt.r, rh: tgt.anchor ? (tgt.anchor.rh || 0) : Math.max(5, Math.hypot(tgt.x - b.pos.x, tgt.z - b.pos.z) * 0.75), L: d, Lh: null, t: 0, maxSpd: 0 };
+  k.gas -= HOOK.cost;
+  if (b.isPlayer) Snd.tone({ f: 1400, f2: 500, d: 0.09, v: 0.1, type: 'triangle' });
+  return true;
+}
+function raceHookRelease(b, quiet) {
+  const k = b.kart; if (!k || !k.hook) return;
+  const hk = k.hook, h = b.hooks[hk.hand]; if (h.st === 1 || h.st === 2) h.st = 5;
+  k.hook = null;
+  if (!quiet && hk.t > 0.3) {
+    Race.stats.releases.push({ id: b.id, spd: +k.spd.toFixed(1), max: +hk.maxSpd.toFixed(1), t: +hk.t.toFixed(2), kind: hk.anchor ? hk.anchor.kind : 'facade' });
+    if (Race.stats.releases.length > 60) Race.stats.releases.shift();
+    if (k.spd > KART.top + 1) {
+      k.spd = Math.min(KART.boostTop + 4, k.spd + 4); k.slingT = 1.3; k.boostT = Math.max(k.boostT, 0.3); Race.stats.slings++; Race.stats.bestSling = Math.max(Race.stats.bestSling, k.spd);
+      if (b.isPlayer) { Snd.whoosh(0.8); shake(0.1); popup(`SLINGSHOT! ${Math.round(k.spd * 3.6)} km/h`, '#7bffb0'); }
+    }
+  }
+}
+// tether physics, run inside kartStep after normal driving (s2 = surface under the kart)
+function raceHookStep(b, dt, s2) {
+  const k = b.kart; k.slingT = Math.max(0, (k.slingT || 0) - dt); k.hookCd = Math.max(0, (k.hookCd || 0) - dt);
+  k.br = s2.br || null; k.li = s2.li; k.plank = s2.plank || null;
+  if (!k.hook) { if (!k.air) k.gas = Math.min(1, k.gas + HOOK.regen * dt); return s2; }
+  const hk = k.hook, h = b.hooks[hk.hand];
+  if (h.st === 0 || h.st >= 3) { k.hook = null; return s2; }
+  if (h.st === 1) return s2; // cable still flying out
+  if (hk.t === 0) { Race.stats.attaches++; const q0 = Race.pts[k.hint]; if (k.air && !s2.road && !s2.plank && k.y < q0.y - 1.5 && !(hk.anchor && (hk.anchor.kind === 'plank' || hk.anchor.kind === 'gap'))) { const n = Race.n; let j = (k.hint + 4) % n, g = 0; while ((Race.pts[j].gap || Race.pts[j].ramp) && g++ < 60) j = (j + 1) % n; const q = Race.pts[j]; hk.rescue = { x: q.x, z: q.z, y: q.y + 1.6, h: q.h }; if (b.isPlayer) popup('🪝 RESCUE!', '#7bffb0'); } }
+  hk.t += dt; k.gas -= HOOK.drain * dt;
+  if (k.gas <= 0 || hk.t > 4.5) { k.gas = Math.max(0, k.gas); raceHookRelease(b); return s2; }
+  if (hk.rescue) { // fell off: the winch yanks you back up onto the road just ahead
+    const R0 = hk.rescue, ex = R0.x - b.pos.x, ey = R0.y - k.y, ez = R0.z - b.pos.z, ed = Math.hypot(ex, ey, ez), sp = 26;
+    if (ed < sp * dt * 1.5 || hk.t > 2.5) { b.pos.x = R0.x; b.pos.z = R0.z; k.y = R0.y; k.vy = 0; k.air = true; k.airT = 0; k.h = R0.h; k.spd = Math.max(Math.abs(k.spd), KART.top * 0.8); k.offT = 0; raceHookRelease(b, true); return raceSurface(b.pos.x, b.pos.z, k.hint, k.y); }
+    const arc = Math.min(1, ed / 8) * 4; b.pos.x += ex / ed * sp * dt; b.pos.z += ez / ed * sp * dt; k.y += (ey / ed * sp + arc) * dt; k.vy = ey / ed * sp; k.air = true; k.offT = 0;
+    k.h = Math.atan2(ex, ez); k.spd = sp; hk.maxSpd = Math.max(hk.maxSpd, sp);
+    return raceSurface(b.pos.x, b.pos.z, k.hint, k.y);
+  }
+  if (hk.anchor && hk.anchor.kind === 'plank') { // reel-up lift onto the elevated shortcut
+    const pl = hk.anchor.plank, ddx = pl.bx - pl.ax, ddz = pl.bz - pl.az, dl = Math.hypot(ddx, ddz), tx = pl.ax + ddx / dl * 3, tz = pl.az + ddz / dl * 3, ty = lerp(pl.ay, pl.by, 3 / dl) + 0.6;
+    const ex = tx - b.pos.x, ey = ty - k.y, ez = tz - b.pos.z, ed = Math.hypot(ex, ey, ez), sp = Math.max(Math.abs(k.spd), 24) + 4;
+    if (ed < sp * dt * 1.5 || ed < 1.2) { b.pos.x = tx; b.pos.z = tz; k.y = ty; k.vy = 0; k.air = true; k.airT = 0; k.h = Math.atan2(ddx, ddz); k.spd = Math.max(k.spd, KART.top + 4); raceHookRelease(b); return raceSurface(b.pos.x, b.pos.z, k.hint, k.y); }
+    const arc = Math.min(1, ed / 6) * 3; // bow upward so it reads as a reel-up, not a teleport
+    b.pos.x += ex / ed * sp * dt; b.pos.z += ez / ed * sp * dt; k.y += (ey / ed * sp + arc) * dt; k.vy = ey / ed * sp; k.air = true; k.h = Math.atan2(ex, ez); k.spd = sp;
+    hk.maxSpd = Math.max(hk.maxSpd, sp);
+    return raceSurface(b.pos.x, b.pos.z, k.hint, k.y);
+  }
+  const Ax = hk.x, Ay = hk.y, Az = hk.z;
+  let Px = b.pos.x, Py = k.y + 0.8, Pz = b.pos.z;
+  let Vx = Math.sin(k.h) * k.spd, Vy = k.air ? k.vy : 0, Vz = Math.cos(k.h) * k.spd;
+  const dx = Px - Ax, dy = Py - Ay, dz = Pz - Az, dist = Math.hypot(dx, dy, dz);
+  // the winch takes up slack instantly, then reels toward the anchor's swing radius
+  const dh = Math.hypot(dx, dz), ground = !k.air && s2.road && hk.anchor && hk.anchor.kind !== 'gap' ? true : (!k.air && s2.road && dist * dist - dy * dy > 4);
+  let taut = false;
+  if (ground) { // on the ground: the tether acts in the horizontal plane (whip around the pole), winch toward the swing radius
+    if (hk.Lh == null) hk.Lh = dh;
+    hk.Lh = Math.min(hk.Lh, dh + 0.05); if (hk.Lh > hk.rh) hk.Lh = Math.max(hk.rh, hk.Lh - HOOK.reel * dt); hk.Lh = Math.max(hk.Lh, 2.5);
+    hk.L = Math.hypot(hk.Lh, dy);
+    if (dh > hk.Lh) { taut = true; const ux = dx / dh, uz = dz / dh; Px = Ax + ux * hk.Lh; Pz = Az + uz * hk.Lh; const vr = Vx * ux + Vz * uz; if (vr > 0) { Vx -= ux * vr; Vz -= uz * vr; } }
+    if (s2.wall < 0) { hk.railT = (hk.railT || 0) + dt; if (hk.railT > 0.25) { raceHookRelease(b); return s2; } } else hk.railT = 0;
+  } else {
+    hk.L = Math.min(hk.L, dist + 0.05); if (hk.L > hk.r) hk.L = Math.max(hk.r, hk.L - HOOK.reel * dt); hk.L = Math.max(hk.L, 3);
+    hk.Lh = Math.sqrt(Math.max(0, hk.L * hk.L - dy * dy));
+  }
+  if (taut || (!ground && dist > hk.L)) {
+    if (!ground) { // airborne (or reeled shorter than the height): full 3D pendulum
+      const ux = dx / dist, uy = dy / dist, uz = dz / dist;
+      Px = Ax + ux * hk.L; Py = Ay + uy * hk.L; Pz = Az + uz * hk.L;
+      const vr = Vx * ux + Vy * uy + Vz * uz; if (vr > 0) { Vx -= ux * vr; Vy -= uy * vr; Vz -= uz * vr; }
+      if (!k.air) { k.air = true; k.airT = 0; k.hopAir = false; }
+    }
+    if (hk.anchor && hk.anchor.kind === 'gap') { // swing assist: line the arc up with the road
+      const q = s2.p || Race.pts[k.hint], vl = Vx * q.nx + Vz * q.nz, f = 1 - Math.exp(-4 * dt); Vx -= q.nx * vl * f; Vz -= q.nz * vl * f;
+      const lat = (Px - q.x) * q.nx + (Pz - q.z) * q.nz; Px -= q.nx * lat * f * 0.5; Pz -= q.nz * lat * f * 0.5;
+    }
+    const hs = Math.hypot(Vx, Vz);
+    if (hs > 1 && hs < HOOK.maxSpd) { const add = HOOK.pump * dt; Vx += Vx / hs * add; Vz += Vz / hs * add; }
+  }
+  b.pos.x = Px; b.pos.z = Pz;
+  let ny = Py - 0.8;
+  const s3 = raceSurface(Px, Pz, k.hint, ny);
+  if (s3.road && ny <= s3.y + 0.05) { ny = s3.y; if (k.air && Vy <= 0.5) { k.air = false; k.gvy = 0; Vy = 0; } }
+  k.y = ny; k.vy = Vy;
+  const sp = Math.hypot(Vx, Vz); if (sp > 2) { k.h = Math.atan2(Vx, Vz); k.spd = sp; } else k.spd = Math.sign(k.spd) * sp;
+  hk.maxSpd = Math.max(hk.maxSpd, k.spd);
+  k.hint = s3.i; k.br = s3.br || null; k.li = s3.li; k.plank = s3.plank || null;
+  return s3;
+}
+// player: left/right mouse (or G) fire, release on button up
+function racePlayerHooks(p) {
+  const k = p.kart; if (!k) return;
+  for (let hand = 0; hand < 2; hand++) {
+    if (RIN.hookDn[hand]) { RIN.hookDn[hand] = false; raceHookFire(p, hand); }
+    if (RIN.hookUp[hand]) { RIN.hookUp[hand] = false; if (k.hook && k.hook.hand === hand) raceHookRelease(p); }
+  }
+  // highlight the target a click would grab
+  const am = Race.aimMark; if (!am) return;
+  const t = !k.hook && Race.phase === 'racing' && k.gas >= HOOK.cost ? pickHookTarget(p) : null;
+  am.visible = !!t;
+  if (t) { am.position.set(t.x, t.y, t.z); am.lookAt(camera.position); am.scale.setScalar((t.anchor ? 1 : 0.55) * (1 + Math.sin(G.t * 9) * 0.08)); am.material.color.setHex(t.anchor ? 0x7bffb0 : 0xffffff); }
+}
+// bots: scripted hook use at corner / gap / plank anchors
+function raceBotHook(b, dt) {
+  const k = b.kart, bt = b.bot, n = Race.n, i = k.hint;
+  if ((b.tp || 0) !== bt.lastTp) { // respawned: if it was at the grapple gap, take the low road next time
+    bt.lastTp = b.tp || 0; const g = Race.ggaps[0]; if (g) {
+    const dg = Math.abs(i - g.gs), ndg = Math.min(dg, n - dg); if (g && g.br && bt.route === 'high' && ndg < 150) { bt.fails = (bt.fails || 0) + 1; if (bt.fails >= 1) bt.route = 'low'; } }
+  }
+  if (k.hook) {
+    const a = k.hook.anchor; let rel = k.hook.t > 4 || (!a && k.hook.t > 0.8);
+    if (a && a.kind === 'corner') { const past = ((i - a.ci + n) % n) < 60; const ah = Race.pts[(i + 6) % n]; if (past && Math.abs(angDiff(k.h, ah.h)) < 0.2) rel = true; if (past && ((i - a.ci + n) % n) > 14) rel = true; }
+    else if (a && a.kind === 'gap') { const g = Race.ggaps[0], GL = (g.ge - g.gs + n) % n, dd = (i - g.gs + n) % n; const yFar = Race.pts[g.ge].y; if (dd < 80 && (dd >= GL + 1 || (dd >= GL * 0.5 && k.y > yFar + 1.2 && k.vy > -1))) rel = true; }
+    else if (a && a.kind === 'plank') { const pl = a.plank, dx = pl.bx - pl.ax, dz = pl.bz - pl.az, L2 = dx * dx + dz * dz, t = ((b.pos.x - pl.ax) * dx + (b.pos.z - pl.az) * dz) / L2, lat = Math.abs((b.pos.x - pl.ax) * dz - (b.pos.z - pl.az) * dx) / Math.sqrt(L2); if (t > 0.02 && t < 0.7 && lat < pl.w * 0.8 && k.y > lerp(pl.ay, pl.by, t) + 0.3) rel = true; if (k.hook.t > 2.5) rel = true; }
+    if (rel) raceHookRelease(b);
+    return;
+  }
+  if (k.respawnT > 0) return;
+  if (k.air && k.gas >= HOOK.cost && k.y < Race.pts[i].y - 1.5 && !Race.pts[i].gap) { const s = raceSurface(b.pos.x, b.pos.z, i, k.y); if (!s.road && !s.plank) { const t = pickHookTarget(b); if (t && !(t.anchor && t.anchor.kind !== 'corner')) { raceHookFire(b, 0, t); return; } } }
+  if (k.gas < 0.3) return;
+  for (const a of Race.anchors) {
+    if (a.route === 'high' && bt.route !== 'high') continue;
+    const d = (i - a.i + n) % n, span = (a.i1 - a.i + n) % n; if (d > span) { if (bt.decided === a) bt.decided = null; continue; }
+    if (bt.decided !== a) { bt.decided = a; bt.use = a.route === 'high' || Math.random() < 0.55 + 0.4 * (G.difficulty === 'hard' ? 1 : 0.5); }
+    if (!bt.use) continue;
+    if (a.kind === 'corner' && d < span * 0.5) continue; // fire in the back half of the window
+    raceHookFire(b, a.sg > 0 ? 0 : 1, { x: a.x, y: a.y, z: a.z, anchor: a, r: a.r }); bt.use = false;
+    return;
+  }
+}
+// where a bot should steer: low road around the grapple gap, plank end when on a plank, else the main racing line
+function botAimPoint(b, look) {
+  const k = b.kart, bt = b.bot, n = Race.n, i = k.hint;
+  if (k.plank) return { x: k.plank.bx, z: k.plank.bz, nx: 0, nz: 0 };
+  for (const br of Race.branches) {
+    const span = (br.b - br.a + n) % n, d = (i - br.a + n) % n, pre = (br.a - i + n) % n;
+    const onIt = k.br === br;
+    if (onIt || (bt.route === 'low' && (d < span || pre < 14))) {
+      let li = onIt ? k.li : (d < span ? Math.round(d / span * (br.n - 1)) : 0);
+      const j = Math.min(br.n - 1, li + Math.max(4, look));
+      if (j >= br.n - 1 && li > br.n - 6) break;
+      return br.pts[j];
+    }
+  }
+  return Race.pts[(i + look) % n];
+}
+function raceCamBlock(ox, oy, oz, dx, dy, dz, maxT) {
+  let best = maxT; const HB = Race.hookBoxes; if (!HB) return best;
+  for (let i = 0; i < HB.length; i++) {
+    const b = HB[i]; if (b[0] > ox + 12 || b[3] < ox - 12 || b[2] > oz + 12 || b[5] < oz - 12) continue;
+    if (oy >= b[1] && oy <= b[4] && ox >= b[0] && ox <= b[3] && oz >= b[2] && oz <= b[5]) continue; // kart itself inside a bounding box (e.g. under an arch) - ignore
+    const t = rayBox(ox, oy, oz, dx, dy, dz, b, best); if (t >= 0 && t < best) best = t;
+  }
+  return best;
+}
+// distance-cull scenery chunks (fog hides them anyway)
+function raceCullChunks() {
+  const C = Race.chunks; if (!C) return; const cx = camera.position.x, cz = camera.position.z;
+  for (let i = 0; i < C.length; i++) { const c = C[i], d = Math.hypot(c.x - cx, c.z - cz) - c.r; c.m.visible = d < 240; if (c.sh == null) c.sh = c.m.castShadow; c.m.castShadow = c.sh && d < 70; }
 }
 
 // ======================================================================
@@ -3914,7 +4428,7 @@ const Net = {
     if (!this.ok()) return netMsg('Online play unavailable', 'Could not load the networking library (PeerJS). Check your internet connection and reload.');
     Snd.init(); this.reset(); this.role = 'host'; G.net = this; this.myId = 0; this.nextId = 1;
     this.mpName();
-    this.bots = clamp(G.botCount, 0, MAX_BEANS - 1); this.diff = G.difficulty; this.rounds = G.totalRounds; this.map = MAPS[G.map] ? G.map : 'city'; this.giantsOn = G.giantsOn !== false ? 1 : 0; this.giantCount = G.giantCount | 0; this.mode = G.mode || 'hide'; this.raceLaps = G.raceLaps || 3; this.raceSeed = G.raceSeed || 0;
+    this.bots = clamp(G.botCount, 0, MAX_BEANS - 1); this.diff = G.difficulty; this.rounds = G.totalRounds; this.map = MAPS[G.map] ? G.map : 'city'; this.giantsOn = G.giantsOn !== false ? 1 : 0; this.giantCount = G.giantCount | 0; this.mode = G.mode || 'hide'; this.raceLaps = G.raceLaps || 2; this.raceSeed = G.raceSeed || 0;
     $('lbMap').querySelectorAll('button').forEach(e => e.classList.toggle('sel', e.dataset.v === this.map));
     $('hostBtn').disabled = true; $('joinMsg').textContent = '';
     showLobby(); $('lbStatus').textContent = 'Creating room…'; $('lbCode').textContent = '…'; $('lbLink').value = '';
@@ -3962,7 +4476,7 @@ const Net = {
     if (d.t === 'in' && b && b.remote) {
       if (d.tp !== b.tp || G.state === 'roulette' || !Array.isArray(d.p)) return;
       const [x, y, z] = d.p; if (![x, y, z, d.yaw].every(Number.isFinite)) return;
-      const BB = G.mode === 'race' ? 260 : BOUND + 1;
+      const BB = G.mode === 'race' ? (Race.bound || 260) + 30 : BOUND + 1;
       b.nb.push({ t: nowMs(), x: clamp(x, -BB, BB), y: clamp(y, G.mode === 'race' ? -25 : -2, 70), z: clamp(z, -BB, BB), yaw: d.yaw });
       if (G.mode === 'race' && typeof raceRemoteInput === 'function') raceRemoteInput(b, d);
       if (b.nb.length > 40) b.nb.shift();
@@ -4001,7 +4515,7 @@ const Net = {
     let defs = shuffle(BOT_DEFS.slice()); defs = defs.filter(d => !used.has(d.color.toLowerCase())).concat(defs.filter(d => used.has(d.color.toLowerCase())));
     const roster = humans.concat(defs.slice(0, nb).map((d, i) => ({ id: 100 + i, name: d.name, color: d.color, hat: d.hat, human: false })));
     G.difficulty = this.diff; G.totalRounds = this.rounds; G.giantsOn = !!this.giantsOn; G.giantCount = this.giantCount | 0;
-    G.mode = this.mode || 'hide'; G.raceLaps = this.raceLaps || 3;
+    G.mode = this.mode || 'hide'; G.raceLaps = this.raceLaps || 2;
     const seed = (this.raceSeed | 0) > 0 ? (this.raceSeed | 0) : raceRandSeed();
     this.raceSeed = seed; G.raceSeed = seed;
     if (G.mode !== 'race' && G.map !== this.map) setMap(this.map);
@@ -4067,7 +4581,7 @@ const Net = {
         this.renderLobby(); break;
       case 'start':
         G.difficulty = d.diff; G.totalRounds = d.rounds; G.giantsOn = !!d.giantsOn; G.giantCount = d.giantCount | 0;
-        G.mode = d.mode || 'hide'; G.raceLaps = d.raceLaps || 3; G.raceSeed = d.raceSeed || 0;
+        G.mode = d.mode || 'hide'; G.raceLaps = d.raceLaps || 2; G.raceSeed = d.raceSeed || 0;
         if (G.mode !== 'race' && MAPS[d.map] && G.map !== d.map) setMap(d.map);
         netRoster(d.roster, this.myId); beginNetGame();
         if (G.mode === 'race') startRaceGame({ seed: G.raceSeed, laps: G.raceLaps, roster: d.roster });
@@ -4122,7 +4636,7 @@ function netHooks(b, hk) {
     const h = b.hooks[i], a = Array.isArray(hk) ? hk[i] : 0;
     if (Array.isArray(a) && a.length === 3 && a.every(Number.isFinite)) {
       const moved = Math.abs(h.a.x - a[0]) + Math.abs(h.a.y - a[1]) + Math.abs(h.a.z - a[2]) > 0.3;
-      if (h.st === 0 || h.st >= 3 || moved) { h.a.set(clamp(a[0], -60, 60), clamp(a[1], -5, 60), clamp(a[2], -60, 60)); h.st = 1; h.prog = 0; h.dist = Math.max(2, b.pos.distanceTo(h.a)); }
+      if (h.st === 0 || h.st >= 3 || moved) { { const HB = G.mode === 'race' ? 420 : 60; h.a.set(clamp(a[0], -HB, HB), clamp(a[1], -5, 90), clamp(a[2], -HB, HB)); } h.st = 1; h.prog = 0; h.dist = Math.max(2, b.pos.distanceTo(h.a)); }
     } else if (h.st === 1 || h.st === 2) h.st = 5;
   }
 }
@@ -4178,7 +4692,7 @@ function renderLobby(info) {
   $('lbStart').disabled = ps.length + bots < 2 || !(Net.peer && Net.peer.open);
     $('lbInfo').textContent = ps.length + bots < 2 ? 'Add at least one bot or wait for a friend to start.' : '';
   } else $('lbInfo').textContent = (info.mode === 'race')
-    ? `🏁 Race · ${info.raceLaps || 3} laps · seed ${info.raceSeed || 'host picks'} · Bots: ${bots} — the host will start the race.`
+    ? `🏁 Race · ${info.raceLaps || 2} laps · seed ${info.raceSeed || 'host picks'} · Bots: ${bots} — the host will start the race.`
     : `Map: ${info.map === 'yard' ? '🌳 Backyard' : '🏰 Walled City'} · Giants: ${info.giantsOn ? (info.giantCount || '?') : 'off'} · Bots: ${bots} · Bot seeker: ${dn[info.diff] || info.diff} · Rounds: ${info.rounds} — the host will start the game.`;
   if (host && $('lbGiantsOn')) {
     $('lbGiantsOn').querySelectorAll('button').forEach(b => b.classList.toggle('sel', (b.dataset.v === '1') === !!info.giantsOn));
@@ -4343,6 +4857,12 @@ function updateCamera(dt) {
     CAM.tgt.x = damp(CAM.tgt.x, p.pos.x, 25, dt); CAM.tgt.z = damp(CAM.tgt.z, p.pos.z, 25, dt); CAM.tgt.y = damp(CAM.tgt.y, p.pos.y + 1.0, kt.air ? 6 : 14, dt);
     desired.set(CAM.tgt.x - Math.sin(yaw) * dist, CAM.tgt.y + h, CAM.tgt.z - Math.cos(yaw) * dist);
     { const cs = raceSurface(desired.x, desired.z, kt.hint); if (Math.abs(cs.L) > RW - 0.6 && Math.abs(cs.L) < RW + 4) desired.y = Math.max(desired.y, cs.ty + 3.2); }
+    { // keep buildings/towers lining the course from swallowing the chase cam
+      const ox = CAM.tgt.x, oy = CAM.tgt.y + 0.5, oz = CAM.tgt.z, dx = desired.x - ox, dy = desired.y - oy, dz = desired.z - oz, L = Math.hypot(dx, dy, dz) || 1;
+      const t = raceCamBlock(ox, oy, oz, dx / L, dy / L, dz / L, L + 0.6), want = t < L + 0.6 ? Math.max(1.4, t - 0.6) : L;
+      const cur = CAM.rBoom || L; CAM.rBoom = want < cur ? damp(cur, want, 30, dt) : damp(cur, want, 3, dt);
+      const f = Math.min(1, CAM.rBoom / L); desired.set(ox + dx * f, oy + dy * f + (1 - f) * 1.0, oz + dz * f);
+    }
     const ahead = 4 + spd * 0.12;
     look.set(CAM.tgt.x + Math.sin(yaw) * ahead, CAM.tgt.y + 0.6, CAM.tgt.z + Math.cos(yaw) * ahead);
     k = 0; CAM.pos.lerp(desired, 1 - Math.exp(-14 * dt)); CAM.look.lerp(look, 1 - Math.exp(-16 * dt));
@@ -4417,7 +4937,7 @@ addEventListener('keydown', e => {
   if (e.code === 'KeyM') { Snd.init(); Snd.toggleMute(); }
   if (e.code === 'Enter' && !$('scoreboard').classList.contains('hidden')) onNext();
   if (G.state !== 'hiding' && G.state !== 'seeking' && G.state !== 'race') return;
-  if (G.state === 'race') { if (e.code === 'KeyR') resetRaceCam(); if (e.code === 'Space') RIN.spPress = true; if (e.code === 'KeyE' || e.code === 'KeyF') RIN.useClick = true; return; }
+  if (G.state === 'race') { if (e.code === 'KeyR' || e.code === 'KeyQ') resetRaceCam(); if (e.code === 'Space') RIN.spPress = true; if (e.code === 'KeyE' || e.code === 'KeyF') RIN.useClick = true; return; }
   if (p.ghost) return;
   const frozen = G.state === 'hiding' && p === G.seeker;
   if (frozen) return;
@@ -4443,12 +4963,12 @@ let swallowUp = false;
 canvas.addEventListener('mousedown', e => {
   Snd.init();
   if (inPlay() && !locked && !G.autoLock) { requestLock(); dragging = true; swallowUp = true; return; }
-  if (G.state === 'race') { if (e.button === 1) { e.preventDefault(); resetRaceCam(); } else if (e.button === 0 && typeof RIN !== 'undefined') RIN.useClick = true; return; }
+  if (G.state === 'race') { if (e.button === 1) { e.preventDefault(); resetRaceCam(); } else if ((e.button === 0 || e.button === 2) && typeof RIN !== 'undefined') RIN.hookDn[e.button === 0 ? 0 : 1] = true; return; }
   if (performance.now() - lockClickT < 250) return;
   if (e.button === 0) fireHook(0); else if (e.button === 2) fireHook(1);
 });
 canvas.addEventListener('contextmenu', e => e.preventDefault());
-addEventListener('mouseup', e => { dragging = false; if (swallowUp) { swallowUp = false; return; } if (e.button === 0) releaseHook(0); else if (e.button === 2) releaseHook(1); });
+addEventListener('mouseup', e => { dragging = false; if (swallowUp) { swallowUp = false; return; } if (G.state === 'race') { if ((e.button === 0 || e.button === 2) && typeof RIN !== 'undefined') RIN.hookUp[e.button === 0 ? 0 : 1] = true; return; } if (e.button === 0) releaseHook(0); else if (e.button === 2) releaseHook(1); });
 addEventListener('mousemove', e => {
   if (!locked && !dragging) return;
   mouseLook(e.movementX || 0, e.movementY || 0);
@@ -5001,7 +5521,7 @@ function update(dt) {
 // ======================================================================
 setMap('city'); G.mapChoice = 'city';
 buildRoster(true); setupMenuScene();
-if (G.debug) G.api = { startGame, startSeeking, startHiding, endRound, nextRound, CAM, aliveHiders, update, updateCamera, updateHUD, spots, zones, setMap, setupMenuScene, fireHook, releaseHook, updateAim, colliders, roofs, groundHeight, planLegs, setGoal, startArc, solidAt, segBlocked, MAPS, keys, giants, spawnGiantsForMap, clearGiants, tryNapeHit, updateGiants, renderer, scene, Snd, seekers, catchBean, fxCatch, Race, startRaceGame, buildRaceTrack, updateRace, endRace, showRaceScoreboard, clearRaceWorld, raceSurface, raceUseItem, raceHit, setItem, kartStep, raceRespawn, playerInput, RIN, saveCamCfg, camBoomFree, resetRaceCam, camOccluders, mouseLook };
+if (G.debug) G.api = { startGame, startSeeking, startHiding, endRound, nextRound, CAM, aliveHiders, update, updateCamera, updateHUD, spots, zones, setMap, setupMenuScene, fireHook, releaseHook, updateAim, colliders, roofs, groundHeight, planLegs, setGoal, startArc, solidAt, segBlocked, MAPS, keys, giants, spawnGiantsForMap, clearGiants, tryNapeHit, updateGiants, renderer, scene, Snd, seekers, catchBean, fxCatch, Race, startRaceGame, buildRaceTrack, updateRace, endRace, showRaceScoreboard, clearRaceWorld, raceSurface, raceHookFire, raceHookRelease, pickHookTarget, HOOK, botAimPoint, racePlayerHooks, camera, raceCullChunks, raceUseItem, raceHit, setItem, kartStep, raceRespawn, playerInput, RIN, saveCamCfg, camBoomFree, resetRaceCam, camOccluders, mouseLook };
 let last = performance.now(), fpsAcc = 0, fpsN = 0;
 G.fps = 0;
 function frame(now) {
